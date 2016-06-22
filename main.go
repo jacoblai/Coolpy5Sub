@@ -5,17 +5,36 @@ import (
 	"net/http"
 	"log"
 	"Coolpy/Cors"
-	"Coolpy/Account"
 	"fmt"
+	"github.com/satori/go.uuid"
+	"Coolpy/Ldata"
+	"encoding/json"
 )
 
+type Person struct {
+	Ukey string
+	Uid  string
+	Pwd  string
+}
+
 func main() {
-	np := Account.New()
+	ldb := &Ldata.LateEngine{DbPath:"data/ac", DbName:"AccountDb"}
+	ldb.Open()
+	defer ldb.Ldb.Close()
+
+	np := &Person{
+		Ukey : uuid.NewV4().String(),
+	}
 	np.Uid = "jao"
 	np.Pwd = "pwd"
 
-	err := np.Save(np)
+	js, err := json.Marshal(&np)
+
+	err = ldb.Set(np.Uid, []byte(js))
 	fmt.Println(err)
+
+	data, err := ldb.Get(np.Uid)
+	fmt.Println(string(data), err)
 
 	router := httprouter.New()
 	//router.GET("/", Index)

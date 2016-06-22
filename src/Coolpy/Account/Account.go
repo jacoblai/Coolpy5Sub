@@ -30,10 +30,20 @@ func New() *Person {
 	}
 }
 
-func (p *Person) Save(ps *Person) error {
+func (p *Person) Put(ps *Person) error {
 	json, err := json.Marshal(ps)
 	if err == nil {
 		ldb.Put([]byte(ps.Uid), json, nil)
 	}
 	return err
+}
+
+func (p *Person) Get(uid string) (*Person, error) {
+	data, err := ldb.Get([]byte(uid), nil)
+	if err == nil {
+		np := New()
+		json.Unmarshal(data,*np)
+		return np,nil
+	}
+	return nil,err
 }
