@@ -1,26 +1,25 @@
 package Account
 
 import (
-	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/satori/go.uuid"
-	"fmt"
 	"encoding/json"
+	"Coolpy/Ldata"
+	"strings"
+	"errors"
 )
 
 type Person struct {
 	Ukey string
-	Uid  string
+	Uid  string //required
 	Pwd  string
 }
 
-var ldb *leveldb.DB
+var ldb *Ldata.LateEngine
 
 func init() {
-	db, err := leveldb.OpenFile("data/ac", nil)
-	if err != nil {
-		fmt.Println("Account database error:", err)
-	}
-	defer db.Close()
+	db := &Ldata.LateEngine{DbPath:"data/ac", DbName:"AccountDb"}
+	db.Open()
+	//defer db.Ldb.Close()
 	ldb = db
 }
 
@@ -30,20 +29,47 @@ func New() *Person {
 	}
 }
 
-func (p *Person) Put(ps *Person) error {
-	json, err := json.Marshal(ps)
-	if err == nil {
-		ldb.Put([]byte(ps.Uid), json, nil)
+func (p *Person) CreateOrReplace(ps *Person) error {
+	if len(strings.TrimSpace(ps.Uid)) == 0 {
+		return errors.New("uid was nil")
 	}
-	return err
+	json, err := json.Marshal(ps)
+	if err != nil {
+		return err
+	}
+	if err = ldb.Set(ps.Uid, json); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (p *Person) Get(uid string) (*Person, error) {
-	data, err := ldb.Get([]byte(uid), nil)
+	if len(strings.TrimSpace(uid)) == 0 {
+		return nil, errors.New("uid was nil")
+	}
+	data, err := ldb.Get(uid)
 	if err == nil {
 		np := New()
-		json.Unmarshal(data,*np)
-		return np,nil
+		json.Unmarshal(data, *np)
+		return np, nil
 	}
-	return nil,err
+	return nil, err
+}
+
+func (p *Person) Delete(uid string) error {
+	if len(strings.TrimSpace(uid)) == 0 {
+		return errors.New("uid was nil")
+	}
+	if err := ldb.Del(uid); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (p *Person) Find(uid string) (map[string][]byte, error) {
+	data, err := ldb.FindKeyStartWith(uid)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }

@@ -6,9 +6,7 @@ import (
 	"log"
 	"Coolpy/Cors"
 	"fmt"
-	"github.com/satori/go.uuid"
-	"Coolpy/Ldata"
-	"encoding/json"
+	"Coolpy/Account"
 )
 
 type Person struct {
@@ -18,23 +16,18 @@ type Person struct {
 }
 
 func main() {
-	ldb := &Ldata.LateEngine{DbPath:"data/ac", DbName:"AccountDb"}
-	ldb.Open()
-	defer ldb.Ldb.Close()
-
-	np := &Person{
-		Ukey : uuid.NewV4().String(),
-	}
+	np := Account.New()
 	np.Uid = "jao"
-	np.Pwd = "pwd"
-
-	js, err := json.Marshal(&np)
-
-	err = ldb.Set(np.Uid, []byte(js))
+	np.Pwd = "pwd111"
+	err := np.CreateOrReplace(np)
 	fmt.Println(err)
 
-	data, err := ldb.Get(np.Uid)
-	fmt.Println(string(data), err)
+	data, err := np.Get(np.Uid)
+	fmt.Println(data.Ukey, err)
+
+	nnp, err := np.Find(np.Uid)
+	fmt.Println(string(nnp[np.Uid]))
+
 
 	router := httprouter.New()
 	//router.GET("/", Index)
