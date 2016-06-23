@@ -24,9 +24,11 @@ func init() {
 }
 
 func New() *Person {
-	return &Person{
-		Ukey : uuid.NewV4().String(),
-	}
+	return &Person{	}
+}
+
+func (p *Person) CreateUkey() {
+	p.Ukey = uuid.NewV4().String()
 }
 
 func (p *Person) CreateOrReplace(ps *Person) error {
@@ -66,7 +68,7 @@ func (p *Person) Delete(uid string) error {
 	return nil
 }
 
-func (p *Person) Find(uid string) (map[string][]byte, error) {
+func (p *Person) FindKeyStart(uid string) (map[string][]byte, error) {
 	data, err := ldb.FindKeyStartWith(uid)
 	if err != nil {
 		return nil, err

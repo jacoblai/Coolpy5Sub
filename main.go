@@ -7,6 +7,7 @@ import (
 	"Coolpy/Cors"
 	"fmt"
 	"Coolpy/Account"
+	"encoding/json"
 )
 
 type Person struct {
@@ -17,16 +18,20 @@ type Person struct {
 
 func main() {
 	np := Account.New()
-	np.Uid = "jao"
-	np.Pwd = "pwd111"
+	np.Uid = "jao22222"
+	np.Pwd = "pwd222"
+	np.CreateUkey()
 	err := np.CreateOrReplace(np)
 	fmt.Println(err)
 
 	data, err := np.Get(np.Uid)
 	fmt.Println(data.Ukey, err)
 
-	nnp, err := np.Find(np.Uid)
-	fmt.Println(string(nnp[np.Uid]))
+	nnp, err := np.FindKeyStart("jao")
+	for k,v := range nnp{
+		fmt.Println(k,string(v))
+	}
+
 
 
 	router := httprouter.New()
