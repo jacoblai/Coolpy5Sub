@@ -7,7 +7,6 @@ import (
 	"Coolpy/Cors"
 	"fmt"
 	"Coolpy/Account"
-	"encoding/json"
 )
 
 type Person struct {
