@@ -16,6 +16,7 @@ type Person struct {
 }
 
 func main() {
+
 	np := Account.New()
 	np.Uid = "jao22222"
 	np.Pwd = "pwd222"
