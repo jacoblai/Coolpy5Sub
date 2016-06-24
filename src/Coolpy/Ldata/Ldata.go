@@ -64,12 +64,25 @@ func (ldb *LateEngine) FindKeyStartWith(key string) (map[string][]byte, error) {
 
 func (ldb *LateEngine) FindKeyRangeByDatetime(start string, end string) (map[string][]byte, error) {
 	keys := make(map[string][]byte)
-
 	min := []byte(start)
 	max := []byte(end)
-
 	iter := ldb.Ldb.NewIterator(nil, nil)
-	for ok := iter.Seek(min); ok && bytes.Compare(iter.Key(),max)<=0; ok = iter.Next() {
+	for ok := iter.Seek(min); ok && bytes.Compare(iter.Key(), max) <= 0; ok = iter.Next() {
+		keys[string(iter.Key())] = iter.Value()
+	}
+	iter.Release()
+	err := iter.Error()
+	if err != nil {
+		return nil, errors.New("iter errors")
+	} else {
+		return keys, nil
+	}
+}
+
+func (ldb *LateEngine) FindAll() (map[string][]byte, error) {
+	keys := make(map[string][]byte)
+	iter := ldb.Ldb.NewIterator(nil, nil)
+	for iter.Next() {
 		keys[string(iter.Key())] = iter.Value()
 	}
 	iter.Release()
