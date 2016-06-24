@@ -1,6 +1,7 @@
 package Account
 
 import (
+	//"github.com/golang/protobuf/proto"
 	"github.com/satori/go.uuid"
 	"encoding/json"
 	"strings"
@@ -51,8 +52,8 @@ func (p *Person) Get(uid string) (*Person, error) {
 	}
 	data, err := ldb.Get(uid)
 	if err == nil {
-		np := New()
-		json.Unmarshal(data, *np)
+		np := &Person{}
+		json.Unmarshal(data, np)
 		return np, nil
 	}
 	return nil, err
@@ -68,8 +69,16 @@ func (p *Person) Delete(uid string) error {
 	return nil
 }
 
-func (p *Person) FindKeyStart(uid string) (map[string][]byte, error) {
+func FindKeyStart(uid string) (map[string][]byte, error) {
 	data, err := ldb.FindKeyStartWith(uid)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+func All() (map[string][]byte, error) {
+	data, err := ldb.FindAll()
 	if err != nil {
 		return nil, err
 	}

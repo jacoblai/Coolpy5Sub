@@ -7,32 +7,27 @@ import (
 	"Coolpy/Cors"
 	"fmt"
 	"Coolpy/Account"
+	"encoding/json"
 )
 
-type Person struct {
-	Ukey string
-	Uid  string
-	Pwd  string
-}
-
 func main() {
-
 	np := Account.New()
-	np.Uid = "jao22222"
-	np.Pwd = "pwd222"
+	np.Uid = "li111"
+	np.Pwd = "pwd111afasdfasdfasdfasdfasdfasdfqfiweuriquweoruqowieruajsdfkajsdlkfjalskdjfklasjdfklajsdklfjasdklf1122"
 	np.CreateUkey()
 	err := np.CreateOrReplace(np)
 	fmt.Println(err)
 
-	data, err := np.Get(np.Uid)
-	fmt.Println(data.Ukey, err)
+	//data, err := np.Get(np.Uid)
+	//fmt.Println(data, err)
 
-	nnp, err := np.FindKeyStart("jao")
+	//nnp, _ := Account.FindKeyStart("o")
+	nnp, _ := Account.All()
 	for k,v := range nnp{
-		fmt.Println(k,string(v))
+		p:= &Account.Person{}
+		json.Unmarshal(v,&p)
+		fmt.Print(k,p)
 	}
-
-
 
 	router := httprouter.New()
 	//router.GET("/", Index)
