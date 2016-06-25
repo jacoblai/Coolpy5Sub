@@ -23,10 +23,8 @@ func main() {
 
 	//nnp, _ := Account.FindKeyStart("o")
 	//nnp, _ := Account.All()
-	//for k,v := range nnp{
-	//	p:= &Account.Person{}
-	//	json.Unmarshal(v,&p)
-	//	fmt.Print(k,p)
+	//for _,v := range nnp{
+	//	fmt.Print(v.Ukey)
 	//}
 
 	router := httprouter.New()

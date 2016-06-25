@@ -25,7 +25,7 @@ func init() {
 }
 
 func New() *Person {
-	return &Person{	}
+	return &Person{}
 }
 
 func (p *Person) CreateUkey() {
@@ -59,7 +59,7 @@ func Get(uid string) (*Person, error) {
 	return nil, err
 }
 
-func (p *Person) Delete(uid string) error {
+func Delete(uid string) error {
 	if len(strings.TrimSpace(uid)) == 0 {
 		return errors.New("uid was nil")
 	}
@@ -69,18 +69,30 @@ func (p *Person) Delete(uid string) error {
 	return nil
 }
 
-func FindKeyStart(uid string) (map[string][]byte, error) {
+func FindKeyStart(uid string) (map[string]*Person, error) {
 	data, err := ldb.FindKeyStartWith(uid)
 	if err != nil {
 		return nil, err
 	}
-	return data, nil
+	ndata := make(map[string]*Person)
+	for k, v := range data {
+		np := &Person{}
+		json.Unmarshal(v, &np)
+		ndata[k] = np
+	}
+	return ndata, nil
 }
 
-func All() (map[string][]byte, error) {
+func All() (map[string]*Person, error) {
 	data, err := ldb.FindAll()
 	if err != nil {
 		return nil, err
 	}
-	return data, nil
+	ndata := make(map[string]*Person)
+	for k, v := range data {
+		np := &Person{}
+		json.Unmarshal(v, &np)
+		ndata[k] = np
+	}
+	return ndata, nil
 }
