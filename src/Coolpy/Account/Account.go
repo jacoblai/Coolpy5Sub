@@ -1,7 +1,6 @@
 package Account
 
 import (
-	//"github.com/golang/protobuf/proto"
 	"github.com/satori/go.uuid"
 	"encoding/json"
 	"strings"

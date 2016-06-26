@@ -11,22 +11,6 @@ import (
 )
 
 func main() {
-	//np := Account.New()
-	//np.Uid = "li111"
-	//np.Pwd = "pwd111afasdfasdfasdfasdfasdfasdfqfiweuriquweoruqowieruajsdfkajsdlkfjalskdjfklasjdfklajsdklfjasdklf1122"
-	//np.CreateUkey()
-	//err := np.CreateOrReplace(np)
-	//fmt.Println(err)
-
-	//data, err := np.Get(np.Uid)
-	//fmt.Println(data, err)
-
-	//nnp, _ := Account.FindKeyStart("o")
-	//nnp, _ := Account.All()
-	//for _,v := range nnp{
-	//	fmt.Print(v.Ukey)
-	//}
-
 	router := httprouter.New()
 	router.GET("/:uid", Basicauth.Auth(Index))
 	router.POST("/", IndexPost)
