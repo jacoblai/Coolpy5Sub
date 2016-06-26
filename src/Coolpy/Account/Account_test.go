@@ -7,11 +7,11 @@ import (
 
 func TestAll(t *testing.T) {
 	fmt.Println("start test")
-	longnp := New()
-	longnp.Uid = "li111"
-	longnp.Pwd = "pwd111afasdfasdfasdfasdfasdfasdfqfiweuriquweoruqowieruajsdfkajsdlkfjalskdjfklasjdfklajsdkl"
-	longnp.CreateUkey()
-	err := CreateOrReplace(longnp)
+	np := New()
+	np.Uid = "jo111"
+	np.Pwd = "pwd111afasdfasdfasdfasdfasdfasdfqfiweuriquweoruqowieruajsdfkajsdlkfjalskdjfklasjdfklajsdkl"
+	np.CreateUkey()
+	err := CreateOrReplace(np)
 	if err != nil {
 		t.Error(err)
 	} else {
@@ -19,15 +19,15 @@ func TestAll(t *testing.T) {
 	}
 
 	fmt.Println("get test")
-	data, err := Get(longnp.Uid)
-	if data.Uid == longnp.Uid {
+	data, err := Get(np.Uid)
+	if data.Uid == np.Uid {
 		fmt.Println("find ok")
 	} else {
 		t.Error("find error")
 	}
 
 	fmt.Println("findkey test")
-	fnp, _ := FindKeyStart("li")
+	fnp, _ := FindKeyStart("jo")
 	if len(fnp) != 1 {
 		t.Error("findkey error")
 	}
