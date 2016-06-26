@@ -32,9 +32,8 @@ func Incr(key string) uint64 {
 		return 1
 	} else {
 		v, _ := ldb.Ldb.Get([]byte(key), nil)
-		i := binary.BigEndian.Uint64(v)
-		i++
-		binary.BigEndian.PutUint64(buf,i)
+		i := binary.BigEndian.Uint64(v) + 1
+		binary.BigEndian.PutUint64(buf, i)
 		ldb.Ldb.Put([]byte(key), buf, nil)
 		return i
 	}
