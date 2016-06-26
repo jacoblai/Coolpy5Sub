@@ -37,7 +37,7 @@ func TestAll(t *testing.T) {
 
 	fmt.Println("findall test")
 	anp, _ := All()
-	if len(anp) != 1{
+	if len(anp) != 1 {
 		t.Error("allkey error")
 	}
 	for _, v := range anp {
