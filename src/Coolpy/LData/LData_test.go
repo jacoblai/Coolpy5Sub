@@ -3,6 +3,8 @@ package Ldata
 import (
 	"testing"
 	"fmt"
+	"sort"
+	"strings"
 )
 
 func TestLateEngine_FindKeyRangeByDatetime(t *testing.T) {
@@ -18,7 +20,7 @@ func TestLateEngine_FindKeyRangeByDatetime(t *testing.T) {
 	//	key := tm.Add(time.Second * time.Duration(i))
 	//	nkey := key.Format(time.RFC3339Nano)
 	//	var nb []byte
-	//	for _, r := range "1:2:" {
+	//	for _, r := range "1,2," {
 	//		nb = append(nb, byte(r))
 	//	}
 	//	for _, r := range nkey {
@@ -34,8 +36,15 @@ func TestLateEngine_FindKeyRangeByDatetime(t *testing.T) {
 	//}
 
 	fmt.Println("datetime range read test")
-	all, _ := db.FindKeyRangeByDatetime("1:2:2013-06-05T14:10:43.678Z","1:2:2013-06-05T14:10:45.678Z")
+	all, _ := db.FindKeyRangeByDatetime("1,2,2013-06-05T14:10:41", "1,2,2013-06-05T14:11:46")
+	keys := make([]string, len(all))
+	i := 0
 	for k, _ := range all {
-		fmt.Println(k)
+		keys[i] = k
+		i++
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		fmt.Printf("Key:%v\n", strings.Split(k,",")[2])
 	}
 }
