@@ -32,19 +32,27 @@ func (ldb *LateEngine) Set(key string, value []byte) error {
 }
 
 func (ldb *LateEngine) Get(key string) ([]byte, error) {
-	data, err := ldb.Ldb.Get([]byte(key), nil)
-	if err != nil {
-		return nil, err
+	ext, _ := ldb.Ldb.Has([]byte(key), nil)
+	if ext {
+		data, err := ldb.Ldb.Get([]byte(key), nil)
+		if err != nil {
+			return nil, err
+		}
+		return data, nil
 	}
-	return data, nil
+	return nil,errors.New("not found")
 }
 
 func (ldb *LateEngine) Del(key string) error {
-	err := ldb.Ldb.Delete([]byte(key), nil)
-	if err != nil {
-		return err
+	ext, _ := ldb.Ldb.Has([]byte(key), nil)
+	if ext{
+		err := ldb.Ldb.Delete([]byte(key), nil)
+		if err != nil {
+			return err
+		}
+		return nil
 	}
-	return nil
+	return errors.New("not found")
 }
 
 func (ldb *LateEngine) FindKeyStartWith(key string) (map[string][]byte, error) {

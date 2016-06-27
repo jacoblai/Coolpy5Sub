@@ -8,6 +8,9 @@ import (
 	"Coolpy/Account"
 	"encoding/json"
 	"Coolpy/BasicAuth"
+	"os"
+	"os/signal"
+	"net"
 )
 
 func main() {
@@ -15,15 +18,25 @@ func main() {
 	router.GET("/:uid", Basicauth.Auth(Index))
 	router.POST("/", IndexPost)
 
-	if err := http.ListenAndServe(":8080", Cors.CORS(router)); err != nil {
-		log.Fatal(err)
+	ln, err := net.Listen("tcp", ":8080")
+	if err != nil {
+		log.Fatalf("Can't listen: %s", err)
 	}
+	go http.Serve(ln, Cors.CORS(router))
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, os.Kill)
+	s := <-c
+	log.Println("Coolpy server on stopped signal is:", s)
+	ln.Close()
+	os.Exit(1)
 }
 
 func Index(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	p,err := Account.Get(ps.ByName("uid"))
+	p, err := Account.Get(ps.ByName("uid"))
 	if err != nil {
-		log.Fatal(err)
+		w.WriteHeader(http.StatusNotFound)
+		return
 	}
 	json.NewEncoder(w).Encode(p)
 }
