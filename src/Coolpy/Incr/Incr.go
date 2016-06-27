@@ -1,7 +1,7 @@
 package Incr
 
 import (
-	"Coolpy/LData"
+	"Coolpy/Ldata"
 	"encoding/binary"
 	"sync"
 )
