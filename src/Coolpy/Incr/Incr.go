@@ -11,9 +11,13 @@ var ldb *Ldata.LateEngine
 func init() {
 	db := &Ldata.LateEngine{DbPath:"data/incr", DbName:"IncrDb"}
 	db.Open()
-	//defer db.Ldb.Close()
 	ldb = db
 }
+
+func Close() error {
+	return ldb.Ldb.Close()
+}
+
 
 var bufPool = sync.Pool{
 	New:func() interface{} {

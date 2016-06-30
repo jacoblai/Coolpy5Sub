@@ -19,12 +19,15 @@ var ldb *Ldata.LateEngine
 func init() {
 	db := &Ldata.LateEngine{DbPath:"data/ac", DbName:"AccountDb"}
 	db.Open()
-	//defer db.Ldb.Close()
 	ldb = db
 }
 
 func New() *Person {
 	return &Person{}
+}
+
+func Close() error {
+	return ldb.Ldb.Close()
 }
 
 func (p *Person) CreateUkey() {

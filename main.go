@@ -3,14 +3,15 @@ package main
 import (
 	"github.com/julienschmidt/httprouter"
 	"net/http"
-	"log"
 	"Coolpy/Cors"
 	"Coolpy/Account"
 	"encoding/json"
 	"Coolpy/BasicAuth"
+	"net"
+	"fmt"
+	"Coolpy/Incr"
 	"os"
 	"os/signal"
-	"net"
 )
 
 func main() {
@@ -20,16 +21,23 @@ func main() {
 
 	ln, err := net.Listen("tcp", ":8080")
 	if err != nil {
-		log.Fatalf("Can't listen: %s", err)
+		fmt.Println("Can't listen: %s", err)
 	}
 	go http.Serve(ln, Cors.CORS(router))
-
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, os.Kill)
-	s := <-c
-	log.Println("Coolpy server on stopped signal is:", s)
-	ln.Close()
-	os.Exit(1)
+	fmt.Println("Coolpy Server host on port 8080")
+	signalChan := make(chan os.Signal, 1)
+	cleanupDone := make(chan bool)
+	signal.Notify(signalChan, os.Interrupt)
+	go func() {
+		for _ = range signalChan {
+			fmt.Println("\nReceived an interrupt, stopping services...\n")
+			ln.Close()
+			Account.Close()
+			Incr.Close()
+			cleanupDone <- true
+		}
+	}()
+	<-cleanupDone
 }
 
 func Index(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -39,6 +47,7 @@ func Index(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	json.NewEncoder(w).Encode(p)
+	return
 }
 
 func IndexPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -47,15 +56,16 @@ func IndexPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	err := decoder.Decode(&p)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
-		log.Fatal(err)
+		fmt.Println(err)
 		return
 	}
 	p.CreateUkey()
 	err = Account.CreateOrReplace(&p)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
-		log.Fatal(err)
+		fmt.Println(err)
 		return
 	}
 	json.NewEncoder(w).Encode(p)
+	return
 }

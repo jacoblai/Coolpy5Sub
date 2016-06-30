@@ -3,6 +3,7 @@ package Ldata
 import (
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/util"
+	"github.com/syndtr/goleveldb/leveldb/opt"
 	"errors"
 	"bytes"
 )
@@ -14,11 +15,13 @@ type LateEngine struct {
 }
 
 func (ldb *LateEngine) Open() error {
-	db, err := leveldb.OpenFile(ldb.DbPath, nil)
+	o := &opt.Options{
+		Compression:opt.NoCompression,
+	}
+	db, err := leveldb.OpenFile(ldb.DbPath, o)
 	if err != nil {
 		return errors.New("Account database error")
 	}
-	//defer db.Close()
 	ldb.Ldb = db
 	return nil
 }
@@ -32,27 +35,19 @@ func (ldb *LateEngine) Set(key string, value []byte) error {
 }
 
 func (ldb *LateEngine) Get(key string) ([]byte, error) {
-	ext, _ := ldb.Ldb.Has([]byte(key), nil)
-	if ext {
-		data, err := ldb.Ldb.Get([]byte(key), nil)
-		if err != nil {
-			return nil, err
-		}
-		return data, nil
+	data, err := ldb.Ldb.Get([]byte(key), nil)
+	if err != nil {
+		return nil, err
 	}
-	return nil,errors.New("not found")
+	return data, nil
 }
 
 func (ldb *LateEngine) Del(key string) error {
-	ext, _ := ldb.Ldb.Has([]byte(key), nil)
-	if ext{
-		err := ldb.Ldb.Delete([]byte(key), nil)
-		if err != nil {
-			return err
-		}
-		return nil
+	err := ldb.Ldb.Delete([]byte(key), nil)
+	if err != nil {
+		return err
 	}
-	return errors.New("not found")
+	return nil
 }
 
 func (ldb *LateEngine) FindKeyStartWith(key string) (map[string][]byte, error) {
