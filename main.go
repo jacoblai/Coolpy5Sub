@@ -38,6 +38,7 @@ func main() {
 		}
 	}()
 	<-cleanupDone
+	fmt.Println("\nStoped Coolpy5...\n")
 }
 
 func Index(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {

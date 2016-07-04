@@ -6,6 +6,8 @@ import (
 	"sync"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/opt"
+	"github.com/syndtr/goleveldb/leveldb/util"
+	"bytes"
 )
 
 // RedisDB holds a single (numbered) Redis database.
@@ -47,6 +49,26 @@ func (db *RedicoDB) allKeys() []string {
 	}
 	iter.Release()
 	sort.Strings(keys) // To make things deterministic.
+	return keys
+}
+
+func (db *RedicoDB) keyStart(k string) []string {
+	var keys []string
+	iter := db.leveldb.NewIterator(util.BytesPrefix([]byte(k)), nil)
+	for iter.Next() {
+		keys = append(keys, string(iter.Key()))
+	}
+	iter.Release()
+	return keys
+}
+
+func (db *RedicoDB) keyRange(min string, max string) []string {
+	var keys []string
+	iter := db.leveldb.NewIterator(nil, nil)
+	for ok := iter.Seek([]byte(min)); ok && bytes.Compare(iter.Key(), []byte(max)) <= 0; ok = iter.Next() {
+		keys = append(keys, string(iter.Key()))
+	}
+	iter.Release()
 	return keys
 }
 

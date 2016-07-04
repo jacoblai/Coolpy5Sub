@@ -11,6 +11,8 @@ func commandsGeneric(m *Redico, srv *redeo.Server) {
 	// DUMP
 	srv.HandleFunc("EXISTS", m.cmdExists)
 	srv.HandleFunc("KEYS", m.cmdKeys)
+	srv.HandleFunc("KEYSSTART", m.cmdKeysStart)
+	srv.HandleFunc("KEYSRANGE", m.cmdKeyRange)
 	// OBJECT
 	srv.HandleFunc("SCAN", m.cmdScan)
 }
@@ -73,6 +75,53 @@ func (m *Redico) cmdKeys(out *redeo.Responder, r *redeo.Request) error {
 		db := m.db(ctx.selectedDB)
 
 		keys := matchKeys(db.allKeys(), key)
+		out.WriteBulkLen(len(keys))
+		for _, s := range keys {
+			out.WriteString(s)
+		}
+	})
+}
+
+// KEYSSTART
+func (m *Redico) cmdKeysStart(out *redeo.Responder, r *redeo.Request) error {
+	if len(r.Args) != 1 {
+		setDirty(r.Client())
+		return r.WrongNumberOfArgs()
+	}
+	if !m.handleAuth(r.Client(), out) {
+		return nil
+	}
+
+	key := r.Args[0]
+
+	return withTx(m, out, r, func(out *redeo.Responder, ctx *connCtx) {
+		db := m.db(ctx.selectedDB)
+
+		keys := db.keyStart(key)
+		out.WriteBulkLen(len(keys))
+		for _, s := range keys {
+			out.WriteString(s)
+		}
+	})
+}
+
+// KEYSRANGE
+func (m *Redico) cmdKeyRange(out *redeo.Responder, r *redeo.Request) error {
+	if len(r.Args) < 2 {
+		setDirty(r.Client())
+		return r.WrongNumberOfArgs()
+	}
+	if !m.handleAuth(r.Client(), out) {
+		return nil
+	}
+
+	min := r.Args[0]
+	max := r.Args[1]
+
+	return withTx(m, out, r, func(out *redeo.Responder, ctx *connCtx) {
+		db := m.db(ctx.selectedDB)
+
+		keys := db.keyRange(min, max)
 		out.WriteBulkLen(len(keys))
 		for _, s := range keys {
 			out.WriteString(s)

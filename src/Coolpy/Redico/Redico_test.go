@@ -4,6 +4,7 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"testing"
 	"fmt"
+	"time"
 )
 
 func TestRedico(t *testing.T) {
@@ -42,8 +43,39 @@ func TestRedico(t *testing.T) {
 	}
 
 	_, err = c.Do("SET", "joo", "bar")
-	if v, err := redis.Strings(c.Do("KEYS", "j*"));err !=nil || v[0] != "joo"{
+	if v, err := redis.Strings(c.Do("KEYS", "j*")); err != nil || v[0] != "joo" {
 		t.Error("Keys not fire *")
+	}
+
+	if v, err := redis.Strings(c.Do("KEYSSTART", "jo")); err == nil {
+		fmt.Println("KEYSSTART")
+		for _, val := range v {
+			fmt.Println(val)
+		}
+	}
+
+	fmt.Println("datetime range test")
+	tm, err := time.Parse(time.RFC3339Nano, "2013-06-05T14:10:43.678Z")
+	if err != nil {
+		panic(err)
+	}
+	for i := 0; i < 10; i++ {
+		key := tm.Add(time.Second * time.Duration(i))
+		nkey := key.Format(time.RFC3339Nano)
+		var nb []byte
+		for _, r := range "1,2," {
+			nb = append(nb, byte(r))
+		}
+		for _, r := range nkey {
+			nb = append(nb, byte(r))
+		}
+		_, err = c.Do("SET", string(nb), "")
+	}
+	v, err := redis.Strings(c.Do("KEYSRANGE", "1,2,2013-06-05T14:10:41", "1,2,2013-06-05T14:11:46"))
+	fmt.Println("KEYSRANGE")
+	fmt.Println(err)
+	for _, val := range v {
+		fmt.Println(val)
 	}
 
 	// You can ask about keys directly, without going over the network.
