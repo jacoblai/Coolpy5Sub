@@ -40,6 +40,29 @@ func (db *RedicoDB) exists(k string) bool {
 	return ok
 }
 
+var bufPool = sync.Pool{
+	New:func() interface{} {
+		buf := make([]byte, 8)
+		return buf
+	},
+}
+
+// change int key value
+func (db *RedicoDB) stringIncr(k string, delta int) (int, error) {
+	v := 0
+	sv, err := db.leveldb.Get([]byte(k), nil)
+	if err != nil {
+		return 0, ErrKeyNotFound
+	}
+	v, err = strconv.Atoi(string(sv))
+	if err != nil {
+		return 0, ErrIntValueError
+	}
+	v += delta
+	db.stringSet(k, strconv.Itoa(v))
+	return v, nil
+}
+
 // allKeys returns all keys. Sorted.
 func (db *RedicoDB) allKeys() []string {
 	var keys []string

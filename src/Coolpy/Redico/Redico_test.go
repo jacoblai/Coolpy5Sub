@@ -37,6 +37,11 @@ func TestRedico(t *testing.T) {
 	_, err = c.Do("PING")
 	fmt.Println(err)
 
+	s.Set("incrs", "12")
+	if v, err := redis.Int(c.Do("INCR", "incrs")); err !=nil || v != 13 {
+		t.Error(v,err)
+	}
+
 	_, err = c.Do("SET", "foo", "bar")
 	if err != nil {
 		t.Error(err)

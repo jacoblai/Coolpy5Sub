@@ -9,6 +9,7 @@ import (
 func commandsString(m *Redico, srv *redeo.Server) {
 	srv.HandleFunc("GET", m.cmdGet)
 	srv.HandleFunc("SET", m.cmdSet)
+	srv.HandleFunc("INCR", m.cmdIncr)
 }
 
 // SET
@@ -105,5 +106,33 @@ func (m *Redico) cmdGet(out *redeo.Responder, r *redeo.Request) error {
 			return
 		}
 		out.WriteString(db.stringGet(key))
+	})
+}
+
+// INCR
+func (m *Redico) cmdIncr(out *redeo.Responder, r *redeo.Request) error {
+	if len(r.Args) != 1 {
+		setDirty(r.Client())
+		return r.WrongNumberOfArgs()
+	}
+	if !m.handleAuth(r.Client(), out) {
+		return nil
+	}
+
+	return withTx(m, out, r, func(out *redeo.Responder, ctx *connCtx) {
+		db := m.db(ctx.selectedDB)
+
+		key := r.Args[0]
+		if !db.exists(key) {
+			out.WriteErrorString(msgWrongType)
+			return
+		}
+		v, err := db.stringIncr(key, +1)
+		if err != nil {
+			out.WriteErrorString(err.Error())
+			return
+		}
+		// Don't touch TTL
+		out.WriteInt(v)
 	})
 }

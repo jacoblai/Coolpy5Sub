@@ -1,7 +1,7 @@
 // There are no dependencies on system binaries, and every server you start
 // will be empty.
 //
-// Start a server with `s, err := miniredis.Run()`.
+// Start a server with `s, err := Redico.Run()`.
 // Stop it with `defer s.Close()`.
 //
 // Point your Redis client to `s.Addr()` or `s.Host(), s.Port()`.
