@@ -42,6 +42,12 @@ func TestRedico(t *testing.T) {
 		t.Error(v,err)
 	}
 
+	r, err := redis.Int(c.Do("DEL", "incrs", "aap"))
+	if err !=nil{
+		t.Error(err)
+	}
+        fmt.Println(r)
+
 	_, err = c.Do("SET", "foo", "bar")
 	if err != nil {
 		t.Error(err)
@@ -50,6 +56,10 @@ func TestRedico(t *testing.T) {
 	_, err = c.Do("SET", "joo", "bar")
 	if v, err := redis.Strings(c.Do("KEYS", "j*")); err != nil || v[0] != "joo" {
 		t.Error("Keys not fire *")
+	}
+
+	if v, err := redis.String(c.Do("GET", "foo"));err ==nil{
+		fmt.Println(v)
 	}
 
 	if v, err := redis.Strings(c.Do("KEYSSTART", "jo")); err == nil {
@@ -92,6 +102,22 @@ func TestRedico(t *testing.T) {
 	if _, err := s.DB(42).Get("foo"); err != ErrKeyNotFound {
 		t.Error("Didn't use a different DB")
 	}
+
+	if _, err = redis.String(c.Do("SELECT", "5")); err !=nil{
+		t.Error(err)
+	}
+
+	if _, err = redis.String(c.Do("SET", "foo", "baz"));err !=nil{
+		t.Error(err)
+	}
+
+	// Direct access.
+	got, err := s.Get("foo")
+	fmt.Println("nomal is",got)
+	s.Select(5)
+	got, err = s.Get("foo")
+	fmt.Println("select 5", got)
+
 	// Or use a Check* function which Fail()s if the key is not what we expect
 	// (checks for existence, key type and the value)
 	// s.CheckGet(t, "foo", "bar")

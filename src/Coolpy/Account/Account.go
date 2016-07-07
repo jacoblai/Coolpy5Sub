@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"strings"
 	"errors"
-	"Coolpy/Ldata"
+	"github.com/garyburd/redigo/redis"
 )
 
 type Person struct {
@@ -14,12 +14,19 @@ type Person struct {
 	Pwd  string
 }
 
-var ldb *Ldata.LateEngine
+var rds redis.Conn
 
-func init() {
-	db := &Ldata.LateEngine{DbPath:"data/ac", DbName:"AccountDb"}
-	db.Open()
-	ldb = db
+func Connect(addr string) {
+	c, err := redis.Dial("tcp", addr)
+	if err != nil {
+		panic(err)
+	}
+	_, err = c.Do("AUTH", "icoolpy.com")
+	if err !=nil{
+		panic(err)
+	}
+	rds = c
+	_, err = redis.String(rds.Do("SELECT", "1"));
 }
 
 func New() *Person {
@@ -27,7 +34,7 @@ func New() *Person {
 }
 
 func Close() error {
-	return ldb.Ldb.Close()
+	return rds.Close()
 }
 
 func (p *Person) CreateUkey() {
@@ -42,7 +49,8 @@ func CreateOrReplace(ps *Person) error {
 	if err != nil {
 		return err
 	}
-	if err = ldb.Set(ps.Uid, json); err != nil {
+	_, err = rds.Do("SET", ps.Uid, json)
+	if err != nil {
 		return err
 	}
 	return nil
@@ -52,10 +60,10 @@ func Get(uid string) (*Person, error) {
 	if len(strings.TrimSpace(uid)) == 0 {
 		return nil, errors.New("uid was nil")
 	}
-	data, err := ldb.Get(uid)
+	data, err := redis.String(rds.Do("GET", uid))
 	if err == nil {
 		np := &Person{}
-		json.Unmarshal(data, np)
+		json.Unmarshal([]byte(data), np)
 		return np, nil
 	}
 	return nil, err
@@ -65,36 +73,39 @@ func Delete(uid string) error {
 	if len(strings.TrimSpace(uid)) == 0 {
 		return errors.New("uid was nil")
 	}
-	if err := ldb.Del(uid); err != nil {
+	_, err := redis.Int(rds.Do("DEL", uid))
+	if err != nil {
 		return err
 	}
 	return nil
 }
 
 func FindKeyStart(uid string) (map[string]*Person, error) {
-	data, err := ldb.FindKeyStartWith(uid)
+	data, err := redis.Strings(rds.Do("KEYSSTART", uid))
 	if err != nil {
 		return nil, err
 	}
 	ndata := make(map[string]*Person)
-	for k, v := range data {
+	for _,v := range data {
+		o, _ := redis.String(rds.Do("GET", v))
 		np := &Person{}
-		json.Unmarshal(v, &np)
-		ndata[k] = np
+		json.Unmarshal([]byte(o), &np)
+		ndata[v] = np
 	}
 	return ndata, nil
 }
 
 func All() (map[string]*Person, error) {
-	data, err := ldb.FindAll()
+	data, err := redis.Strings(rds.Do("KEYS", "*"));
 	if err != nil {
 		return nil, err
 	}
 	ndata := make(map[string]*Person)
-	for k, v := range data {
+	for _,v := range data {
+		o, _ := redis.String(rds.Do("GET", v))
 		np := &Person{}
-		json.Unmarshal(v, &np)
-		ndata[k] = np
+		json.Unmarshal([]byte(o), &np)
+		ndata[v] = np
 	}
 	return ndata, nil
 }

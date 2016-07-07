@@ -9,12 +9,20 @@ import (
 	"Coolpy/BasicAuth"
 	"net"
 	"fmt"
-	"Coolpy/Incr"
 	"os"
 	"os/signal"
+	"Coolpy/Redico"
 )
 
 func main() {
+	redServer, err := Redico.Run()
+	if err != nil {
+		panic(err)
+	}
+	defer redServer.Close()
+	redServer.RequireAuth("icoolpy.com")
+	Account.Connect(redServer.Addr())
+
 	router := httprouter.New()
 	router.GET("/:uid", Basicauth.Auth(Index))
 	router.POST("/", IndexPost)
@@ -25,6 +33,8 @@ func main() {
 	}
 	go http.Serve(ln, Cors.CORS(router))
 	fmt.Println("Coolpy Server host on port 8080")
+
+
 	signalChan := make(chan os.Signal, 1)
 	cleanupDone := make(chan bool)
 	signal.Notify(signalChan, os.Interrupt)
@@ -33,7 +43,6 @@ func main() {
 			fmt.Println("\nStopping Coolpy5...\n")
 			ln.Close()
 			Account.Close()
-			Incr.Close()
 			cleanupDone <- true
 		}
 	}()
