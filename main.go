@@ -16,8 +16,9 @@ import (
 )
 
 func main() {
-	var port = flag.Int("p", 8080, "coolpy port")
-
+	var port int
+	flag.IntVar(&port, "p", 8080, "tcp/ip port munber")
+	flag.Parse()
 	//初始化数据库服务
 	redServer, err := Redico.Run()
 	if err != nil {
@@ -34,12 +35,12 @@ func main() {
 	router.GET("/:uid", Basicauth.Auth(Account.UserGet))
 	router.POST("/", Account.UserPost)
 
-	ln, err := net.Listen("tcp", ":" + strconv.Itoa(*port))
+	ln, err := net.Listen("tcp", ":" + strconv.Itoa(port))
 	if err != nil {
 		fmt.Println("Can't listen: %s", err)
 	}
 	go http.Serve(ln, Cors.CORS(router))
-	fmt.Println("Coolpy Server host on port 8080")
+	fmt.Println("Coolpy Server host on port ", strconv.Itoa(port))
 
 	signalChan := make(chan os.Signal, 1)
 	cleanupDone := make(chan bool)
