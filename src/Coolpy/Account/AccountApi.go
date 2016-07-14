@@ -26,6 +26,7 @@ func CreateAdmin() {
 }
 
 func UserPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	defer r.Body.Close()
 	decoder := json.NewDecoder(r.Body)
 	var p Person
 	err := decoder.Decode(&p)
@@ -61,6 +62,7 @@ func UserGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func UserPut(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	defer r.Body.Close()
 	decoder := json.NewDecoder(r.Body)
 	var p Person
 	err := decoder.Decode(&p)
