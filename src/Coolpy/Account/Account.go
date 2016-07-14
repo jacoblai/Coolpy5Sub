@@ -9,9 +9,10 @@ import (
 )
 
 type Person struct {
-	Ukey string
-	Uid  string //required
-	Pwd  string
+	Ukey string `validate:"required"`
+	Uid  string `validate:"required"`
+	Pwd  string `validate:"required"`
+	UserName string
 }
 
 var rds redis.Conn

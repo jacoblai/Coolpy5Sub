@@ -5,35 +5,41 @@ import (
 	"net/http"
 	"Coolpy/Cors"
 	"Coolpy/Account"
-	"encoding/json"
 	"Coolpy/BasicAuth"
 	"net"
 	"fmt"
 	"os"
 	"os/signal"
 	"Coolpy/Redico"
+	"flag"
+	"strconv"
 )
 
 func main() {
+	var port = flag.Int("p", 8080, "coolpy port")
+
+	//初始化数据库服务
 	redServer, err := Redico.Run()
 	if err != nil {
 		panic(err)
 	}
 	defer redServer.Close()
 	redServer.RequireAuth("icoolpy.com")
+	//初始化用户账号服务
 	Account.Connect(redServer.Addr())
+	//自动检测创建超级账号
+	Account.CreateAdmin()
 
 	router := httprouter.New()
-	router.GET("/:uid", Basicauth.Auth(Index))
-	router.POST("/", IndexPost)
+	router.GET("/:uid", Basicauth.Auth(Account.UserGet))
+	router.POST("/", Account.UserPost)
 
-	ln, err := net.Listen("tcp", ":8080")
+	ln, err := net.Listen("tcp", ":" + strconv.Itoa(*port))
 	if err != nil {
 		fmt.Println("Can't listen: %s", err)
 	}
 	go http.Serve(ln, Cors.CORS(router))
 	fmt.Println("Coolpy Server host on port 8080")
-
 
 	signalChan := make(chan os.Signal, 1)
 	cleanupDone := make(chan bool)
@@ -48,34 +54,4 @@ func main() {
 	}()
 	<-cleanupDone
 	fmt.Println("\nStoped Coolpy5...\n")
-}
-
-func Index(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	p, err := Account.Get(ps.ByName("uid"))
-	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-	json.NewEncoder(w).Encode(p)
-	return
-}
-
-func IndexPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	decoder := json.NewDecoder(r.Body)
-	var p Account.Person
-	err := decoder.Decode(&p)
-	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		fmt.Println(err)
-		return
-	}
-	p.CreateUkey()
-	err = Account.CreateOrReplace(&p)
-	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		fmt.Println(err)
-		return
-	}
-	json.NewEncoder(w).Encode(p)
-	return
 }
