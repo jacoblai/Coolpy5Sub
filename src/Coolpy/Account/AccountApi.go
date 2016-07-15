@@ -95,11 +95,15 @@ func UserPut(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func UserDel(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	p := ps.ByName("uid")
-	if p == "" {
+	uid := ps.ByName("uid")
+	if uid == "" {
 		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, "params nuid")
 		return
 	}
-	Delete(p)
+	if uid == "admin" {
+		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, "isAdmin")
+		return
+	}
+	Delete(uid)
 	fmt.Fprintf(w, `{"ok":%d}`, 1)
 }
