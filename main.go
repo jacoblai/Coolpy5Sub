@@ -25,9 +25,10 @@ func main() {
 		panic(err)
 	}
 	defer redServer.Close()
-	redServer.RequireAuth("icoolpy.com")
+	svcpwd := "icoolpy.com"
+	redServer.RequireAuth(svcpwd)
 	//初始化用户账号服务
-	Account.Connect(redServer.Addr())
+	Account.Connect(redServer.Addr(), svcpwd)
 	//自动检测创建超级账号
 	Account.CreateAdmin()
 
@@ -36,6 +37,9 @@ func main() {
 	router.GET("/api/user/:uid", Basicauth.Auth(Account.UserGet))
 	router.PUT("/api/user/:uid", Basicauth.Auth(Account.UserPut))
 	router.DELETE("/api/user/:uid", Basicauth.Auth(Account.UserDel))
+	router.GET("/api/um/all", Basicauth.Auth(Account.UserAll))
+	router.GET("/api/um/apikey", Basicauth.Auth(Account.UserApiKey))
+	router.GET("/api/um/newkey", Basicauth.Auth(Account.UserNewApiKey))
 
 	ln, err := net.Listen("tcp", ":" + strconv.Itoa(port))
 	if err != nil {

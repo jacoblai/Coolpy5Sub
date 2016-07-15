@@ -17,12 +17,12 @@ type Person struct {
 
 var rds redis.Conn
 
-func Connect(addr string) {
+func Connect(addr string, pwd string) {
 	c, err := redis.Dial("tcp", addr)
 	if err != nil {
 		panic(err)
 	}
-	_, err = c.Do("AUTH", "icoolpy.com")
+	_, err = c.Do("AUTH", pwd)
 	if err !=nil{
 		panic(err)
 	}
@@ -97,7 +97,7 @@ func FindKeyStart(uid string) (map[string]*Person, error) {
 }
 
 func All() (map[string]*Person, error) {
-	data, err := redis.Strings(rds.Do("KEYS", "*"));
+	data, err := redis.Strings(rds.Do("KEYS", "*"))
 	if err != nil {
 		return nil, err
 	}

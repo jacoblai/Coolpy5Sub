@@ -117,3 +117,52 @@ func UserDel(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	Delete(uid)
 	fmt.Fprintf(w, `{"ok":%d}`, 1)
 }
+
+func UserAll(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	v, err := r.Cookie("islogin")
+	if err != nil {
+		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, "dosn't login")
+		return
+	}
+	if v.Value != "admin" {
+		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, "dosn't Admin")
+		return
+	}
+	ndata, err := All()
+	if err != nil {
+		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, err)
+		return
+	}
+	pStr, _ := json.Marshal(&ndata)
+	fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
+}
+
+func UserApiKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	v, err := r.Cookie("islogin")
+	if err != nil {
+		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, "dosn't login")
+		return
+	}
+	p, err := Get(v.Value)
+	if err != nil {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+		return
+	}
+	fmt.Fprintf(w, `{"ok":%d,"data":"%v"}`, 1, p.Ukey)
+}
+
+func UserNewApiKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	v, err := r.Cookie("islogin")
+	if err != nil {
+		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, "dosn't login")
+		return
+	}
+	p, err := Get(v.Value)
+	if err != nil {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+		return
+	}
+	p.CreateUkey()
+	CreateOrReplace(p)
+	fmt.Fprintf(w, `{"ok":%d,"data":"%v"}`, 1, p.Ukey)
+}
