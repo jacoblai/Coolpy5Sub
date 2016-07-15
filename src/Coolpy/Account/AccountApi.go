@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"encoding/json"
 	"gopkg.in/go-playground/validator.v8"
+	"fmt"
 )
 
 var validate *validator.Validate
@@ -31,34 +32,36 @@ func UserPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var p Person
 	err := decoder.Decode(&p)
 	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, err)
 		return
 	}
 	if p.Uid == "admin" {
-		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, "isAdmin")
 		return
 	}
 	p.CreateUkey()
 	errs := validate.Struct(p)
 	if errs != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, "invalid")
 		return
 	}
 	err = CreateOrReplace(&p)
 	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, err)
 		return
 	}
-	json.NewEncoder(w).Encode(p)
+	pStr, _ := json.Marshal(&p)
+	fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
 }
 
 func UserGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	p, err := Get(ps.ByName("uid"))
 	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, err)
 		return
 	}
-	json.NewEncoder(w).Encode(p)
+	pStr, _ := json.Marshal(&p)
+	fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
 }
 
 func UserPut(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -67,35 +70,36 @@ func UserPut(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var p Person
 	err := decoder.Decode(&p)
 	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, err)
 		return
 	}
 	if p.Uid == "admin" {
-		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, "isAdmin")
 		return
 	}
 	op, _ := Get(ps.ByName("uid"))
 	if op == nil {
-		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, "params nuid")
 		return
 	}
 	if p.Uid != op.Uid {
-		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, "uidne")
 		return
 	}
 	op.UserName = p.UserName
 	op.Pwd = p.Pwd
 	op.Uid = p.Uid
 	CreateOrReplace(op)
-	w.WriteHeader(http.StatusOK)
+	pStr, _ := json.Marshal(op)
+	fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
 }
 
 func UserDel(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	p := ps.ByName("uid")
 	if p == "" {
-		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, "params nuid")
 		return
 	}
 	Delete(p)
-	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, `{"ok":%d}`, 1)
 }
