@@ -35,8 +35,13 @@ func UserPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, err)
 		return
 	}
-	if p.Uid == "admin" {
-		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, "isAdmin")
+	v, err := r.Cookie("islogin")
+	if err != nil {
+		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, "dosn't login")
+		return
+	}
+	if v.Value != "admin" {
+		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, "dosn't Admin")
 		return
 	}
 	p.CreateUkey()
@@ -60,6 +65,7 @@ func UserGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, err)
 		return
 	}
+	p.Pwd = ""
 	pStr, _ := json.Marshal(&p)
 	fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
 }
@@ -88,7 +94,6 @@ func UserPut(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 	op.UserName = p.UserName
 	op.Pwd = p.Pwd
-	op.Uid = p.Uid
 	CreateOrReplace(op)
 	pStr, _ := json.Marshal(op)
 	fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
@@ -100,8 +105,13 @@ func UserDel(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, "params nuid")
 		return
 	}
-	if uid == "admin" {
-		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, "isAdmin")
+	v, err := r.Cookie("islogin")
+	if err != nil {
+		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, "dosn't login")
+		return
+	}
+	if v.Value != "admin" {
+		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, "dosn't Admin")
 		return
 	}
 	Delete(uid)

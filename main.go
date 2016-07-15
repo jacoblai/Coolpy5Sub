@@ -32,10 +32,10 @@ func main() {
 	Account.CreateAdmin()
 
 	router := httprouter.New()
-	router.POST("/", Account.UserPost)
-	router.GET("/:uid", Basicauth.Auth(Account.UserGet))
-	router.PUT("/:uid", Basicauth.Auth(Account.UserPut))
-	router.DELETE("/:uid", Basicauth.Auth(Account.UserDel))
+	router.POST("/api/user", Basicauth.Auth(Account.UserPost))
+	router.GET("/api/user/:uid", Basicauth.Auth(Account.UserGet))
+	router.PUT("/api/user/:uid", Basicauth.Auth(Account.UserPut))
+	router.DELETE("/api/user/:uid", Basicauth.Auth(Account.UserDel))
 
 	ln, err := net.Listen("tcp", ":" + strconv.Itoa(port))
 	if err != nil {
