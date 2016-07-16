@@ -25,6 +25,10 @@ func Auth(next httprouter.Handle)httprouter.Handle  {
 						Name:  "islogin",
 						Value: p.Uid,
 					})
+					r.AddCookie(&http.Cookie{
+						Name:  "ukey",
+						Value: p.Ukey,
+					})
 					next(w, r, ps)
 					return
 				}

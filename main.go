@@ -13,6 +13,8 @@ import (
 	"Coolpy/Redico"
 	"flag"
 	"strconv"
+	"Coolpy/Incr"
+	"Coolpy/Hubs"
 )
 
 func main() {
@@ -31,8 +33,13 @@ func main() {
 	Account.Connect(redServer.Addr(), svcpwd)
 	//自动检测创建超级账号
 	Account.CreateAdmin()
+	//自动id库
+	Incr.Connect(redServer.Addr(), svcpwd)
+	//hub库
+	Hubs.Connect(redServer.Addr(), svcpwd)
 
 	router := httprouter.New()
+	//用户管理api
 	router.POST("/api/user", Basicauth.Auth(Account.UserPost))
 	router.GET("/api/user/:uid", Basicauth.Auth(Account.UserGet))
 	router.PUT("/api/user/:uid", Basicauth.Auth(Account.UserPut))
@@ -40,6 +47,9 @@ func main() {
 	router.GET("/api/um/all", Basicauth.Auth(Account.UserAll))
 	router.GET("/api/um/apikey", Basicauth.Auth(Account.UserApiKey))
 	router.GET("/api/um/newkey", Basicauth.Auth(Account.UserNewApiKey))
+	//hubs管理api
+	router.POST("/api/hubs", Basicauth.Auth(Hubs.HubPost))
+	router.GET("/api/hubs/:ukey", Basicauth.Auth(Hubs.HubsGet))
 
 	ln, err := net.Listen("tcp", ":" + strconv.Itoa(port))
 	if err != nil {

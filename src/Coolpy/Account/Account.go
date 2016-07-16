@@ -9,9 +9,9 @@ import (
 )
 
 type Person struct {
-	Ukey string `validate:"required"`
-	Uid  string `validate:"required"`
-	Pwd  string `validate:"required"`
+	Ukey     string `validate:"required"`
+	Uid      string `validate:"required"`
+	Pwd      string `validate:"required"`
 	UserName string
 }
 
@@ -23,7 +23,7 @@ func Connect(addr string, pwd string) {
 		panic(err)
 	}
 	_, err = c.Do("AUTH", pwd)
-	if err !=nil{
+	if err != nil {
 		panic(err)
 	}
 	rds = c
@@ -87,7 +87,7 @@ func FindKeyStart(uid string) (map[string]*Person, error) {
 		return nil, err
 	}
 	ndata := make(map[string]*Person)
-	for _,v := range data {
+	for _, v := range data {
 		o, _ := redis.String(rds.Do("GET", v))
 		np := &Person{}
 		json.Unmarshal([]byte(o), &np)
@@ -96,17 +96,17 @@ func FindKeyStart(uid string) (map[string]*Person, error) {
 	return ndata, nil
 }
 
-func All() (map[string]*Person, error) {
+func All() ([]*Person, error) {
 	data, err := redis.Strings(rds.Do("KEYS", "*"))
 	if err != nil {
 		return nil, err
 	}
-	ndata := make(map[string]*Person)
-	for _,v := range data {
+	var ndata []*Person
+	for _, v := range data {
 		o, _ := redis.String(rds.Do("GET", v))
 		np := &Person{}
 		json.Unmarshal([]byte(o), &np)
-		ndata[v] = np
+		ndata = append(ndata, np)
 	}
 	return ndata, nil
 }

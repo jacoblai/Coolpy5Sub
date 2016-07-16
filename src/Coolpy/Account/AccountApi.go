@@ -163,6 +163,8 @@ func UserNewApiKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 		return
 	}
 	p.CreateUkey()
+	//delete all sub hub and node
+
 	CreateOrReplace(p)
 	fmt.Fprintf(w, `{"ok":%d,"data":"%v"}`, 1, p.Ukey)
 }
