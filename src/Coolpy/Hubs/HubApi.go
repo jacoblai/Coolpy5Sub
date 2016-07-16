@@ -154,5 +154,7 @@ func HubDel(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	Delete(key)
+	//delete all sub node
+
 	fmt.Fprintf(w, `{"ok":%d}`, 1)
 }
