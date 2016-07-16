@@ -32,27 +32,27 @@ func UserPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var p Person
 	err := decoder.Decode(&p)
 	if err != nil {
-		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, err)
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 		return
 	}
 	v, err := r.Cookie("islogin")
 	if err != nil {
-		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, "dosn't login")
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "dosn't login")
 		return
 	}
 	if v.Value != "admin" {
-		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, "dosn't Admin")
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "dosn't Admin")
 		return
 	}
 	p.CreateUkey()
 	errs := validate.Struct(p)
 	if errs != nil {
-		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, "invalid")
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "invalid")
 		return
 	}
 	err = CreateOrReplace(&p)
 	if err != nil {
-		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, err)
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 		return
 	}
 	pStr, _ := json.Marshal(&p)
@@ -62,7 +62,7 @@ func UserPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 func UserGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	p, err := Get(ps.ByName("uid"))
 	if err != nil {
-		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, err)
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 		return
 	}
 	p.Pwd = ""
@@ -76,20 +76,20 @@ func UserPut(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var p Person
 	err := decoder.Decode(&p)
 	if err != nil {
-		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, err)
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 		return
 	}
 	if p.Uid == "admin" {
-		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, "isAdmin")
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "isAdmin")
 		return
 	}
 	op, _ := Get(ps.ByName("uid"))
 	if op == nil {
-		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, "params nuid")
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params nuid")
 		return
 	}
 	if p.Uid != op.Uid {
-		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, "uidne")
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "uidne")
 		return
 	}
 	op.UserName = p.UserName
@@ -102,16 +102,16 @@ func UserPut(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 func UserDel(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	uid := ps.ByName("uid")
 	if uid == "" {
-		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, "params nuid")
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params nuid")
 		return
 	}
 	v, err := r.Cookie("islogin")
 	if err != nil {
-		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, "dosn't login")
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "dosn't login")
 		return
 	}
 	if v.Value != "admin" {
-		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, "dosn't Admin")
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "dosn't Admin")
 		return
 	}
 	Delete(uid)
@@ -121,16 +121,16 @@ func UserDel(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 func UserAll(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	v, err := r.Cookie("islogin")
 	if err != nil {
-		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, "dosn't login")
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "dosn't login")
 		return
 	}
 	if v.Value != "admin" {
-		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, "dosn't Admin")
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "dosn't Admin")
 		return
 	}
 	ndata, err := All()
 	if err != nil {
-		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, err)
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 		return
 	}
 	pStr, _ := json.Marshal(&ndata)
@@ -140,7 +140,7 @@ func UserAll(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 func UserApiKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	v, err := r.Cookie("islogin")
 	if err != nil {
-		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, "dosn't login")
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "dosn't login")
 		return
 	}
 	p, err := Get(v.Value)
@@ -154,7 +154,7 @@ func UserApiKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 func UserNewApiKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	v, err := r.Cookie("islogin")
 	if err != nil {
-		fmt.Fprintf(w, `{"ok":%d,"err":%v}`, 0, "dosn't login")
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "dosn't login")
 		return
 	}
 	p, err := Get(v.Value)

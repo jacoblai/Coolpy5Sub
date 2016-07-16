@@ -5,6 +5,8 @@ import (
 	"Coolpy/Incr"
 	"encoding/json"
 	"strconv"
+	"strings"
+	"errors"
 )
 
 type Hub struct {
@@ -67,4 +69,38 @@ func HubStartWith(k string) ([]*Hub, error) {
 		ndata = append(ndata, h)
 	}
 	return ndata, nil
+}
+
+func HubGetOne(k string) (*Hub, error) {
+	o, err := redis.String(rds.Do("GET", k))
+	if err != nil {
+		return nil, err
+	}
+	h := &Hub{}
+	json.Unmarshal([]byte(o), &h)
+	return h, nil
+}
+
+func HubReplace(h *Hub) error {
+	json, err := json.Marshal(h)
+	if err != nil {
+		return err
+	}
+	key := h.Ukey + ":" + strconv.FormatInt(h.Id, 10)
+	_, err = rds.Do("SET", key, json)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func Delete(hid string) error {
+	if len(strings.TrimSpace(hid)) == 0 {
+		return errors.New("uid was nil")
+	}
+	_, err := redis.Int(rds.Do("DEL", hid))
+	if err != nil {
+		return err
+	}
+	return nil
 }

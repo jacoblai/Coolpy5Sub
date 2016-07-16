@@ -50,6 +50,9 @@ func main() {
 	//hubs管理api
 	router.POST("/api/hubs", Basicauth.Auth(Hubs.HubPost))
 	router.GET("/api/hubs/:ukey", Basicauth.Auth(Hubs.HubsGet))
+	router.GET("/api/hub/:hid", Basicauth.Auth(Hubs.HubGet))
+	router.PUT("/api/hub/:hid", Basicauth.Auth(Hubs.HubPut))
+	router.DELETE("/api/hub/:hid", Basicauth.Auth(Hubs.HubDel))
 
 	ln, err := net.Listen("tcp", ":" + strconv.Itoa(port))
 	if err != nil {
