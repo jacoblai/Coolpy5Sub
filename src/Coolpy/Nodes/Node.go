@@ -29,7 +29,7 @@ type NodeType struct {
 	Photo        int
 }
 
-var NodeTypeEnum = NodeType{0, 1, 2, 3, 4, 5, 6}
+var NodeTypeEnum = NodeType{1, 2, 3, 4, 5, 6, 7}
 var NodeReflectType = reflect.TypeOf(NodeTypeEnum)
 
 func (c *NodeType) GetName(v int) string {
