@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"Coolpy/Controller"
 	"github.com/syndtr/goleveldb/leveldb/errors"
+	"strings"
 )
 
 type Node struct {
@@ -109,4 +110,27 @@ func nodeGetOne(k string) (*Node, error) {
 	h := &Node{}
 	json.Unmarshal([]byte(o), &h)
 	return h, nil
+}
+
+func nodeReplace(k string, h *Node) error {
+	json, err := json.Marshal(h)
+	if err != nil {
+		return err
+	}
+	_, err = rds.Do("SET", k, json)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func delete(k string) error {
+	if len(strings.TrimSpace(k)) == 0 {
+		return errors.New("uid was nil")
+	}
+	_, err := redis.Int(rds.Do("DEL", k))
+	if err != nil {
+		return err
+	}
+	return nil
 }
