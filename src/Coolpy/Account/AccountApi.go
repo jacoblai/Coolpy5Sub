@@ -22,7 +22,7 @@ func CreateAdmin() {
 		p.Uid = "admin"
 		p.CreateUkey()
 		p.UserName = "admin"
-		CreateOrReplace(p)
+		createOrReplace(p)
 	}
 }
 
@@ -50,7 +50,7 @@ func UserPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "invalid")
 		return
 	}
-	err = CreateOrReplace(&p)
+	err = createOrReplace(&p)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 		return
@@ -94,7 +94,7 @@ func UserPut(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 	op.UserName = p.UserName
 	op.Pwd = p.Pwd
-	CreateOrReplace(op)
+	createOrReplace(op)
 	pStr, _ := json.Marshal(op)
 	fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
 }
@@ -114,7 +114,7 @@ func UserDel(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "dosn't Admin")
 		return
 	}
-	Delete(uid)
+	delete(uid)
 	fmt.Fprintf(w, `{"ok":%d}`, 1)
 }
 
@@ -128,7 +128,7 @@ func UserAll(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "dosn't Admin")
 		return
 	}
-	ndata, err := All()
+	ndata, err := all()
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 		return
@@ -165,6 +165,6 @@ func UserNewApiKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	p.CreateUkey()
 	//delete all sub hub and node
 
-	CreateOrReplace(p)
+	createOrReplace(p)
 	fmt.Fprintf(w, `{"ok":%d,"data":"%v"}`, 1, p.Ukey)
 }

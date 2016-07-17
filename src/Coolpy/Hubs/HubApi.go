@@ -36,7 +36,7 @@ func HubPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	}
 	uc, _ := r.Cookie("ukey")
 	h.Ukey = uc.Value
-	err = HubCreate(&h)
+	err = hubCreate(&h)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 		return
@@ -62,7 +62,7 @@ func HubsGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey inrole")
 		return
 	}
-	ndata, err := HubStartWith(uk)
+	ndata, err := hubStartWith(uk)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 		return
@@ -125,7 +125,7 @@ func HubPut(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	oh.Public = h.Public
 	oh.Tabs = h.Tabs
 	oh.Title = h.Title
-	HubReplace(oh)
+	hubReplace(oh)
 	pStr, _ := json.Marshal(&oh)
 	fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
 }
@@ -153,7 +153,7 @@ func HubDel(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext")
 		return
 	}
-	Delete(key)
+	delete(key)
 	//delete all sub node
 
 	fmt.Fprintf(w, `{"ok":%d}`, 1)

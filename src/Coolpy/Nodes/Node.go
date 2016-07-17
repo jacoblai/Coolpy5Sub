@@ -51,7 +51,7 @@ func Connect(addr string, pwd string) {
 	rds.Do("SELECT", "3")
 }
 
-func NodeCreate(ukey string, node *Node) error {
+func nodeCreate(ukey string, node *Node) error {
 	v, err := Incr.NodeInrc()
 	if err != nil {
 		return err
@@ -86,17 +86,7 @@ func NodeCreate(ukey string, node *Node) error {
 	return nil
 }
 
-//func NodeGetOne(k string) (*Node, error) {
-//	o, err := redis.String(rds.Do("GET", k))
-//	if err != nil {
-//		return nil, err
-//	}
-//	h := &Node{}
-//	json.Unmarshal([]byte(o), &h)
-//	return h, nil
-//}
-
-func NodeStartWith(k string) ([]*Node, error) {
+func nodeStartWith(k string) ([]*Node, error) {
 	data, err := redis.Strings(rds.Do("KEYSSTART", k))
 	if err != nil {
 		return nil, err
@@ -109,4 +99,14 @@ func NodeStartWith(k string) ([]*Node, error) {
 		ndata = append(ndata, h)
 	}
 	return ndata, nil
+}
+
+func nodeGetOne(k string) (*Node, error) {
+	o, err := redis.String(rds.Do("GET", k))
+	if err != nil {
+		return nil, err
+	}
+	h := &Node{}
+	json.Unmarshal([]byte(o), &h)
+	return h, nil
 }

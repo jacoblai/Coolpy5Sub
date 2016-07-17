@@ -61,7 +61,8 @@ func main() {
 	router.DELETE("/api/hub/:hid", Basicauth.Auth(Hubs.HubDel))
 	//nodes管理api
 	router.POST("/api/hub/:hid/nodes", Basicauth.Auth(Nodes.NodePost))
-	router.GET("/api/hub/:hid/nodes", Basicauth.Auth(Nodes.NodeGet))
+	router.GET("/api/hub/:hid/nodes", Basicauth.Auth(Nodes.NodesGet))
+	router.GET("/api/hub/:hid/node/:nid", Basicauth.Auth(Nodes.NodeGet))
 
 	ln, err := net.Listen("tcp", ":" + strconv.Itoa(port))
 	if err != nil {

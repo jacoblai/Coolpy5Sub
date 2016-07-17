@@ -42,7 +42,7 @@ func (p *Person) CreateUkey() {
 	p.Ukey = uuid.NewV4().String()
 }
 
-func CreateOrReplace(ps *Person) error {
+func createOrReplace(ps *Person) error {
 	if len(strings.TrimSpace(ps.Uid)) == 0 {
 		return errors.New("uid was nil")
 	}
@@ -70,7 +70,7 @@ func Get(uid string) (*Person, error) {
 	return nil, err
 }
 
-func Delete(uid string) error {
+func delete(uid string) error {
 	if len(strings.TrimSpace(uid)) == 0 {
 		return errors.New("uid was nil")
 	}
@@ -81,7 +81,7 @@ func Delete(uid string) error {
 	return nil
 }
 
-func FindKeyStart(uid string) (map[string]*Person, error) {
+func findKeyStart(uid string) (map[string]*Person, error) {
 	data, err := redis.Strings(rds.Do("KEYSSTART", uid))
 	if err != nil {
 		return nil, err
@@ -96,7 +96,7 @@ func FindKeyStart(uid string) (map[string]*Person, error) {
 	return ndata, nil
 }
 
-func All() ([]*Person, error) {
+func all() ([]*Person, error) {
 	data, err := redis.Strings(rds.Do("KEYS", "*"))
 	if err != nil {
 		return nil, err

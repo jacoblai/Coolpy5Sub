@@ -36,7 +36,7 @@ func Connect(addr string, pwd string) {
 	rds.Do("SELECT", "2")
 }
 
-func HubCreate(hub *Hub) error {
+func hubCreate(hub *Hub) error {
 	v, err := Incr.HubInrc()
 	if err != nil {
 		return err
@@ -55,7 +55,7 @@ func HubCreate(hub *Hub) error {
 	return nil
 }
 
-func HubStartWith(k string) ([]*Hub, error) {
+func hubStartWith(k string) ([]*Hub, error) {
 	data, err := redis.Strings(rds.Do("KEYSSTART", k))
 	if err != nil {
 		return nil, err
@@ -81,7 +81,7 @@ func HubGetOne(k string) (*Hub, error) {
 	return h, nil
 }
 
-func HubReplace(h *Hub) error {
+func hubReplace(h *Hub) error {
 	json, err := json.Marshal(h)
 	if err != nil {
 		return err
@@ -94,7 +94,7 @@ func HubReplace(h *Hub) error {
 	return nil
 }
 
-func Delete(hid string) error {
+func delete(hid string) error {
 	if len(strings.TrimSpace(hid)) == 0 {
 		return errors.New("uid was nil")
 	}
