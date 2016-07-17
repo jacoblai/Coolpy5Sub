@@ -15,6 +15,8 @@ import (
 	"strconv"
 	"Coolpy/Incr"
 	"Coolpy/Hubs"
+	"Coolpy/Nodes"
+	"Coolpy/Controller"
 )
 
 func main() {
@@ -37,6 +39,10 @@ func main() {
 	Incr.Connect(redServer.Addr(), svcpwd)
 	//hub库
 	Hubs.Connect(redServer.Addr(), svcpwd)
+	//node库
+	Nodes.Connect(redServer.Addr(), svcpwd)
+	//控制器库
+	Controller.Connect(redServer.Addr(), svcpwd)
 
 	router := httprouter.New()
 	//用户管理api
@@ -53,6 +59,9 @@ func main() {
 	router.GET("/api/hub/:hid", Basicauth.Auth(Hubs.HubGet))
 	router.PUT("/api/hub/:hid", Basicauth.Auth(Hubs.HubPut))
 	router.DELETE("/api/hub/:hid", Basicauth.Auth(Hubs.HubDel))
+	//nodes管理api
+	router.POST("/api/hub/:hid/nodes", Basicauth.Auth(Nodes.NodePost))
+	router.GET("/api/hub/:hid/nodes", Basicauth.Auth(Nodes.NodeGet))
 
 	ln, err := net.Listen("tcp", ":" + strconv.Itoa(port))
 	if err != nil {
