@@ -228,3 +228,126 @@ func DPGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "unkown type")
 	}
 }
+
+func DPPut(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	defer r.Body.Close()
+	hid := ps.ByName("hid")
+	if hid == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
+		return
+	}
+	if k, _ := Hubs.CheckHubId(hid); k == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext")
+		return
+	}
+	nid := ps.ByName("nid")
+	if nid == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
+		return
+	}
+	if k, _ := Nodes.CheckNodeId(nid); k == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "node not ext")
+		return
+	}
+	ukey := r.Header.Get("U-ApiKey")
+	if ukey == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not post")
+		return
+	}
+	b, err := Account.CheckUKey(ukey + ":")
+	if b == false {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not ext")
+		return
+	}
+	key := ukey + ":" + hid + ":" + nid
+	n, err := Nodes.NodeGetOne(key)
+	if err != nil {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext or node not in hub")
+		return
+	}
+	if n.Type == Nodes.NodeTypeEnum.Switcher {
+		decoder := json.NewDecoder(r.Body)
+		var v Controller.Switcher
+		err = decoder.Decode(&v)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		errs := validate.Struct(v)
+		if errs != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "invalid")
+			return
+		}
+		c, err := Controller.GetSwitcher(key)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		c.Svalue = v.Svalue
+		err = Controller.ReplaceSwitcher(key, c)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		pStr, _ := json.Marshal(&c)
+		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
+	} else if n.Type == Nodes.NodeTypeEnum.RangeControl {
+		decoder := json.NewDecoder(r.Body)
+		var v Controller.RangeControl
+		err = decoder.Decode(&v)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		errs := validate.Struct(v)
+		if errs != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "invalid")
+			return
+		}
+		c, err := Controller.GetRangeControl(key)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		if v.Rvalue > c.Max || c.Rvalue <c.Min {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "range value err")
+			return
+		}
+		c.Rvalue = v.Rvalue
+		err = Controller.ReplaceRangeControl(key, c)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		pStr, _ := json.Marshal(&c)
+		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
+	} else if n.Type == Nodes.NodeTypeEnum.GenControl {
+		decoder := json.NewDecoder(r.Body)
+		var v Controller.GenControl
+		err = decoder.Decode(&v)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		errs := validate.Struct(v)
+		if errs != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "invalid")
+			return
+		}
+		c, err := Controller.GetGenControl(key)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		c.Gvalue = v.Gvalue
+		err = Controller.ReplaceGenControl(key, c)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		pStr, _ := json.Marshal(&c)
+		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
+	} else {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "unkown type")
+	}
+}

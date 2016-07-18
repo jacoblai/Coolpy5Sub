@@ -9,19 +9,19 @@ import (
 type Switcher struct {
 	HubId  int64
 	NodeId int64
-	Svalue int
+	Svalue int `validate:"required"`
 }
 
 type GenControl struct {
 	HubId  int64
 	NodeId int64
-	Gvalue string
+	Gvalue string `validate:"required"`
 }
 
 type RangeControl struct {
 	HubId  int64
 	NodeId int64
-	Rvalue int64
+	Rvalue int64 `validate:"required"`
 	Min    int64
 	Max    int64
 	Step   int64
@@ -40,6 +40,18 @@ func Connect(addr string, pwd string) {
 	}
 	rds = c
 	rds.Do("SELECT", "4")
+}
+
+func ReplaceSwitcher(k string,s *Switcher) error {
+	json, err := json.Marshal(s)
+	if err != nil {
+		return err
+	}
+	_, err = rds.Do("SET", k, json)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func GetSwitcher(k string) (*Switcher, error) {
@@ -67,6 +79,18 @@ func BeginSwitcher(ukey string, Hubid int64, Nodeid int64) error {
 		return err
 	}
 	_, err = rds.Do("SET", key, json)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func ReplaceRangeControl(k string,s *RangeControl) error {
+	json, err := json.Marshal(s)
+	if err != nil {
+		return err
+	}
+	_, err = rds.Do("SET", k, json)
 	if err != nil {
 		return err
 	}
@@ -101,6 +125,18 @@ func BeginRangeControl(ukey string, Hubid int64, Nodeid int64) error {
 		return err
 	}
 	_, err = rds.Do("SET", key, json)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func ReplaceGenControl(k string,s *GenControl) error {
+	json, err := json.Marshal(s)
+	if err != nil {
+		return err
+	}
+	_, err = rds.Do("SET", k, json)
 	if err != nil {
 		return err
 	}

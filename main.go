@@ -78,6 +78,7 @@ func main() {
 	//datapoints管理api
 	router.POST("/api/hub/:hid/node/:nid/datapoints", DataPoints.DPPost)
 	router.GET("/api/hub/:hid/node/:nid/datapoint", DataPoints.DPGet)
+	router.PUT("/api/hub/:hid/node/:nid/datapoint", DataPoints.DPPut)
 
 	ln, err := net.Listen("tcp", ":" + strconv.Itoa(port))
 	if err != nil {
