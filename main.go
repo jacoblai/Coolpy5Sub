@@ -17,6 +17,7 @@ import (
 	"Coolpy/Hubs"
 	"Coolpy/Nodes"
 	"Coolpy/Controller"
+	"Coolpy/DataPoints"
 )
 
 func main() {
@@ -43,6 +44,8 @@ func main() {
 	Nodes.Connect(redServer.Addr(), svcpwd)
 	//控制器库
 	Controller.Connect(redServer.Addr(), svcpwd)
+	//数据结点库
+	DataPoints.Connect(redServer.Addr(), svcpwd)
 
 	router := httprouter.New()
 	//用户管理api
@@ -65,6 +68,8 @@ func main() {
 	router.GET("/api/hub/:hid/node/:nid", Basicauth.Auth(Nodes.NodeGet))
 	router.PUT("/api/hub/:hid/node/:nid", Basicauth.Auth(Nodes.NodePut))
 	router.DELETE("/api/hub/:hid/node/:nid", Basicauth.Auth(Nodes.NodeDel))
+	//datapoints管理api
+	router.POST("/api/hub/:hid/node/:nid/datapoints", DataPoints.DPPost)
 
 	ln, err := net.Listen("tcp", ":" + strconv.Itoa(port))
 	if err != nil {

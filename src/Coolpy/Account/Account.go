@@ -50,7 +50,8 @@ func createOrReplace(ps *Person) error {
 	if err != nil {
 		return err
 	}
-	_, err = rds.Do("SET", ps.Uid, json)
+	k:= ps.Ukey + ":" + ps.Uid
+	_, err = rds.Do("SET", k, json)
 	if err != nil {
 		return err
 	}
@@ -61,27 +62,43 @@ func Get(uid string) (*Person, error) {
 	if len(strings.TrimSpace(uid)) == 0 {
 		return nil, errors.New("uid was nil")
 	}
-	data, err := redis.String(rds.Do("GET", uid))
-	if err == nil {
-		np := &Person{}
-		json.Unmarshal([]byte(data), np)
-		return np, nil
+	k, err := getFromDb(uid)
+	if err != nil {
+		return nil, err
 	}
-	return nil, err
+	o, _ := redis.String(rds.Do("GET", k))
+	np := &Person{}
+	json.Unmarshal([]byte(o), &np)
+	return np, nil
 }
 
 func delete(uid string) error {
 	if len(strings.TrimSpace(uid)) == 0 {
 		return errors.New("uid was nil")
 	}
-	_, err := redis.Int(rds.Do("DEL", uid))
+	k, err := getFromDb(uid)
+	if err != nil {
+		return err
+	}
+	_, err = redis.Int(rds.Do("DEL", k))
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func findKeyStart(uid string) (map[string]*Person, error) {
+func CheckKeyStart(k string) (bool, error) {
+	data, err := redis.Strings(rds.Do("KEYSSTART", k))
+	if err != nil {
+		return false, err
+	}
+	if data[0] == "" {
+		return false, nil
+	}
+	return true, nil
+}
+
+func FindKeyStart(uid string) (map[string]*Person, error) {
 	data, err := redis.Strings(rds.Do("KEYSSTART", uid))
 	if err != nil {
 		return nil, err
@@ -109,4 +126,15 @@ func all() ([]*Person, error) {
 		ndata = append(ndata, np)
 	}
 	return ndata, nil
+}
+
+func getFromDb(uid string) (string, error) {
+	data, err := redis.Strings(rds.Do("KEYS", "*:" + uid))
+	if err != nil {
+		return "", err
+	}
+	for _, v := range data {
+		return v, nil
+	}
+	return  "",errors.New("not ext")
 }

@@ -78,6 +78,10 @@ func HubGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params ukey")
 		return
 	}
+	if k, _ := CheckHubId(hid); k == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext")
+		return
+	}
 	_, err := r.Cookie("islogin")
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "dosn't login")
@@ -98,6 +102,10 @@ func HubPut(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	hid := ps.ByName("hid")
 	if hid == "" {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params ukey")
+		return
+	}
+	if k, _ := CheckHubId(hid); k == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext")
 		return
 	}
 	decoder := json.NewDecoder(r.Body)
@@ -137,6 +145,10 @@ func HubDel(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params ukey")
 		return
 	}
+	if k, _ := CheckHubId(hid); k == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext")
+		return
+	}
 	_, err := r.Cookie("islogin")
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "dosn't login")
@@ -149,7 +161,7 @@ func HubDel(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub nrole")
 		return
 	}
-	if oh == nil{
+	if oh == nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext")
 		return
 	}

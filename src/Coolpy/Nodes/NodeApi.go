@@ -24,6 +24,10 @@ func NodePost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
 		return
 	}
+	if k, _ := Hubs.CheckHubId(hid); k == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext")
+		return
+	}
 	decoder := json.NewDecoder(r.Body)
 	var n Node
 	err := decoder.Decode(&n)
@@ -69,6 +73,10 @@ func NodesGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
 		return
 	}
+	if k, _ := Hubs.CheckHubId(hid); k == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext")
+		return
+	}
 	_, err := r.Cookie("islogin")
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "dosn't login")
@@ -91,9 +99,17 @@ func NodeGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
 		return
 	}
+	if k, _ := Hubs.CheckHubId(hid); k == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext")
+		return
+	}
 	nid := ps.ByName("nid")
 	if nid == "" {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
+		return
+	}
+	if k, _ := CheckNodeId(nid); k == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "node not ext")
 		return
 	}
 	_, err := r.Cookie("islogin")
@@ -118,9 +134,17 @@ func NodePut(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
 		return
 	}
+	if k, _ := Hubs.CheckHubId(hid); k == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext")
+		return
+	}
 	nid := ps.ByName("nid")
 	if nid == "" {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
+		return
+	}
+	if k, _ := CheckNodeId(nid); k == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "node not ext")
 		return
 	}
 	decoder := json.NewDecoder(r.Body)
@@ -156,9 +180,17 @@ func NodeDel(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
 		return
 	}
+	if k, _ := Hubs.CheckHubId(hid); k == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext")
+		return
+	}
 	nid := ps.ByName("nid")
 	if nid == "" {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
+		return
+	}
+	if k, _ := CheckNodeId(nid); k == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "node not ext")
 		return
 	}
 	_, err := r.Cookie("islogin")
