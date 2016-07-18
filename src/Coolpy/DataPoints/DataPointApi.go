@@ -14,6 +14,7 @@ import (
 	"Coolpy/Values"
 	"Coolpy/Gpss"
 	"Coolpy/Gens"
+	"Coolpy/Controller"
 )
 
 var validate *validator.Validate
@@ -198,6 +199,30 @@ func DPGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			return
 		}
 		pStr, _ := json.Marshal(&max)
+		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
+	} else if n.Type == Nodes.NodeTypeEnum.Switcher {
+		c, err := Controller.GetSwitcher(key)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		pStr, _ := json.Marshal(&c)
+		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
+	} else if n.Type == Nodes.NodeTypeEnum.RangeControl {
+		c, err := Controller.GetRangeControl(key)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		pStr, _ := json.Marshal(&c)
+		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
+	} else if n.Type == Nodes.NodeTypeEnum.GenControl {
+		c, err := Controller.GetGenControl(key)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		pStr, _ := json.Marshal(&c)
 		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
 	} else {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "unkown type")

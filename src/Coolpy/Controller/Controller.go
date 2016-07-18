@@ -22,9 +22,9 @@ type RangeControl struct {
 	HubId  int64
 	NodeId int64
 	Rvalue int64
-	Min int64
-	Max int64
-	Step int64
+	Min    int64
+	Max    int64
+	Step   int64
 }
 
 var rds redis.Conn
@@ -40,6 +40,19 @@ func Connect(addr string, pwd string) {
 	}
 	rds = c
 	rds.Do("SELECT", "4")
+}
+
+func GetSwitcher(k string) (*Switcher, error) {
+	o, err := redis.String(rds.Do("GET", k))
+	if err != nil {
+		return nil, err
+	}
+	h := &Switcher{}
+	err = json.Unmarshal([]byte(o), &h)
+	if err !=nil{
+		return nil,err
+	}
+	return h, nil
 }
 
 func BeginSwitcher(ukey string, Hubid int64, Nodeid int64) error {
@@ -58,6 +71,19 @@ func BeginSwitcher(ukey string, Hubid int64, Nodeid int64) error {
 		return err
 	}
 	return nil
+}
+
+func GetRangeControl(k string) (*RangeControl, error) {
+	o, err := redis.String(rds.Do("GET", k))
+	if err != nil {
+		return nil, err
+	}
+	h := &RangeControl{}
+	err = json.Unmarshal([]byte(o), &h)
+	if err !=nil{
+		return nil,err
+	}
+	return h, nil
 }
 
 func BeginRangeControl(ukey string, Hubid int64, Nodeid int64) error {
@@ -79,6 +105,19 @@ func BeginRangeControl(ukey string, Hubid int64, Nodeid int64) error {
 		return err
 	}
 	return nil
+}
+
+func GetGenControl(k string) (*GenControl, error) {
+	o, err := redis.String(rds.Do("GET", k))
+	if err != nil {
+		return nil, err
+	}
+	h := &GenControl{}
+	err = json.Unmarshal([]byte(o), &h)
+	if err !=nil{
+		return nil,err
+	}
+	return h, nil
 }
 
 func BeginGenControl(ukey string, Hubid int64, Nodeid int64) error {
