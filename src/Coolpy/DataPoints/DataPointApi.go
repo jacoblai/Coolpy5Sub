@@ -9,6 +9,11 @@ import (
 	"time"
 	"Coolpy/Account"
 	"strconv"
+	"Coolpy/Hubs"
+	"Coolpy/Nodes"
+	"Coolpy/Values"
+	"Coolpy/Gpss"
+	"Coolpy/Gens"
 )
 
 var validate *validator.Validate
@@ -25,9 +30,17 @@ func DPPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
 		return
 	}
+	if k, _ := Hubs.CheckHubId(hid); k == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext")
+		return
+	}
 	nid := ps.ByName("nid")
 	if nid == "" {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
+		return
+	}
+	if k, _ := Nodes.CheckNodeId(nid); k == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "node not ext")
 		return
 	}
 	ukey := r.Header.Get("U-ApiKey")
@@ -35,34 +48,93 @@ func DPPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not post")
 		return
 	}
-	b, err := Account.CheckKeyStart(ukey)
+	b, err := Account.CheckUKey(ukey + ":")
 	if b == false {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not ext")
 		return
 	}
-	decoder := json.NewDecoder(r.Body)
-	var v ValueDP
-	err = decoder.Decode(&v)
+	key := ukey + ":" + hid + ":" + nid
+	n, err := Nodes.NodeGetOne(key)
 	if err != nil {
-		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext or node not in hub")
 		return
 	}
-	errs := validate.Struct(v)
-	if errs != nil {
-		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "invalid")
-		return
+	if n.Type == Nodes.NodeTypeEnum.Value {
+		decoder := json.NewDecoder(r.Body)
+		var v Values.ValueDP
+		err = decoder.Decode(&v)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		errs := validate.Struct(v)
+		if errs != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "invalid")
+			return
+		}
+		if v.TimeStamp.IsZero() {
+			v.TimeStamp = time.Now()
+		}
+		v.HubId, _ = strconv.ParseInt(hid, 10, 64)
+		v.NodeId, _ = strconv.ParseInt(nid, 10, 64)
+		err = Values.ValueCreate(key + ":" + v.TimeStamp.Format(time.RFC3339Nano), &v)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		pStr, _ := json.Marshal(&v)
+		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
+	} else if n.Type == Nodes.NodeTypeEnum.Gps {
+		decoder := json.NewDecoder(r.Body)
+		var v Gpss.GpsDP
+		err = decoder.Decode(&v)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		errs := validate.Struct(v)
+		if errs != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "invalid")
+			return
+		}
+		if v.TimeStamp.IsZero() {
+			v.TimeStamp = time.Now()
+		}
+		v.HubId, _ = strconv.ParseInt(hid, 10, 64)
+		v.NodeId, _ = strconv.ParseInt(nid, 10, 64)
+		err = Gpss.GpsCreate(key + ":" + v.TimeStamp.Format(time.RFC3339Nano), &v)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		pStr, _ := json.Marshal(&v)
+		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
+	} else if n.Type == Nodes.NodeTypeEnum.Gen {
+		decoder := json.NewDecoder(r.Body)
+		var v Gens.GenDP
+		err = decoder.Decode(&v)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		errs := validate.Struct(v)
+		if errs != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "invalid")
+			return
+		}
+		if v.TimeStamp.IsZero() {
+			v.TimeStamp = time.Now()
+		}
+		v.HubId, _ = strconv.ParseInt(hid, 10, 64)
+		v.NodeId, _ = strconv.ParseInt(nid, 10, 64)
+		err = Gens.GenCreate(key + ":" + v.TimeStamp.Format(time.RFC3339Nano), &v)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		pStr, _ := json.Marshal(&v)
+		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
+	} else {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "unkown type")
 	}
-	if v.TimeStamp.IsZero() {
-		v.TimeStamp = time.Now()
-	}
-	v.HubId,_ = strconv.ParseInt(hid, 10, 64)
-	v.NodeId,_ = strconv.ParseInt(nid, 10, 64)
-	key := ukey + ":" + hid + ":" + nid + ":" + v.TimeStamp.Format(time.RFC3339Nano)
-	err = dpCreate(key, &v)
-	if err != nil {
-		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
-		return
-	}
-	pStr, _ := json.Marshal(&v)
-	fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
 }

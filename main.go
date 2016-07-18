@@ -18,6 +18,9 @@ import (
 	"Coolpy/Nodes"
 	"Coolpy/Controller"
 	"Coolpy/DataPoints"
+	"Coolpy/Values"
+	"Coolpy/Gpss"
+	"Coolpy/Gens"
 )
 
 func main() {
@@ -44,8 +47,12 @@ func main() {
 	Nodes.Connect(redServer.Addr(), svcpwd)
 	//控制器库
 	Controller.Connect(redServer.Addr(), svcpwd)
-	//数据结点库
-	DataPoints.Connect(redServer.Addr(), svcpwd)
+	//数据结点value库
+	Values.Connect(redServer.Addr(), svcpwd)
+	//数据结点gps库
+	Gpss.Connect(redServer.Addr(), svcpwd)
+	//数据结点gen库
+	Gens.Connect(redServer.Addr(), svcpwd)
 
 	router := httprouter.New()
 	//用户管理api

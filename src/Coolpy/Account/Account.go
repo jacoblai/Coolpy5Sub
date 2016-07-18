@@ -87,7 +87,7 @@ func delete(uid string) error {
 	return nil
 }
 
-func CheckKeyStart(k string) (bool, error) {
+func CheckUKey(k string) (bool, error) {
 	data, err := redis.Strings(rds.Do("KEYSSTART", k))
 	if err != nil {
 		return false, err

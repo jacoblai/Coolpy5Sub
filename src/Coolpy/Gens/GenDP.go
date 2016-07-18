@@ -1,4 +1,4 @@
-package DataPoints
+package Gens
 
 import (
 	"github.com/garyburd/redigo/redis"
@@ -6,11 +6,11 @@ import (
 	"time"
 )
 
-type ValueDP struct {
+type GenDP struct {
 	HubId     int64
 	NodeId    int64
 	TimeStamp time.Time
-	Value     float64 `validate:"required"`
+	Value string `validate:"required"`
 }
 
 var rds redis.Conn
@@ -25,10 +25,10 @@ func Connect(addr string, pwd string) {
 		panic(err)
 	}
 	rds = c
-	rds.Do("SELECT", "5")
+	rds.Do("SELECT", "7")
 }
 
-func dpCreate(k string, dp *ValueDP) error {
+func GenCreate(k string, dp *GenDP) error {
 	json, err := json.Marshal(dp)
 	if err != nil {
 		return err

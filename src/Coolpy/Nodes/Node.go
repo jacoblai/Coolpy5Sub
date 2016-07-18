@@ -102,7 +102,7 @@ func nodeStartWith(k string) ([]*Node, error) {
 	return ndata, nil
 }
 
-func nodeGetOne(k string) (*Node, error) {
+func NodeGetOne(k string) (*Node, error) {
 	o, err := redis.String(rds.Do("GET", k))
 	if err != nil {
 		return nil, err

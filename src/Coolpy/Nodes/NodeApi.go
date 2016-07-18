@@ -118,7 +118,7 @@ func NodeGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	ukey, _ := r.Cookie("ukey")
-	ndata, err := nodeGetOne(ukey.Value + ":" + hid + ":" + nid)
+	ndata, err := NodeGetOne(ukey.Value + ":" + hid + ":" + nid)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext or node not in hub")
 		return
@@ -160,7 +160,7 @@ func NodePut(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	ukey, _ := r.Cookie("ukey")
-	on, err := nodeGetOne(ukey.Value + ":" + hid + ":" + nid)
+	on, err := NodeGetOne(ukey.Value + ":" + hid + ":" + nid)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext or node not in hub")
 		return
@@ -200,7 +200,7 @@ func NodeDel(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 	ukey, _ := r.Cookie("ukey")
 	key := ukey.Value + ":" + hid + ":" + nid
-	oh, err := nodeGetOne(key)
+	oh, err := NodeGetOne(key)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub nrole")
 		return
