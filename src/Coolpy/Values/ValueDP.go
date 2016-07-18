@@ -2,6 +2,7 @@ package Values
 
 import (
 	"github.com/garyburd/redigo/redis"
+	"github.com/pmylund/sortutil"
 	"encoding/json"
 	"time"
 )
@@ -38,4 +39,20 @@ func ValueCreate(k string, dp *ValueDP) error {
 		return err
 	}
 	return nil
+}
+
+func MaxGet(k string) (*ValueDP, error) {
+	data, err := redis.Strings(rds.Do("KEYSSTART", k))
+	if err != nil {
+		return nil, err
+	}
+	var ndata []*ValueDP
+	for _, v := range data {
+		o, _ := redis.String(rds.Do("GET", v))
+		h := &ValueDP{}
+		json.Unmarshal([]byte(o), &h)
+		ndata = append(ndata, h)
+	}
+	sortutil.DescByField(ndata, "TimeStamp")
+	return ndata[0], nil
 }

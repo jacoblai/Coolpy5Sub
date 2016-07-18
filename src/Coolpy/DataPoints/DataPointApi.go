@@ -73,7 +73,7 @@ func DPPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			return
 		}
 		if v.TimeStamp.IsZero() {
-			v.TimeStamp = time.Now()
+			v.TimeStamp = time.Now().UTC().Add(time.Hour * 8)
 		}
 		v.HubId, _ = strconv.ParseInt(hid, 10, 64)
 		v.NodeId, _ = strconv.ParseInt(nid, 10, 64)
@@ -98,7 +98,7 @@ func DPPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			return
 		}
 		if v.TimeStamp.IsZero() {
-			v.TimeStamp = time.Now()
+			v.TimeStamp = time.Now().UTC().Add(time.Hour * 8)
 		}
 		v.HubId, _ = strconv.ParseInt(hid, 10, 64)
 		v.NodeId, _ = strconv.ParseInt(nid, 10, 64)
@@ -123,7 +123,7 @@ func DPPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			return
 		}
 		if v.TimeStamp.IsZero() {
-			v.TimeStamp = time.Now()
+			v.TimeStamp = time.Now().UTC().Add(time.Hour * 8)
 		}
 		v.HubId, _ = strconv.ParseInt(hid, 10, 64)
 		v.NodeId, _ = strconv.ParseInt(nid, 10, 64)
@@ -133,6 +133,71 @@ func DPPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			return
 		}
 		pStr, _ := json.Marshal(&v)
+		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
+	} else {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "unkown type")
+	}
+}
+
+func DPGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	defer r.Body.Close()
+	hid := ps.ByName("hid")
+	if hid == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
+		return
+	}
+	if k, _ := Hubs.CheckHubId(hid); k == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext")
+		return
+	}
+	nid := ps.ByName("nid")
+	if nid == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
+		return
+	}
+	if k, _ := Nodes.CheckNodeId(nid); k == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "node not ext")
+		return
+	}
+	ukey := r.Header.Get("U-ApiKey")
+	if ukey == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not post")
+		return
+	}
+	b, err := Account.CheckUKey(ukey + ":")
+	if b == false {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not ext")
+		return
+	}
+	key := ukey + ":" + hid + ":" + nid
+	n, err := Nodes.NodeGetOne(key)
+	if err != nil {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext or node not in hub")
+		return
+	}
+	if n.Type == Nodes.NodeTypeEnum.Value {
+		max, err := Values.MaxGet(key + ":")
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		pStr, _ := json.Marshal(&max)
+		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
+	} else if n.Type == Nodes.NodeTypeEnum.Gps {
+		max, err := Gpss.MaxGet(key + ":")
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		pStr, _ := json.Marshal(&max)
+		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
+	} else if n.Type == Nodes.NodeTypeEnum.Gen {
+		max, err := Gens.MaxGet(key + ":")
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		pStr, _ := json.Marshal(&max)
 		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
 	} else {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "unkown type")

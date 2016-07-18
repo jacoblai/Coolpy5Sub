@@ -35,23 +35,23 @@ func main() {
 	defer redServer.Close()
 	svcpwd := "icoolpy.com"
 	redServer.RequireAuth(svcpwd)
-	//初始化用户账号服务
+	//初始化用户账号服务1
 	Account.Connect(redServer.Addr(), svcpwd)
 	//自动检测创建超级账号
 	Account.CreateAdmin()
-	//自动id库
+	//自动id库0
 	Incr.Connect(redServer.Addr(), svcpwd)
-	//hub库
+	//hub库2
 	Hubs.Connect(redServer.Addr(), svcpwd)
-	//node库
+	//node库3
 	Nodes.Connect(redServer.Addr(), svcpwd)
-	//控制器库
+	//控制器库4
 	Controller.Connect(redServer.Addr(), svcpwd)
-	//数据结点value库
+	//数据结点value库5
 	Values.Connect(redServer.Addr(), svcpwd)
-	//数据结点gps库
+	//数据结点gps库6
 	Gpss.Connect(redServer.Addr(), svcpwd)
-	//数据结点gen库
+	//数据结点gen库7
 	Gens.Connect(redServer.Addr(), svcpwd)
 
 	router := httprouter.New()
@@ -77,6 +77,7 @@ func main() {
 	router.DELETE("/api/hub/:hid/node/:nid", Basicauth.Auth(Nodes.NodeDel))
 	//datapoints管理api
 	router.POST("/api/hub/:hid/node/:nid/datapoints", DataPoints.DPPost)
+	router.GET("/api/hub/:hid/node/:nid/datapoint", DataPoints.DPGet)
 
 	ln, err := net.Listen("tcp", ":" + strconv.Itoa(port))
 	if err != nil {

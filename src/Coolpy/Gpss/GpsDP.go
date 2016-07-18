@@ -4,6 +4,7 @@ import (
 	"time"
 	"encoding/json"
 	"github.com/garyburd/redigo/redis"
+	"github.com/pmylund/sortutil"
 )
 
 type GpsDP struct {
@@ -41,4 +42,20 @@ func GpsCreate(k string, dp *GpsDP) error {
 		return err
 	}
 	return nil
+}
+
+func MaxGet(k string) (*GpsDP, error) {
+	data, err := redis.Strings(rds.Do("KEYSSTART", k))
+	if err != nil {
+		return nil, err
+	}
+	var ndata []*GpsDP
+	for _, v := range data {
+		o, _ := redis.String(rds.Do("GET", v))
+		h := &GpsDP{}
+		json.Unmarshal([]byte(o), &h)
+		ndata = append(ndata, h)
+	}
+	sortutil.DescByField(ndata, "TimeStamp")
+	return ndata[0], nil
 }

@@ -4,6 +4,7 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"encoding/json"
 	"time"
+	"github.com/pmylund/sortutil"
 )
 
 type GenDP struct {
@@ -38,4 +39,20 @@ func GenCreate(k string, dp *GenDP) error {
 		return err
 	}
 	return nil
+}
+
+func MaxGet(k string) (*GenDP, error) {
+	data, err := redis.Strings(rds.Do("KEYSSTART", k))
+	if err != nil {
+		return nil, err
+	}
+	var ndata []*GenDP
+	for _, v := range data {
+		o, _ := redis.String(rds.Do("GET", v))
+		h := &GenDP{}
+		json.Unmarshal([]byte(o), &h)
+		ndata = append(ndata, h)
+	}
+	sortutil.DescByField(ndata, "TimeStamp")
+	return ndata[0], nil
 }
