@@ -2,6 +2,8 @@ package main
 
 import (
 	"github.com/julienschmidt/httprouter"
+	"github.com/surgemq/surgemq/service"
+	"github.com/surgemq/surgemq/auth"
 	"net/http"
 	"Coolpy/Cors"
 	"Coolpy/Account"
@@ -21,11 +23,17 @@ import (
 	"Coolpy/Values"
 	"Coolpy/Gpss"
 	"Coolpy/Gens"
+	"log"
+	"Coolpy/MAuth"
 )
 
 func main() {
-	var port int
+	var (
+		port int
+		mport int
+	)
 	flag.IntVar(&port, "p", 8080, "tcp/ip port munber")
+	flag.IntVar(&mport, "mp", 1883, "mqtt port munber")
 	flag.Parse()
 	//初始化数据库服务
 	redServer, err := Redico.Run()
@@ -53,6 +61,24 @@ func main() {
 	Gpss.Connect(redServer.Addr(), svcpwd)
 	//数据结点gen库7
 	Gens.Connect(redServer.Addr(), svcpwd)
+
+	// Create a mqtt server
+	auth.Register("coolpy", &MAuth.Manager{})
+	mqttsvr := &service.Server{
+		KeepAlive:        300, // seconds
+		ConnectTimeout:   2, // seconds
+		SessionsProvider: "mem", // keeps sessions in memory
+		Authenticator:    "coolpy", // always succeed
+		TopicsProvider:   "mem", // keeps topic subscriptions in memory
+	}
+	go func() {
+		// Listen and serve connections at mport
+		if err := mqttsvr.ListenAndServe("tcp://:" + strconv.Itoa(mport)); err != nil {
+			log.Fatal(err)
+		}
+	}()
+	fmt.Println("Coolpy Server mqtt on port ", strconv.Itoa(mport))
+	//MqttClient.Connect(strconv.Itoa(mport))
 
 	router := httprouter.New()
 	//用户管理api
@@ -94,7 +120,7 @@ func main() {
 		for _ = range signalChan {
 			fmt.Println("\nStopping Coolpy5...\n")
 			ln.Close()
-			Account.Close()
+			mqttsvr.Close()
 			cleanupDone <- true
 		}
 	}()
