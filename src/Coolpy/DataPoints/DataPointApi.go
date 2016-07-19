@@ -637,3 +637,82 @@ func DPDelByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "unkown type")
 	}
 }
+
+func DPGetRange(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	defer r.Body.Close()
+	qs := r.URL.Query()
+	dpStart := qs.Get("start")
+	start, err := time.Parse(time.RFC3339Nano, dpStart)
+	if err != nil {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
+		return
+	}
+	dpEnd := qs.Get("end")
+	end, err := time.Parse(time.RFC3339Nano, dpEnd)
+	if err != nil {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
+		return
+	}
+	dpInterval := qs.Get("interval")
+	interval, err := strconv.Atoi(dpInterval)
+	if err != nil {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
+		return
+	}
+	dpPage := qs.Get("page")
+	page, err := strconv.Atoi(dpPage)
+	if err != nil {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
+		return
+	}
+	hid := ps.ByName("hid")
+	if hid == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
+		return
+	}
+	if k, _ := Hubs.CheckHubId(hid); k == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext")
+		return
+	}
+	nid := ps.ByName("nid")
+	if nid == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
+		return
+	}
+	if k, _ := Nodes.CheckNodeId(nid); k == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "node not ext")
+		return
+	}
+	ukey := r.Header.Get("U-ApiKey")
+	if ukey == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not post")
+		return
+	}
+	b, err := Account.CheckUKey(ukey + ":")
+	if b == false {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not ext")
+		return
+	}
+	key := ukey + ":" + hid + ":" + nid
+	n, err := Nodes.NodeGetOne(key)
+	if err != nil {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext or node not in hub")
+		return
+	}
+	if n.Type == Nodes.NodeTypeEnum.Value {
+		c, err := Values.GetRange(key + ":" + start.Format(time.RFC3339Nano),
+			key + ":" + end.Format(time.RFC3339Nano), interval, page)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		pStr, _ := json.Marshal(&c)
+		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
+	} else if n.Type == Nodes.NodeTypeEnum.Gps {
+
+	} else if n.Type == Nodes.NodeTypeEnum.Gen {
+
+	} else {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "unkown type")
+	}
+}

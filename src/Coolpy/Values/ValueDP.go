@@ -91,3 +91,29 @@ func Delete(k string) error {
 	}
 	return nil
 }
+
+func GetRange(start string, end string, interval int, page int) ([]*ValueDP, error) {
+	data, err := redis.Strings(rds.Do("KEYSRANGE", start, end))
+	if err != nil {
+		return nil, err
+	}
+	//pageSize := 50
+	//var totalPage = (len(data) + pageSize - 1) / pageSize;
+	//if page > totalPage{
+	//	return nil,errors.New("pages out of range")
+	//}
+	//comStartBit := 0
+	//if totalPage > 1{
+	//	comStartBit = page * pageSize
+	//}
+	//pageData := data[comStartBit:pageSize]
+	var ndata []*ValueDP
+	for _, v := range data {
+		o, _ := redis.String(rds.Do("GET", v))
+		h := &ValueDP{}
+		json.Unmarshal([]byte(o), &h)
+		ndata = append(ndata, h)
+	}
+	sortutil.DescByField(ndata, "TimeStamp")
+	return ndata, nil
+}
