@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"github.com/garyburd/redigo/redis"
 	"github.com/pmylund/sortutil"
+	"strings"
+	"errors"
 )
 
 type GpsDP struct {
@@ -76,6 +78,17 @@ func Replace(k string, h *GpsDP) error {
 		return err
 	}
 	_, err = rds.Do("SET", k, json)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func Delete(k string) error {
+	if len(strings.TrimSpace(k)) == 0 {
+		return errors.New("uid was nil")
+	}
+	_, err := redis.Int(rds.Do("DEL", k))
 	if err != nil {
 		return err
 	}

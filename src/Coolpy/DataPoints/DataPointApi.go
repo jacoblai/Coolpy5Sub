@@ -552,3 +552,88 @@ func DPPutByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "unkown type")
 	}
 }
+
+func DPDelByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	defer r.Body.Close()
+	dpKey := ps.ByName("key")
+	if dpKey == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
+		return
+	}
+	hid := ps.ByName("hid")
+	if hid == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
+		return
+	}
+	if k, _ := Hubs.CheckHubId(hid); k == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext")
+		return
+	}
+	nid := ps.ByName("nid")
+	if nid == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
+		return
+	}
+	if k, _ := Nodes.CheckNodeId(nid); k == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "node not ext")
+		return
+	}
+	ukey := r.Header.Get("U-ApiKey")
+	if ukey == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not post")
+		return
+	}
+	b, err := Account.CheckUKey(ukey + ":")
+	if b == false {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not ext")
+		return
+	}
+	key := ukey + ":" + hid + ":" + nid
+	n, err := Nodes.NodeGetOne(key)
+	if err != nil {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext or node not in hub")
+		return
+	}
+	if n.Type == Nodes.NodeTypeEnum.Value {
+		c, err := Values.GetOneByKey(key + ":" + dpKey)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		err = Values.Delete(key + ":" + dpKey)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		pStr, _ := json.Marshal(&c)
+		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
+	} else if n.Type == Nodes.NodeTypeEnum.Gps {
+		c, err := Gpss.GetOneByKey(key + ":" + dpKey)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		err = Gpss.Delete(key + ":" + dpKey)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		pStr, _ := json.Marshal(&c)
+		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
+	} else if n.Type == Nodes.NodeTypeEnum.Gen {
+		c, err := Gens.GetOneByKey(key + ":" + dpKey)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		err = Gens.Delete(key + ":" + dpKey)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		pStr, _ := json.Marshal(&c)
+		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
+	} else {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "unkown type")
+	}
+}

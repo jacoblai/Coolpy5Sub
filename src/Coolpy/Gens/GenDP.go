@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"time"
 	"github.com/pmylund/sortutil"
+	"strings"
+	"errors"
 )
 
 type GenDP struct {
@@ -73,6 +75,17 @@ func Replace(k string, h *GenDP) error {
 		return err
 	}
 	_, err = rds.Do("SET", k, json)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func Delete(k string) error {
+	if len(strings.TrimSpace(k)) == 0 {
+		return errors.New("uid was nil")
+	}
+	_, err := redis.Int(rds.Do("DEL", k))
 	if err != nil {
 		return err
 	}
