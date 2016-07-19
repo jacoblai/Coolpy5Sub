@@ -58,7 +58,10 @@ func MaxGet(k string) (*ValueDP, error) {
 }
 
 func GetOneByKey(k string) (*ValueDP, error) {
-	o, _ := redis.String(rds.Do("GET", k))
+	o, err := redis.String(rds.Do("GET", k))
+	if err != nil {
+		return nil, err
+	}
 	h := &ValueDP{}
 	json.Unmarshal([]byte(o), &h)
 	return h, nil

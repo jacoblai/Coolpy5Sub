@@ -11,7 +11,7 @@ type GenDP struct {
 	HubId     int64
 	NodeId    int64
 	TimeStamp time.Time
-	Value string `validate:"required"`
+	Value     string `validate:"required"`
 }
 
 var rds redis.Conn
@@ -58,7 +58,10 @@ func MaxGet(k string) (*GenDP, error) {
 }
 
 func GetOneByKey(k string) (*GenDP, error) {
-	o, _ := redis.String(rds.Do("GET", k))
+	o, err := redis.String(rds.Do("GET", k))
+	if err != nil {
+		return nil, err
+	}
 	h := &GenDP{}
 	json.Unmarshal([]byte(o), &h)
 	return h, nil
