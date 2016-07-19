@@ -56,3 +56,10 @@ func MaxGet(k string) (*GenDP, error) {
 	sortutil.DescByField(ndata, "TimeStamp")
 	return ndata[0], nil
 }
+
+func GetOneByKey(k string) (*GenDP, error) {
+	o, _ := redis.String(rds.Do("GET", k))
+	h := &GenDP{}
+	json.Unmarshal([]byte(o), &h)
+	return h, nil
+}

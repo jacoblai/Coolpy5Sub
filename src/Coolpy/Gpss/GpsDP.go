@@ -59,3 +59,10 @@ func MaxGet(k string) (*GpsDP, error) {
 	sortutil.DescByField(ndata, "TimeStamp")
 	return ndata[0], nil
 }
+
+func GetOneByKey(k string) (*GpsDP, error) {
+	o, _ := redis.String(rds.Do("GET", k))
+	h := &GpsDP{}
+	json.Unmarshal([]byte(o), &h)
+	return h, nil
+}

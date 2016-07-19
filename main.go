@@ -88,6 +88,7 @@ func main() {
 	router.POST("/api/hub/:hid/node/:nid/datapoints", DataPoints.DPPost)
 	router.GET("/api/hub/:hid/node/:nid/datapoint", DataPoints.DPGet)
 	router.PUT("/api/hub/:hid/node/:nid/datapoint", DataPoints.DPPut)
+	router.GET("/api/hub/:hid/node/:nid/datapoint/:key", DataPoints.DPGetByKey)
 
 	ln, err := net.Listen("tcp", ":" + strconv.Itoa(port))
 	if err != nil {
@@ -101,7 +102,6 @@ func main() {
 	signal.Notify(signalChan, os.Interrupt)
 	go func() {
 		for _ = range signalChan {
-			fmt.Println("\nStopping Coolpy5...\n")
 			ln.Close()
 			Mtsvc.Close()
 			cleanupDone <- true
