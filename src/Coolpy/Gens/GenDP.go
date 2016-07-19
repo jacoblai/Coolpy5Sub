@@ -66,3 +66,15 @@ func GetOneByKey(k string) (*GenDP, error) {
 	json.Unmarshal([]byte(o), &h)
 	return h, nil
 }
+
+func Replace(k string, h *GenDP) error {
+	json, err := json.Marshal(h)
+	if err != nil {
+		return err
+	}
+	_, err = rds.Do("SET", k, json)
+	if err != nil {
+		return err
+	}
+	return nil
+}

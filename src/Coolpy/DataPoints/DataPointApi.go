@@ -425,3 +425,130 @@ func DPGetByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "unkown type")
 	}
 }
+
+func DPPutByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	defer r.Body.Close()
+	dpKey := ps.ByName("key")
+	if dpKey == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
+		return
+	}
+	hid := ps.ByName("hid")
+	if hid == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
+		return
+	}
+	if k, _ := Hubs.CheckHubId(hid); k == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext")
+		return
+	}
+	nid := ps.ByName("nid")
+	if nid == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
+		return
+	}
+	if k, _ := Nodes.CheckNodeId(nid); k == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "node not ext")
+		return
+	}
+	ukey := r.Header.Get("U-ApiKey")
+	if ukey == "" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not post")
+		return
+	}
+	b, err := Account.CheckUKey(ukey + ":")
+	if b == false {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not ext")
+		return
+	}
+	key := ukey + ":" + hid + ":" + nid
+	n, err := Nodes.NodeGetOne(key)
+	if err != nil {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext or node not in hub")
+		return
+	}
+	if n.Type == Nodes.NodeTypeEnum.Value {
+		decoder := json.NewDecoder(r.Body)
+		var v Values.ValueDP
+		err = decoder.Decode(&v)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		errs := validate.Struct(v)
+		if errs != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "invalid")
+			return
+		}
+		c, err := Values.GetOneByKey(key + ":" + dpKey)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		c.Value = v.Value
+		err = Values.Replace(key + ":" + dpKey, c)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		pStr, _ := json.Marshal(&c)
+		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
+	} else if n.Type == Nodes.NodeTypeEnum.Gps {
+		decoder := json.NewDecoder(r.Body)
+		var v Gpss.GpsDP
+		err = decoder.Decode(&v)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		errs := validate.Struct(v)
+		if errs != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "invalid")
+			return
+		}
+		c, err := Gpss.GetOneByKey(key + ":" + dpKey)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		c.Lat = v.Lat
+		c.Lng = v.Lng
+		c.Offset = v.Offset
+		c.Speed = v.Speed
+		err = Gpss.Replace(key + ":" + dpKey, c)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		pStr, _ := json.Marshal(&c)
+		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
+	} else if n.Type == Nodes.NodeTypeEnum.Gen {
+		decoder := json.NewDecoder(r.Body)
+		var v Gens.GenDP
+		err = decoder.Decode(&v)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		errs := validate.Struct(v)
+		if errs != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "invalid")
+			return
+		}
+		c, err := Gens.GetOneByKey(key + ":" + dpKey)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		c.Value = v.Value
+		err = Gens.Replace(key + ":" + dpKey, c)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		pStr, _ := json.Marshal(&c)
+		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
+	} else {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "unkown type")
+	}
+}
