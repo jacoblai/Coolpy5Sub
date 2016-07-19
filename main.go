@@ -2,8 +2,6 @@ package main
 
 import (
 	"github.com/julienschmidt/httprouter"
-	"github.com/surgemq/surgemq/service"
-	"github.com/surgemq/surgemq/auth"
 	"net/http"
 	"Coolpy/Cors"
 	"Coolpy/Account"
@@ -23,8 +21,7 @@ import (
 	"Coolpy/Values"
 	"Coolpy/Gpss"
 	"Coolpy/Gens"
-	"log"
-	"Coolpy/MAuth"
+	"Coolpy/Mtsvc"
 )
 
 func main() {
@@ -62,23 +59,9 @@ func main() {
 	//数据结点gen库7
 	Gens.Connect(redServer.Addr(), svcpwd)
 
-	// Create a mqtt server
-	auth.Register("coolpy", &MAuth.Manager{})
-	mqttsvr := &service.Server{
-		KeepAlive:        300, // seconds
-		ConnectTimeout:   2, // seconds
-		SessionsProvider: "mem", // keeps sessions in memory
-		Authenticator:    "coolpy", // always succeed
-		TopicsProvider:   "mem", // keeps topic subscriptions in memory
-	}
-	go func() {
-		// Listen and serve connections at mport
-		if err := mqttsvr.ListenAndServe("tcp://:" + strconv.Itoa(mport)); err != nil {
-			log.Fatal(err)
-		}
-	}()
+	//host mqtt service
+        Mtsvc.Host(mport)
 	fmt.Println("Coolpy Server mqtt on port ", strconv.Itoa(mport))
-	//MqttClient.Connect(strconv.Itoa(mport))
 
 	router := httprouter.New()
 	//用户管理api
@@ -120,7 +103,7 @@ func main() {
 		for _ = range signalChan {
 			fmt.Println("\nStopping Coolpy5...\n")
 			ln.Close()
-			mqttsvr.Close()
+			Mtsvc.Close()
 			cleanupDone <- true
 		}
 	}()

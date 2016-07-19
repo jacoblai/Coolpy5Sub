@@ -15,6 +15,7 @@ import (
 	"Coolpy/Gpss"
 	"Coolpy/Gens"
 	"Coolpy/Controller"
+	"Coolpy/Mtsvc"
 )
 
 var validate *validator.Validate
@@ -290,6 +291,7 @@ func DPPut(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			return
 		}
 		pStr, _ := json.Marshal(&c)
+		Mtsvc.Public(key, pStr)
 		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
 	} else if n.Type == Nodes.NodeTypeEnum.RangeControl {
 		decoder := json.NewDecoder(r.Body)
@@ -309,7 +311,7 @@ func DPPut(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
 		}
-		if v.Rvalue > c.Max || c.Rvalue <c.Min {
+		if v.Rvalue > c.Max || c.Rvalue < c.Min {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "range value err")
 			return
 		}
@@ -320,6 +322,7 @@ func DPPut(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			return
 		}
 		pStr, _ := json.Marshal(&c)
+		Mtsvc.Public(key, pStr)
 		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
 	} else if n.Type == Nodes.NodeTypeEnum.GenControl {
 		decoder := json.NewDecoder(r.Body)
@@ -346,6 +349,7 @@ func DPPut(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			return
 		}
 		pStr, _ := json.Marshal(&c)
+		Mtsvc.Public(key, pStr)
 		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
 	} else {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "unkown type")
