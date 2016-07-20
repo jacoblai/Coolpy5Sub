@@ -94,3 +94,65 @@ func Delete(k string) error {
 	}
 	return nil
 }
+
+func GetRange(start string, end string, interval float64, page int) ([]*GpsDP, error) {
+	data, err := redis.Strings(rds.Do("KEYSRANGE", start, end))
+	if err != nil {
+		return nil, err
+	}
+	sortutil.Desc(data)
+	var IntervalData []string
+	for _, v := range data {
+		if len(IntervalData) == 0 {
+			IntervalData = append(IntervalData, v)
+		} else {
+			otime := strings.Split(IntervalData[len(IntervalData) - 1], ",")
+			otm, _ := time.Parse(time.RFC3339Nano, otime[3])
+			vtime := strings.Split(v, ",")
+			vtm, _ := time.Parse(time.RFC3339Nano, vtime[3])
+			du := otm.Sub(vtm)
+			if du.Seconds() >= interval{
+				IntervalData = append(IntervalData, v)
+			}
+		}
+	}
+	pageSize := 50
+	allcount := len(IntervalData)
+	lastPageSize := allcount % pageSize
+	totalPage := (allcount + pageSize - 1) / pageSize
+	if page > totalPage {
+		return nil, errors.New("pages out of range")
+	}
+	var pageData []string
+	if page == 1 {
+		if totalPage == page {
+			//只有一页
+			pageData = IntervalData[:allcount]
+		} else {
+			//不止一页的第一页
+			pageData = IntervalData[:pageSize]
+		}
+	} else if page < totalPage {
+		//中间页
+		cursor := (pageSize * page) - pageSize //起启位计算
+		pageData = IntervalData[cursor:cursor + pageSize]
+	} else if page == totalPage {
+		//尾页
+		if lastPageSize == 0 {
+			pageData = IntervalData[allcount - pageSize:]
+		} else {
+			pageData = IntervalData[allcount - lastPageSize:]
+		}
+	} else {
+		return nil, errors.New("page not ext")
+	}
+	var ndata []*GpsDP
+	for _, v := range pageData {
+		o, _ := redis.String(rds.Do("GET", v))
+		h := &GpsDP{}
+		json.Unmarshal([]byte(o), &h)
+		ndata = append(ndata, h)
+	}
+	sortutil.DescByField(ndata, "TimeStamp")
+	return ndata, nil
+}

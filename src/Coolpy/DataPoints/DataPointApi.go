@@ -659,7 +659,7 @@ func DPGetRange(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	dpInterval := qs.Get("interval")
-	interval, err := strconv.Atoi(dpInterval)
+	interval, err := strconv.ParseFloat(dpInterval,10)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
 		return
@@ -715,9 +715,23 @@ func DPGetRange(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		pStr, _ := json.Marshal(&c)
 		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
 	} else if n.Type == Nodes.NodeTypeEnum.Gps {
-
+		c, err := Gpss.GetRange(dpkey + "," + start.Format(time.RFC3339Nano),
+			dpkey + "," + end.Format(time.RFC3339Nano), interval, page)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		pStr, _ := json.Marshal(&c)
+		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
 	} else if n.Type == Nodes.NodeTypeEnum.Gen {
-
+		c, err := Gens.GetRange(dpkey + "," + start.Format(time.RFC3339Nano),
+			dpkey + "," + end.Format(time.RFC3339Nano), interval, page)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		pStr, _ := json.Marshal(&c)
+		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
 	} else {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "unkown type")
 	}
