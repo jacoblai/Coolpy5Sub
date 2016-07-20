@@ -56,6 +56,7 @@ func DPPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	key := ukey + ":" + hid + ":" + nid
+	dpkey := ukey + "," + hid + "," + nid
 	n, err := Nodes.NodeGetOne(key)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext or node not in hub")
@@ -79,7 +80,7 @@ func DPPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		}
 		v.HubId, _ = strconv.ParseInt(hid, 10, 64)
 		v.NodeId, _ = strconv.ParseInt(nid, 10, 64)
-		err = Values.ValueCreate(key + ":" + v.TimeStamp.Format(time.RFC3339Nano), &v)
+		err = Values.ValueCreate(dpkey + "," + v.TimeStamp.Format(time.RFC3339Nano), &v)
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
@@ -104,7 +105,7 @@ func DPPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		}
 		v.HubId, _ = strconv.ParseInt(hid, 10, 64)
 		v.NodeId, _ = strconv.ParseInt(nid, 10, 64)
-		err = Gpss.GpsCreate(key + ":" + v.TimeStamp.Format(time.RFC3339Nano), &v)
+		err = Gpss.GpsCreate(dpkey + "," + v.TimeStamp.Format(time.RFC3339Nano), &v)
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
@@ -129,7 +130,7 @@ func DPPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		}
 		v.HubId, _ = strconv.ParseInt(hid, 10, 64)
 		v.NodeId, _ = strconv.ParseInt(nid, 10, 64)
-		err = Gens.GenCreate(key + ":" + v.TimeStamp.Format(time.RFC3339Nano), &v)
+		err = Gens.GenCreate(dpkey + "," + v.TimeStamp.Format(time.RFC3339Nano), &v)
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
@@ -172,13 +173,14 @@ func DPGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	key := ukey + ":" + hid + ":" + nid
+	dpkey := ukey + "," + hid + "," + nid
 	n, err := Nodes.NodeGetOne(key)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext or node not in hub")
 		return
 	}
 	if n.Type == Nodes.NodeTypeEnum.Value {
-		max, err := Values.MaxGet(key + ":")
+		max, err := Values.MaxGet(dpkey + ",")
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
@@ -186,7 +188,7 @@ func DPGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		pStr, _ := json.Marshal(&max)
 		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
 	} else if n.Type == Nodes.NodeTypeEnum.Gps {
-		max, err := Gpss.MaxGet(key + ":")
+		max, err := Gpss.MaxGet(dpkey + ",")
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
@@ -194,7 +196,7 @@ func DPGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		pStr, _ := json.Marshal(&max)
 		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
 	} else if n.Type == Nodes.NodeTypeEnum.Gen {
-		max, err := Gens.MaxGet(key + ":")
+		max, err := Gens.MaxGet(dpkey + ",")
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
@@ -392,13 +394,14 @@ func DPGetByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	key := ukey + ":" + hid + ":" + nid
+	dpkey := ukey + "," + hid + "," + nid
 	n, err := Nodes.NodeGetOne(key)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext or node not in hub")
 		return
 	}
 	if n.Type == Nodes.NodeTypeEnum.Value {
-		one, err := Values.GetOneByKey(key + ":" + dpKey)
+		one, err := Values.GetOneByKey(dpkey + "," + dpKey)
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
@@ -406,7 +409,7 @@ func DPGetByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		pStr, _ := json.Marshal(&one)
 		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
 	} else if n.Type == Nodes.NodeTypeEnum.Gps {
-		one, err := Gpss.GetOneByKey(key + ":" + dpKey)
+		one, err := Gpss.GetOneByKey(dpkey + "," + dpKey)
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
@@ -414,7 +417,7 @@ func DPGetByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		pStr, _ := json.Marshal(&one)
 		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
 	} else if n.Type == Nodes.NodeTypeEnum.Gen {
-		max, err := Gens.GetOneByKey(key + ":" + dpKey)
+		max, err := Gens.GetOneByKey(dpkey + "," + dpKey)
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
@@ -462,6 +465,7 @@ func DPPutByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	key := ukey + ":" + hid + ":" + nid
+	dpkey := ukey + "," + hid + "," + nid
 	n, err := Nodes.NodeGetOne(key)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext or node not in hub")
@@ -480,13 +484,13 @@ func DPPutByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "invalid")
 			return
 		}
-		c, err := Values.GetOneByKey(key + ":" + dpKey)
+		c, err := Values.GetOneByKey(dpkey + "," + dpKey)
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
 		}
 		c.Value = v.Value
-		err = Values.Replace(key + ":" + dpKey, c)
+		err = Values.Replace(dpkey + "," + dpKey, c)
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
@@ -506,7 +510,7 @@ func DPPutByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "invalid")
 			return
 		}
-		c, err := Gpss.GetOneByKey(key + ":" + dpKey)
+		c, err := Gpss.GetOneByKey(dpkey + "," + dpKey)
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
@@ -515,7 +519,7 @@ func DPPutByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		c.Lng = v.Lng
 		c.Offset = v.Offset
 		c.Speed = v.Speed
-		err = Gpss.Replace(key + ":" + dpKey, c)
+		err = Gpss.Replace(dpkey + "," + dpKey, c)
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
@@ -535,13 +539,13 @@ func DPPutByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "invalid")
 			return
 		}
-		c, err := Gens.GetOneByKey(key + ":" + dpKey)
+		c, err := Gens.GetOneByKey(dpkey + "," + dpKey)
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
 		}
 		c.Value = v.Value
-		err = Gens.Replace(key + ":" + dpKey, c)
+		err = Gens.Replace(dpkey + "," + dpKey, c)
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
@@ -589,18 +593,19 @@ func DPDelByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	key := ukey + ":" + hid + ":" + nid
+	dpkey := ukey + "," + hid + "," + nid
 	n, err := Nodes.NodeGetOne(key)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext or node not in hub")
 		return
 	}
 	if n.Type == Nodes.NodeTypeEnum.Value {
-		c, err := Values.GetOneByKey(key + ":" + dpKey)
+		c, err := Values.GetOneByKey(dpkey + "," + dpKey)
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
 		}
-		err = Values.Delete(key + ":" + dpKey)
+		err = Values.Delete(dpkey + "," + dpKey)
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
@@ -608,12 +613,12 @@ func DPDelByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		pStr, _ := json.Marshal(&c)
 		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
 	} else if n.Type == Nodes.NodeTypeEnum.Gps {
-		c, err := Gpss.GetOneByKey(key + ":" + dpKey)
+		c, err := Gpss.GetOneByKey(dpkey + "," + dpKey)
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
 		}
-		err = Gpss.Delete(key + ":" + dpKey)
+		err = Gpss.Delete(dpkey + "," + dpKey)
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
@@ -621,12 +626,12 @@ func DPDelByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		pStr, _ := json.Marshal(&c)
 		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
 	} else if n.Type == Nodes.NodeTypeEnum.Gen {
-		c, err := Gens.GetOneByKey(key + ":" + dpKey)
+		c, err := Gens.GetOneByKey(dpkey + "," + dpKey)
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
 		}
-		err = Gens.Delete(key + ":" + dpKey)
+		err = Gens.Delete(dpkey + "," + dpKey)
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
@@ -694,14 +699,15 @@ func DPGetRange(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	key := ukey + ":" + hid + ":" + nid
+	dpkey := ukey + "," + hid + "," + nid
 	n, err := Nodes.NodeGetOne(key)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext or node not in hub")
 		return
 	}
 	if n.Type == Nodes.NodeTypeEnum.Value {
-		c, err := Values.GetRange(key + ":" + start.Format(time.RFC3339Nano),
-			key + ":" + end.Format(time.RFC3339Nano), interval, page)
+		c, err := Values.GetRange(dpkey + "," + start.Format(time.RFC3339Nano),
+			dpkey + "," + end.Format(time.RFC3339Nano), interval, page)
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return

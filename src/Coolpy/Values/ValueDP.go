@@ -97,18 +97,39 @@ func GetRange(start string, end string, interval int, page int) ([]*ValueDP, err
 	if err != nil {
 		return nil, err
 	}
-	//pageSize := 50
-	//var totalPage = (len(data) + pageSize - 1) / pageSize;
-	//if page > totalPage{
-	//	return nil,errors.New("pages out of range")
-	//}
-	//comStartBit := 0
-	//if totalPage > 1{
-	//	comStartBit = page * pageSize
-	//}
-	//pageData := data[comStartBit:pageSize]
+	sortutil.Desc(data)
+	pageSize := 2
+	allcount := len(data)
+	lastPageSize := allcount % pageSize
+	totalPage := (allcount + pageSize - 1) / pageSize
+	if page > totalPage {
+		return nil, errors.New("pages out of range")
+	}
+	var pageData []string
+	if page == 1 {
+		if totalPage == page {
+			//只有一页
+			pageData = data[:allcount]
+		} else {
+			//不止一页的第一页
+			pageData = data[:pageSize]
+		}
+	} else if page < totalPage {
+		//中间页
+		cursor := (pageSize * page) - pageSize //起启位计算
+		pageData = data[cursor:cursor + pageSize]
+	} else if page == totalPage {
+		//尾页
+		if lastPageSize == 0 {
+			pageData = data[allcount - pageSize:]
+		} else {
+			pageData = data[allcount - lastPageSize:]
+		}
+	} else {
+		return nil, errors.New("page not ext")
+	}
 	var ndata []*ValueDP
-	for _, v := range data {
+	for _, v := range pageData {
 		o, _ := redis.String(rds.Do("GET", v))
 		h := &ValueDP{}
 		json.Unmarshal([]byte(o), &h)
