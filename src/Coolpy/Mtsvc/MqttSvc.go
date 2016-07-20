@@ -4,8 +4,6 @@ import (
 	"github.com/surgemq/surgemq/service"
 	"log"
 	"strconv"
-	"Coolpy/MAuth"
-	"github.com/surgemq/surgemq/auth"
 	"github.com/surgemq/message"
 )
 
@@ -13,12 +11,12 @@ var svc *service.Server
 
 func Host(mport int) {
 	// Create a mqtt server
-	auth.Register("coolpy", &MAuth.Manager{})
+	//auth.Register("coolpy", &Manager{})
 	mqttsvr := &service.Server{
 		KeepAlive:        300, // seconds
 		ConnectTimeout:   2, // seconds
 		SessionsProvider: "mem", // keeps sessions in memory
-		Authenticator:    "coolpy", // always succeed
+		Authenticator:    "mockSuccess", // always succeed
 		TopicsProvider:   "mem", // keeps topic subscriptions in memory
 	}
 	svc = mqttsvr

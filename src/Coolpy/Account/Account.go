@@ -50,7 +50,7 @@ func createOrReplace(ps *Person) error {
 	if err != nil {
 		return err
 	}
-	k:= ps.Ukey + ":" + ps.Uid
+	k := ps.Ukey + ":" + ps.Uid
 	_, err = rds.Do("SET", k, json)
 	if err != nil {
 		return err
@@ -67,6 +67,20 @@ func Get(uid string) (*Person, error) {
 		return nil, err
 	}
 	o, _ := redis.String(rds.Do("GET", k))
+	np := &Person{}
+	json.Unmarshal([]byte(o), &np)
+	return np, nil
+}
+
+func GetByUkey(k string) (*Person, error) {
+	if len(strings.TrimSpace(k)) == 0 {
+		return nil, errors.New("uid was nil")
+	}
+	dbk, err := getUkeyFromDb(k)
+	if err != nil {
+		return nil, err
+	}
+	o, _ := redis.String(rds.Do("GET", dbk))
 	np := &Person{}
 	json.Unmarshal([]byte(o), &np)
 	return np, nil
@@ -136,5 +150,16 @@ func getFromDb(uid string) (string, error) {
 	for _, v := range data {
 		return v, nil
 	}
-	return  "",errors.New("not ext")
+	return "", errors.New("not ext")
+}
+
+func getUkeyFromDb(k string) (string, error) {
+	data, err := redis.Strings(rds.Do("KEYS", k + ":*"))
+	if err != nil {
+		return "", err
+	}
+	for _, v := range data {
+		return v, nil
+	}
+	return "", errors.New("not ext")
 }

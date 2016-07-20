@@ -1,7 +1,8 @@
-package MAuth
+package Mtsvc
 
 import (
 	"github.com/surgemq/surgemq/auth"
+	"Coolpy/Account"
 )
 
 type Authenticator interface {
@@ -12,8 +13,12 @@ type Manager struct {
 }
 
 func (this *Manager) Authenticate(id string, cred interface{}) error {
-	if id == "111" {
-		return nil
+	u, err := Account.GetByUkey(id)
+	if err != nil {
+		return auth.ErrAuthFailure
 	}
-	return auth.ErrAuthFailure
+	if u.Ukey != id {
+		return auth.ErrAuthFailure
+	}
+	return nil
 }
