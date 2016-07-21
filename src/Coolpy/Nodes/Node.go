@@ -9,6 +9,7 @@ import (
 	"Coolpy/Controller"
 	"github.com/syndtr/goleveldb/leveldb/errors"
 	"strings"
+	"Coolpy/Deller"
 )
 
 type Node struct {
@@ -50,6 +51,30 @@ func Connect(addr string, pwd string) {
 	}
 	rds = c
 	rds.Do("SELECT", "3")
+	go delChan()
+}
+
+func delChan() {
+	for {
+		select {
+		case k, ok := <-Deller.DelNodes:
+			if ok {
+				ns, err := nodeStartWithKeys(k + ":")
+				if err != nil {
+					break
+				}
+				for _, v := range ns {
+					del(v)
+					go func() {
+						dpk := strings.Replace(k, ":", ",", -1)
+						Deller.DelValues <- dpk
+						Deller.DelGpss <- dpk
+						Deller.DelGens <- dpk
+					}()
+				}
+			}
+		}
+	}
 }
 
 func nodeCreate(ukey string, node *Node) error {
@@ -70,21 +95,29 @@ func nodeCreate(ukey string, node *Node) error {
 	//初始化控制器
 	if node.Type == NodeTypeEnum.Switcher {
 		err := Controller.BeginSwitcher(ukey, node.HubId, node.Id)
-		if err !=nil{
-			return  errors.New("init error")
+		if err != nil {
+			return errors.New("init error")
 		}
-	}else if node.Type == NodeTypeEnum.GenControl{
+	} else if node.Type == NodeTypeEnum.GenControl {
 		err := Controller.BeginGenControl(ukey, node.HubId, node.Id)
-		if err !=nil{
-			return  errors.New("init error")
+		if err != nil {
+			return errors.New("init error")
 		}
-	}else if node.Type == NodeTypeEnum.RangeControl{
+	} else if node.Type == NodeTypeEnum.RangeControl {
 		err := Controller.BeginRangeControl(ukey, node.HubId, node.Id)
-		if err !=nil{
-			return  errors.New("init error")
+		if err != nil {
+			return errors.New("init error")
 		}
 	}
 	return nil
+}
+
+func nodeStartWithKeys(k string) ([]string, error) {
+	data, err := redis.Strings(rds.Do("KEYSSTART", k))
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }
 
 func nodeStartWith(k string) ([]*Node, error) {
@@ -124,7 +157,7 @@ func nodeReplace(k string, h *Node) error {
 	return nil
 }
 
-func delete(k string) error {
+func del(k string) error {
 	if len(strings.TrimSpace(k)) == 0 {
 		return errors.New("uid was nil")
 	}
@@ -143,5 +176,5 @@ func CheckNodeId(nodeid string) (string, error) {
 	for _, v := range data {
 		return v, nil
 	}
-	return  "",errors.New("not ext")
+	return "", errors.New("not ext")
 }

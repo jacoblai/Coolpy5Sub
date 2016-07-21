@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"gopkg.in/go-playground/validator.v8"
 	"fmt"
+	"Coolpy/Deller"
 )
 
 var validate *validator.Validate
@@ -162,9 +163,12 @@ func UserNewApiKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 		return
 	}
-	p.CreateUkey()
+	uc, _ := r.Cookie("ukey")
 	//delete all sub hub and node
-
+	go func() {
+		Deller.DelHubs <- uc.Value
+	}()
+	p.CreateUkey()
 	createOrReplace(p)
 	fmt.Fprintf(w, `{"ok":%d,"data":"%v"}`, 1, p.Ukey)
 }

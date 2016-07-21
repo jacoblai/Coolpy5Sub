@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"errors"
+	"Coolpy/Deller"
 )
 
 type Hub struct {
@@ -34,6 +35,29 @@ func Connect(addr string, pwd string) {
 	}
 	rds = c
 	rds.Do("SELECT", "2")
+	go delChan()
+}
+
+func delChan() {
+	for {
+		select {
+		case ukey, ok := <-Deller.DelHubs:
+			if ok {
+				hs, err := hubStartWith(ukey)
+				if err != nil {
+					break
+				}
+				for _, v := range hs {
+					del(string(v.Id))
+					go func() {
+						ks := ukey + ":" + string(v.Id)
+						Deller.DelControls <- ks
+						Deller.DelNodes <- ks
+					}()
+				}
+			}
+		}
+	}
 }
 
 func hubCreate(hub *Hub) error {
@@ -94,7 +118,7 @@ func hubReplace(h *Hub) error {
 	return nil
 }
 
-func delete(hid string) error {
+func del(hid string) error {
 	if len(strings.TrimSpace(hid)) == 0 {
 		return errors.New("uid was nil")
 	}
@@ -113,5 +137,5 @@ func CheckHubId(hubid string) (string, error) {
 	for _, v := range data {
 		return v, nil
 	}
-	return  "",errors.New("not ext")
+	return "", errors.New("not ext")
 }

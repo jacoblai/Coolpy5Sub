@@ -605,7 +605,7 @@ func DPDelByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
 		}
-		err = Values.Delete(dpkey + "," + dpKey)
+		err = Values.Del(dpkey + "," + dpKey)
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
@@ -618,7 +618,7 @@ func DPDelByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
 		}
-		err = Gpss.Delete(dpkey + "," + dpKey)
+		err = Gpss.Del(dpkey + "," + dpKey)
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
@@ -631,7 +631,7 @@ func DPDelByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
 		}
-		err = Gens.Delete(dpkey + "," + dpKey)
+		err = Gens.Del(dpkey + "," + dpKey)
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return

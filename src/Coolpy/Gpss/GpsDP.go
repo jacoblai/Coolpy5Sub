@@ -7,6 +7,7 @@ import (
 	"github.com/pmylund/sortutil"
 	"strings"
 	"errors"
+	"Coolpy/Deller"
 )
 
 type GpsDP struct {
@@ -32,6 +33,24 @@ func Connect(addr string, pwd string) {
 	}
 	rds = c
 	rds.Do("SELECT", "6")
+	go delChan()
+}
+
+func delChan() {
+	for {
+		select {
+		case k, ok := <-Deller.DelGpss:
+			if ok {
+				vs, err := startWith(k)
+				if err != nil {
+					break
+				}
+				for _, v := range vs {
+					Del(v)
+				}
+			}
+		}
+	}
 }
 
 func GpsCreate(k string, dp *GpsDP) error {
@@ -44,6 +63,14 @@ func GpsCreate(k string, dp *GpsDP) error {
 		return err
 	}
 	return nil
+}
+
+func startWith(k string) ([]string, error) {
+	data, err := redis.Strings(rds.Do("KEYSSTART", k))
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }
 
 func MaxGet(k string) (*GpsDP, error) {
@@ -84,7 +111,7 @@ func Replace(k string, h *GpsDP) error {
 	return nil
 }
 
-func Delete(k string) error {
+func Del(k string) error {
 	if len(strings.TrimSpace(k)) == 0 {
 		return errors.New("uid was nil")
 	}

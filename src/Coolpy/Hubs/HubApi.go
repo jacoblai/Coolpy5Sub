@@ -165,7 +165,7 @@ func HubDel(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext")
 		return
 	}
-	delete(key)
+	del(key)
 	//delete all sub node
 
 	fmt.Fprintf(w, `{"ok":%d}`, 1)

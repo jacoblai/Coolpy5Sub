@@ -4,6 +4,9 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"strconv"
 	"encoding/json"
+	"Coolpy/Deller"
+	"strings"
+	"errors"
 )
 
 type Switcher struct {
@@ -40,9 +43,27 @@ func Connect(addr string, pwd string) {
 	}
 	rds = c
 	rds.Do("SELECT", "4")
+	go delChan()
 }
 
-func ReplaceSwitcher(k string,s *Switcher) error {
+func delChan() {
+	for {
+		select {
+		case k, ok := <-Deller.DelControls:
+			if ok {
+				cs, err := ctrlStartWith(k)
+				if err != nil {
+					break
+				}
+				for _, v := range cs {
+					del(v)
+				}
+			}
+		}
+	}
+}
+
+func ReplaceSwitcher(k string, s *Switcher) error {
 	json, err := json.Marshal(s)
 	if err != nil {
 		return err
@@ -61,8 +82,8 @@ func GetSwitcher(k string) (*Switcher, error) {
 	}
 	h := &Switcher{}
 	err = json.Unmarshal([]byte(o), &h)
-	if err !=nil{
-		return nil,err
+	if err != nil {
+		return nil, err
 	}
 	return h, nil
 }
@@ -85,7 +106,7 @@ func BeginSwitcher(ukey string, Hubid int64, Nodeid int64) error {
 	return nil
 }
 
-func ReplaceRangeControl(k string,s *RangeControl) error {
+func ReplaceRangeControl(k string, s *RangeControl) error {
 	json, err := json.Marshal(s)
 	if err != nil {
 		return err
@@ -104,8 +125,8 @@ func GetRangeControl(k string) (*RangeControl, error) {
 	}
 	h := &RangeControl{}
 	err = json.Unmarshal([]byte(o), &h)
-	if err !=nil{
-		return nil,err
+	if err != nil {
+		return nil, err
 	}
 	return h, nil
 }
@@ -131,7 +152,7 @@ func BeginRangeControl(ukey string, Hubid int64, Nodeid int64) error {
 	return nil
 }
 
-func ReplaceGenControl(k string,s *GenControl) error {
+func ReplaceGenControl(k string, s *GenControl) error {
 	json, err := json.Marshal(s)
 	if err != nil {
 		return err
@@ -150,8 +171,8 @@ func GetGenControl(k string) (*GenControl, error) {
 	}
 	h := &GenControl{}
 	err = json.Unmarshal([]byte(o), &h)
-	if err !=nil{
-		return nil,err
+	if err != nil {
+		return nil, err
 	}
 	return h, nil
 }
@@ -168,6 +189,25 @@ func BeginGenControl(ukey string, Hubid int64, Nodeid int64) error {
 		return err
 	}
 	_, err = rds.Do("SET", key, json)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func ctrlStartWith(k string) ([]string, error) {
+	data, err := redis.Strings(rds.Do("KEYSSTART", k))
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+func del(k string) error {
+	if len(strings.TrimSpace(k)) == 0 {
+		return errors.New("uid was nil")
+	}
+	_, err := redis.Int(rds.Do("DEL", k))
 	if err != nil {
 		return err
 	}

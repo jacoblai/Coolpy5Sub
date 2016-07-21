@@ -7,6 +7,7 @@ import (
 	"time"
 	"strings"
 	"errors"
+	"Coolpy/Deller"
 )
 
 type ValueDP struct {
@@ -29,6 +30,24 @@ func Connect(addr string, pwd string) {
 	}
 	rds = c
 	rds.Do("SELECT", "5")
+	go delChan()
+}
+
+func delChan() {
+	for {
+		select {
+		case k, ok := <-Deller.DelValues:
+			if ok {
+				vs, err := startWith(k)
+				if err != nil {
+					break
+				}
+				for _, v := range vs {
+					Del(v)
+				}
+			}
+		}
+	}
 }
 
 func ValueCreate(k string, dp *ValueDP) error {
@@ -41,6 +60,14 @@ func ValueCreate(k string, dp *ValueDP) error {
 		return err
 	}
 	return nil
+}
+
+func startWith(k string) ([]string, error) {
+	data, err := redis.Strings(rds.Do("KEYSSTART", k))
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }
 
 func MaxGet(k string) (*ValueDP, error) {
@@ -81,7 +108,7 @@ func Replace(k string, h *ValueDP) error {
 	return nil
 }
 
-func Delete(k string) error {
+func Del(k string) error {
 	if len(strings.TrimSpace(k)) == 0 {
 		return errors.New("uid was nil")
 	}

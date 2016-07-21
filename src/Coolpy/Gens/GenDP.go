@@ -7,6 +7,7 @@ import (
 	"github.com/pmylund/sortutil"
 	"strings"
 	"errors"
+	"Coolpy/Deller"
 )
 
 type GenDP struct {
@@ -29,6 +30,24 @@ func Connect(addr string, pwd string) {
 	}
 	rds = c
 	rds.Do("SELECT", "7")
+	go delChan()
+}
+
+func delChan() {
+	for {
+		select {
+		case k, ok := <-Deller.DelGens:
+			if ok {
+				vs, err := startWith(k)
+				if err != nil {
+					break
+				}
+				for _, v := range vs {
+					Del(v)
+				}
+			}
+		}
+	}
 }
 
 func GenCreate(k string, dp *GenDP) error {
@@ -41,6 +60,14 @@ func GenCreate(k string, dp *GenDP) error {
 		return err
 	}
 	return nil
+}
+
+func startWith(k string) ([]string, error) {
+	data, err := redis.Strings(rds.Do("KEYSSTART", k))
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }
 
 func MaxGet(k string) (*GenDP, error) {
@@ -81,7 +108,7 @@ func Replace(k string, h *GenDP) error {
 	return nil
 }
 
-func Delete(k string) error {
+func Del(k string) error {
 	if len(strings.TrimSpace(k)) == 0 {
 		return errors.New("uid was nil")
 	}
