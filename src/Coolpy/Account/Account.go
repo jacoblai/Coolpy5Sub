@@ -34,10 +34,6 @@ func New() *Person {
 	return &Person{}
 }
 
-func Close() error {
-	return rds.Close()
-}
-
 func (p *Person) CreateUkey() {
 	p.Ukey = uuid.NewV4().String()
 }
