@@ -55,15 +55,10 @@ func delChan() {
 			}
 		case ukeyhid, ok := <-Deller.DelHub:
 			if ok {
-				h, err := HubGetOne(ukeyhid)
+				err := del(ukeyhid)
 				if err != nil {
 					break
 				}
-				k, err := CheckHubId(string(h.Id))
-				if err != nil {
-					break
-				}
-				del(k)
 				go deldo(ukeyhid)
 			}
 		}

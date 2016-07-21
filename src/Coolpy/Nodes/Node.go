@@ -71,12 +71,10 @@ func delChan() {
 			}
 		case ukeyhidnid, ok := <-Deller.DelNode:
 			if ok {
-				n, err := NodeGetOne(ukeyhidnid)
+				err := del(ukeyhidnid)
 				if err != nil {
 					break
 				}
-				k, err := CheckNodeId(string(n.Id))
-				del(k)
 				go deldo(ukeyhidnid)
 			}
 		}
