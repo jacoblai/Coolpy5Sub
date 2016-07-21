@@ -57,24 +57,37 @@ func Connect(addr string, pwd string) {
 func delChan() {
 	for {
 		select {
-		case k, ok := <-Deller.DelNodes:
+		case ukeyhid, ok := <-Deller.DelNodes:
 			if ok {
-				ns, err := nodeStartWithKeys(k + ":")
+				ns, err := nodeStartWith(ukeyhid + ":")
 				if err != nil {
 					break
 				}
 				for _, v := range ns {
-					del(v)
-					go func() {
-						dpk := strings.Replace(k, ":", ",", -1)
-						Deller.DelValues <- dpk
-						Deller.DelGpss <- dpk
-						Deller.DelGens <- dpk
-					}()
+					k := ukeyhid + ":" + string(v.Id)
+					del(k)
+					go deldo(k)
 				}
+			}
+		case ukeyhidnid, ok := <-Deller.DelNode:
+			if ok {
+				n, err := NodeGetOne(ukeyhidnid)
+				if err != nil {
+					break
+				}
+				k, err := CheckNodeId(string(n.Id))
+				del(k)
+				go deldo(ukeyhidnid)
 			}
 		}
 	}
+}
+
+func deldo(ukeyhidnid string) {
+	dpk := strings.Replace(ukeyhidnid, ":", ",", -1)
+	Deller.DelValues <- dpk
+	Deller.DelGpss <- dpk
+	Deller.DelGens <- dpk
 }
 
 func nodeCreate(ukey string, node *Node) error {
@@ -110,14 +123,6 @@ func nodeCreate(ukey string, node *Node) error {
 		}
 	}
 	return nil
-}
-
-func nodeStartWithKeys(k string) ([]string, error) {
-	data, err := redis.Strings(rds.Do("KEYSSTART", k))
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
 }
 
 func nodeStartWith(k string) ([]*Node, error) {

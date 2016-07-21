@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"strconv"
 	"Coolpy/Hubs"
+	"Coolpy/Deller"
 )
 
 var validate *validator.Validate
@@ -205,12 +206,14 @@ func NodeDel(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub nrole")
 		return
 	}
-	if oh == nil{
+	if oh == nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext")
 		return
 	}
-	del(key)
 	//delete all sub node
-
+	go func() {
+		Deller.DelNode <- key
+		Deller.DelControls <- key
+	}()
 	fmt.Fprintf(w, `{"ok":%d}`, 1)
 }

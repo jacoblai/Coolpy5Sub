@@ -48,16 +48,31 @@ func delChan() {
 					break
 				}
 				for _, v := range hs {
-					del(string(v.Id))
-					go func() {
-						ks := ukey + ":" + string(v.Id)
-						Deller.DelControls <- ks
-						Deller.DelNodes <- ks
-					}()
+					k := ukey + ":" + string(v.Id)
+					del(k)
+					go deldo(k)
 				}
+			}
+		case ukeyhid, ok := <-Deller.DelHub:
+			if ok {
+				h, err := HubGetOne(ukeyhid)
+				if err != nil {
+					break
+				}
+				k, err := CheckHubId(string(h.Id))
+				if err != nil {
+					break
+				}
+				del(k)
+				go deldo(ukeyhid)
 			}
 		}
 	}
+}
+
+func deldo(ukeyhid string) {
+	Deller.DelControls <- ukeyhid
+	Deller.DelNodes <- ukeyhid
 }
 
 func hubCreate(hub *Hub) error {
@@ -118,11 +133,11 @@ func hubReplace(h *Hub) error {
 	return nil
 }
 
-func del(hid string) error {
-	if len(strings.TrimSpace(hid)) == 0 {
+func del(k string) error {
+	if len(strings.TrimSpace(k)) == 0 {
 		return errors.New("uid was nil")
 	}
-	_, err := redis.Int(rds.Do("DEL", hid))
+	_, err := redis.Int(rds.Do("DEL", k))
 	if err != nil {
 		return err
 	}
