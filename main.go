@@ -74,7 +74,7 @@ func main() {
 	router.GET("/api/um/newkey", Basicauth.Auth(Account.UserNewApiKey))
 	//hubs管理api
 	router.POST("/api/hubs", Basicauth.Auth(Hubs.HubPost))
-	router.GET("/api/hubs/:ukey", Basicauth.Auth(Hubs.HubsGet))
+	router.GET("/api/hubs", Basicauth.Auth(Hubs.HubsGet))
 	router.GET("/api/hub/:hid", Basicauth.Auth(Hubs.HubGet))
 	router.PUT("/api/hub/:hid", Basicauth.Auth(Hubs.HubPut))
 	router.DELETE("/api/hub/:hid", Basicauth.Auth(Hubs.HubDel))

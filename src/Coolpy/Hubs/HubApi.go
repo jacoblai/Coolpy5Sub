@@ -48,22 +48,13 @@ func HubPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 func HubsGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	defer r.Body.Close()
-	uk := ps.ByName("ukey")
-	if uk == "" {
-		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params ukey")
-		return
-	}
 	_, err := r.Cookie("islogin")
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "dosn't login")
 		return
 	}
 	ukey, _ := r.Cookie("ukey")
-	if ukey.Value != uk {
-		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey inrole")
-		return
-	}
-	ndata, err := hubStartWith(uk)
+	ndata, err := hubStartWith(ukey.Value)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 		return
