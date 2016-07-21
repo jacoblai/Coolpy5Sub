@@ -45,6 +45,10 @@ func UserPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "dosn't Admin")
 		return
 	}
+	if p.Uid == "admin" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "admin uid")
+		return
+	}
 	p.CreateUkey()
 	errs := validate.Struct(p)
 	if errs != nil {
@@ -80,12 +84,8 @@ func UserPut(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 		return
 	}
-	if p.Uid == "admin" {
-		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "isAdmin")
-		return
-	}
-	op, _ := Get(ps.ByName("uid"))
-	if op == nil {
+	op, err := Get(ps.ByName("uid"))
+	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params nuid")
 		return
 	}
@@ -106,6 +106,10 @@ func UserDel(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params nuid")
 		return
 	}
+	if uid == "admin" {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "admin account")
+		return
+	}
 	v, err := r.Cookie("islogin")
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "dosn't login")
@@ -115,7 +119,7 @@ func UserDel(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "dosn't Admin")
 		return
 	}
-	delete(uid)
+	del(uid)
 	fmt.Fprintf(w, `{"ok":%d}`, 1)
 }
 

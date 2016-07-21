@@ -86,7 +86,7 @@ func GetByUkey(k string) (*Person, error) {
 	return np, nil
 }
 
-func delete(uid string) error {
+func del(uid string) error {
 	if len(strings.TrimSpace(uid)) == 0 {
 		return errors.New("uid was nil")
 	}

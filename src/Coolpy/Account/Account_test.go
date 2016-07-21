@@ -11,7 +11,7 @@ func TestAll(t *testing.T) {
 	np.Uid = "jo111"
 	np.Pwd = "pwd111afasdfasdfasdfasdfasdfasdfqfiweuriquweoruqowieruajsdfkajsdlkfjalskdjfklasjdfklajsdkl"
 	np.CreateUkey()
-	err := CreateOrReplace(np)
+	err := createOrReplace(np)
 	if err != nil {
 		t.Error(err)
 	} else {
@@ -36,7 +36,7 @@ func TestAll(t *testing.T) {
 	}
 
 	fmt.Println("findall test")
-	anp, _ := All()
+	anp, _ := all()
 	if len(anp) != 1 {
 		t.Error("allkey error")
 	}
