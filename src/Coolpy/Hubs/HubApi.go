@@ -145,12 +145,8 @@ func HubDel(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 	ukey, _ := r.Cookie("ukey")
 	key := ukey.Value + ":" + hid
-	oh, err := HubGetOne(key)
+	_, err = HubGetOne(key)
 	if err != nil {
-		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub nrole")
-		return
-	}
-	if oh == nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext")
 		return
 	}
