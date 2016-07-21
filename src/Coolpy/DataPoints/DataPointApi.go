@@ -384,12 +384,12 @@ func DPGetByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		pStr, _ := json.Marshal(&one)
 		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
 	} else if n.Type == Nodes.NodeTypeEnum.Gen {
-		max, err := Gens.GetOneByKey(dpkey + "," + dpKey)
+		one, err := Gens.GetOneByKey(dpkey + "," + dpKey)
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
 		}
-		pStr, _ := json.Marshal(&max)
+		pStr, _ := json.Marshal(&one)
 		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
 	} else {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "unkown type")
