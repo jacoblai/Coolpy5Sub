@@ -24,7 +24,11 @@ import (
 	"Coolpy/Mtsvc"
 )
 
+var v = "5.0.1.0"
+var kv = "alpha"
+
 func main() {
+	fmt.Println("Coolpy Version:", v, kv)
 	var (
 		port int
 		mport int
@@ -60,8 +64,8 @@ func main() {
 	Gens.Connect(redServer.Addr(), svcpwd)
 
 	//host mqtt service
-        Mtsvc.Host(mport)
-	fmt.Println("Coolpy Server mqtt on port ", strconv.Itoa(mport))
+	Mtsvc.Host(mport)
+	fmt.Println("Coolpy mqtt on port", strconv.Itoa(mport))
 
 	router := httprouter.New()
 	//用户管理api
@@ -98,7 +102,7 @@ func main() {
 		fmt.Println("Can't listen: %s", err)
 	}
 	go http.Serve(ln, Cors.CORS(router))
-	fmt.Println("Coolpy Server host on port ", strconv.Itoa(port))
+	fmt.Println("Coolpy http on port", strconv.Itoa(port))
 
 	signalChan := make(chan os.Signal, 1)
 	cleanupDone := make(chan bool)
