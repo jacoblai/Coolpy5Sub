@@ -9,7 +9,6 @@ import (
 	"time"
 	"Coolpy/Account"
 	"strconv"
-	"Coolpy/Hubs"
 	"Coolpy/Nodes"
 	"Coolpy/Values"
 	"Coolpy/Gpss"
@@ -32,17 +31,9 @@ func DPPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
 		return
 	}
-	if k, _ := Hubs.CheckHubId(hid); k == "" {
-		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext")
-		return
-	}
 	nid := ps.ByName("nid")
 	if nid == "" {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
-		return
-	}
-	if k, _ := Nodes.CheckNodeId(nid); k == "" {
-		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "node not ext")
 		return
 	}
 	ukey := r.Header.Get("U-ApiKey")
@@ -149,17 +140,9 @@ func DPGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
 		return
 	}
-	if k, _ := Hubs.CheckHubId(hid); k == "" {
-		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext")
-		return
-	}
 	nid := ps.ByName("nid")
 	if nid == "" {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
-		return
-	}
-	if k, _ := Nodes.CheckNodeId(nid); k == "" {
-		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "node not ext")
 		return
 	}
 	ukey := r.Header.Get("U-ApiKey")
@@ -239,17 +222,9 @@ func DPPut(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
 		return
 	}
-	if k, _ := Hubs.CheckHubId(hid); k == "" {
-		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext")
-		return
-	}
 	nid := ps.ByName("nid")
 	if nid == "" {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
-		return
-	}
-	if k, _ := Nodes.CheckNodeId(nid); k == "" {
-		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "node not ext")
 		return
 	}
 	ukey := r.Header.Get("U-ApiKey")
@@ -370,17 +345,9 @@ func DPGetByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
 		return
 	}
-	if k, _ := Hubs.CheckHubId(hid); k == "" {
-		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext")
-		return
-	}
 	nid := ps.ByName("nid")
 	if nid == "" {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
-		return
-	}
-	if k, _ := Nodes.CheckNodeId(nid); k == "" {
-		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "node not ext")
 		return
 	}
 	ukey := r.Header.Get("U-ApiKey")
@@ -441,17 +408,9 @@ func DPPutByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
 		return
 	}
-	if k, _ := Hubs.CheckHubId(hid); k == "" {
-		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext")
-		return
-	}
 	nid := ps.ByName("nid")
 	if nid == "" {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
-		return
-	}
-	if k, _ := Nodes.CheckNodeId(nid); k == "" {
-		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "node not ext")
 		return
 	}
 	ukey := r.Header.Get("U-ApiKey")
@@ -569,17 +528,9 @@ func DPDelByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
 		return
 	}
-	if k, _ := Hubs.CheckHubId(hid); k == "" {
-		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext")
-		return
-	}
 	nid := ps.ByName("nid")
 	if nid == "" {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
-		return
-	}
-	if k, _ := Nodes.CheckNodeId(nid); k == "" {
-		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "node not ext")
 		return
 	}
 	ukey := r.Header.Get("U-ApiKey")
@@ -675,17 +626,9 @@ func DPGetRange(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
 		return
 	}
-	if k, _ := Hubs.CheckHubId(hid); k == "" {
-		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext")
-		return
-	}
 	nid := ps.ByName("nid")
 	if nid == "" {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
-		return
-	}
-	if k, _ := Nodes.CheckNodeId(nid); k == "" {
-		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "node not ext")
 		return
 	}
 	ukey := r.Header.Get("U-ApiKey")

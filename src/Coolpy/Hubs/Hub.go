@@ -138,14 +138,3 @@ func del(k string) error {
 	}
 	return nil
 }
-
-func CheckHubId(hubid string) (string, error) {
-	data, err := redis.Strings(rds.Do("KEYS", "*:" + hubid))
-	if err != nil {
-		return "", err
-	}
-	for _, v := range data {
-		return v, nil
-	}
-	return "", errors.New("not ext")
-}
