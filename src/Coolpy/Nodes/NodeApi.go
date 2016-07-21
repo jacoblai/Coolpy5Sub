@@ -213,7 +213,7 @@ func NodeDel(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	//delete all sub node
 	go func() {
 		Deller.DelNode <- key
-		Deller.DelControls <- key
+		Deller.DelControl <- key
 	}()
 	fmt.Fprintf(w, `{"ok":%d}`, 1)
 }

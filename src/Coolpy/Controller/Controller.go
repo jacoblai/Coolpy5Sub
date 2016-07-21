@@ -59,6 +59,10 @@ func delChan() {
 					del(v)
 				}
 			}
+		case ukeyhidnid, ok := <-Deller.DelControl:
+			if ok {
+				del(ukeyhidnid)
+			}
 		}
 	}
 }
