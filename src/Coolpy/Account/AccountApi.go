@@ -23,7 +23,7 @@ func CreateAdmin() {
 		p.Uid = "admin"
 		p.CreateUkey()
 		p.UserName = "admin"
-		createOrReplace(p)
+		create(p)
 	}
 }
 
@@ -49,13 +49,18 @@ func UserPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "admin uid")
 		return
 	}
+	_, err = Get(p.Uid)
+	if err == nil {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "uid ext")
+		return
+	}
 	p.CreateUkey()
 	errs := validate.Struct(p)
 	if errs != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "invalid")
 		return
 	}
-	err = createOrReplace(&p)
+	err = create(&p)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 		return
@@ -95,7 +100,8 @@ func UserPut(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 	op.UserName = p.UserName
 	op.Pwd = p.Pwd
-	createOrReplace(op)
+	del(p.Uid)
+	create(op)
 	pStr, _ := json.Marshal(op)
 	fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
 }
@@ -172,7 +178,8 @@ func UserNewApiKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	go func() {
 		Deller.DelHubs <- uc.Value
 	}()
+	del(p.Uid)
 	p.CreateUkey()
-	createOrReplace(p)
+	create(p)
 	fmt.Fprintf(w, `{"ok":%d,"data":"%v"}`, 1, p.Ukey)
 }

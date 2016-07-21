@@ -42,7 +42,7 @@ func (p *Person) CreateUkey() {
 	p.Ukey = uuid.NewV4().String()
 }
 
-func createOrReplace(ps *Person) error {
+func create(ps *Person) error {
 	if len(strings.TrimSpace(ps.Uid)) == 0 {
 		return errors.New("uid was nil")
 	}

@@ -11,7 +11,7 @@ func TestAll(t *testing.T) {
 	np.Uid = "jo111"
 	np.Pwd = "pwd111afasdfasdfasdfasdfasdfasdfqfiweuriquweoruqowieruajsdfkajsdlkfjalskdjfklasjdfklajsdkl"
 	np.CreateUkey()
-	err := createOrReplace(np)
+	err := create(np)
 	if err != nil {
 		t.Error(err)
 	} else {
