@@ -71,10 +71,7 @@ func delChan() {
 			}
 		case ukeyhidnid, ok := <-Deller.DelNode:
 			if ok {
-				err := del(ukeyhidnid)
-				if err != nil {
-					break
-				}
+				del(ukeyhidnid)
 				go deldo(ukeyhidnid)
 			}
 		}

@@ -55,10 +55,7 @@ func delChan() {
 			}
 		case ukeyhid, ok := <-Deller.DelHub:
 			if ok {
-				err := del(ukeyhid)
-				if err != nil {
-					break
-				}
+				del(ukeyhid)
 				go deldo(ukeyhid)
 			}
 		}
