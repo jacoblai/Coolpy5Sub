@@ -108,21 +108,6 @@ func CheckUKey(k string) (bool, error) {
 	return true, nil
 }
 
-func FindKeyStart(uid string) (map[string]*Person, error) {
-	data, err := redis.Strings(rds.Do("KEYSSTART", uid))
-	if err != nil {
-		return nil, err
-	}
-	ndata := make(map[string]*Person)
-	for _, v := range data {
-		o, _ := redis.String(rds.Do("GET", v))
-		np := &Person{}
-		json.Unmarshal([]byte(o), &np)
-		ndata[v] = np
-	}
-	return ndata, nil
-}
-
 func all() ([]*Person, error) {
 	data, err := redis.Strings(rds.Do("KEYS", "*"))
 	if err != nil {

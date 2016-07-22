@@ -26,14 +26,14 @@ func TestAll(t *testing.T) {
 		t.Error("find error")
 	}
 
-	fmt.Println("findkey test")
-	fnp, _ := FindKeyStart("jo")
-	if len(fnp) != 1 {
-		t.Error("findkey error")
-	}
-	for _, v := range fnp {
-		fmt.Println(v.Uid)
-	}
+	//fmt.Println("findkey test")
+	//fnp, _ := findKeyStart("jo")
+	//if len(fnp) != 1 {
+	//	t.Error("findkey error")
+	//}
+	//for _, v := range fnp {
+	//	fmt.Println(v.Uid)
+	//}
 
 	fmt.Println("findall test")
 	anp, _ := all()
