@@ -86,6 +86,7 @@ func deldo(ukeyhidnid string) {
 	Deller.DelValues <- dpk
 	Deller.DelGpss <- dpk
 	Deller.DelGens <- dpk
+	Deller.DelPhotos <- dpk
 }
 
 func nodeCreate(ukey string, node *Node) error {

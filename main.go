@@ -22,6 +22,7 @@ import (
 	"Coolpy/Gpss"
 	"Coolpy/Gens"
 	"Coolpy/Mtsvc"
+	"Coolpy/Photos"
 )
 
 var v = "5.0.1.0"
@@ -62,6 +63,8 @@ func main() {
 	Gpss.Connect(redServer.Addr(), svcpwd)
 	//数据结点gen库7
 	Gens.Connect(redServer.Addr(), svcpwd)
+	//数据结点img库8
+	Photos.Connect(redServer.Addr(), svcpwd)
 
 	//host mqtt service
 	Mtsvc.Host(mport)
@@ -96,6 +99,8 @@ func main() {
 	router.PUT("/api/hub/:hid/node/:nid/datapoint/:key", DataPoints.DPPutByKey)//传感器更新key对应值
 	router.DELETE("/api/hub/:hid/node/:nid/datapoint/:key", DataPoints.DPDelByKey)//传感器删除key对应值
 	router.GET("/api/hub/:hid/node/:nid/json", DataPoints.DPGetRange)//传感器取得历史数据
+	//图像管理api
+	router.POST("/api/hub/:hid/node/:nid/photos", Photos.PhotoPost)//上传图片png,jpg,gif
 
 	ln, err := net.Listen("tcp", ":" + strconv.Itoa(port))
 	if err != nil {
