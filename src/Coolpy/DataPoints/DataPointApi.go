@@ -42,8 +42,8 @@ func DPPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not post")
 		return
 	}
-	b, err := Account.CheckUKey(ukey + ":")
-	if b == false {
+	_, err := Account.GetUkeyFromDb(ukey)
+	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not ext")
 		return
 	}
@@ -151,8 +151,8 @@ func DPGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not post")
 		return
 	}
-	b, err := Account.CheckUKey(ukey + ":")
-	if b == false {
+	_, err := Account.GetUkeyFromDb(ukey)
+	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not ext")
 		return
 	}
@@ -233,8 +233,8 @@ func DPPut(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not post")
 		return
 	}
-	b, err := Account.CheckUKey(ukey + ":")
-	if b == false {
+	_, err := Account.GetUkeyFromDb(ukey)
+	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not ext")
 		return
 	}
@@ -356,8 +356,8 @@ func DPGetByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not post")
 		return
 	}
-	b, err := Account.CheckUKey(ukey + ":")
-	if b == false {
+	_, err := Account.GetUkeyFromDb(ukey)
+	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not ext")
 		return
 	}
@@ -419,8 +419,8 @@ func DPPutByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not post")
 		return
 	}
-	b, err := Account.CheckUKey(ukey + ":")
-	if b == false {
+	_, err := Account.GetUkeyFromDb(ukey)
+	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not ext")
 		return
 	}
@@ -539,8 +539,8 @@ func DPDelByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not post")
 		return
 	}
-	b, err := Account.CheckUKey(ukey + ":")
-	if b == false {
+	_, err := Account.GetUkeyFromDb(ukey)
+	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not ext")
 		return
 	}
@@ -637,8 +637,8 @@ func DPGetRange(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not post")
 		return
 	}
-	b, err := Account.CheckUKey(ukey + ":")
-	if b == false {
+	_, err = Account.GetUkeyFromDb(ukey)
+	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not ext")
 		return
 	}

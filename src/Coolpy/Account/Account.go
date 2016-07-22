@@ -72,7 +72,7 @@ func GetByUkey(k string) (*Person, error) {
 	if len(strings.TrimSpace(k)) == 0 {
 		return nil, errors.New("uid was nil")
 	}
-	dbk, err := getUkeyFromDb(k)
+	dbk, err := GetUkeyFromDb(k)
 	if err != nil {
 		return nil, err
 	}
@@ -95,17 +95,6 @@ func del(uid string) error {
 		return err
 	}
 	return nil
-}
-
-func CheckUKey(k string) (bool, error) {
-	data, err := redis.Strings(rds.Do("KEYSSTART", k))
-	if err != nil {
-		return false, err
-	}
-	if data[0] == "" {
-		return false, nil
-	}
-	return true, nil
 }
 
 func all() ([]*Person, error) {
@@ -134,7 +123,7 @@ func getFromDb(uid string) (string, error) {
 	return "", errors.New("not ext")
 }
 
-func getUkeyFromDb(k string) (string, error) {
+func GetUkeyFromDb(k string) (string, error) {
 	data, err := redis.Strings(rds.Do("KEYS", k + ":*"))
 	if err != nil {
 		return "", err

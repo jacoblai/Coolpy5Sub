@@ -28,8 +28,8 @@ func PhotoPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not post")
 		return
 	}
-	b, err := Account.CheckUKey(ukey + ":")
-	if b == false {
+	_, err := Account.GetUkeyFromDb(ukey)
+	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not ext")
 		return
 	}
@@ -94,8 +94,8 @@ func PhotoGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not post")
 		return
 	}
-	b, err := Account.CheckUKey(ukey + ":")
-	if b == false {
+	_, err := Account.GetUkeyFromDb(ukey)
+	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not ext")
 		return
 	}
@@ -141,8 +141,8 @@ func PhotoGetByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not post")
 		return
 	}
-	b, err := Account.CheckUKey(ukey + ":")
-	if b == false {
+	_, err := Account.GetUkeyFromDb(ukey)
+	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not ext")
 		return
 	}
@@ -188,8 +188,8 @@ func PhotoDelByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not post")
 		return
 	}
-	b, err := Account.CheckUKey(ukey + ":")
-	if b == false {
+	_, err := Account.GetUkeyFromDb(ukey)
+	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not ext")
 		return
 	}
