@@ -103,6 +103,10 @@ func nodeCreate(ukey string, node *Node) error {
 	if err != nil {
 		return err
 	}
+	//验证nodetype
+	if NodeTypeEnum.GetName(node.Type - 1) == "" {
+		return errors.New("node type error")
+	}
 	//初始化控制器
 	if node.Type == NodeTypeEnum.Switcher {
 		err := Controller.BeginSwitcher(ukey, node.HubId, node.Id)
