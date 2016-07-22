@@ -103,6 +103,7 @@ func main() {
 	}
 	go http.Serve(ln, Cors.CORS(router))
 	fmt.Println("Coolpy http on port", strconv.Itoa(port))
+	fmt.Println("Power By ICOOLPY.COM")
 
 	signalChan := make(chan os.Signal, 1)
 	cleanupDone := make(chan bool)
