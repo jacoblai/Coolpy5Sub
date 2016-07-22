@@ -101,6 +101,9 @@ func main() {
 	router.GET("/api/hub/:hid/node/:nid/json", DataPoints.DPGetRange)//传感器取得历史数据
 	//图像管理api
 	router.POST("/api/hub/:hid/node/:nid/photos", Photos.PhotoPost)//上传图片png,jpg,gif
+	router.GET("/api/hub/:hid/node/:nid/photo/content", Photos.PhotoGet)
+	router.GET("/api/hub/:hid/node/:nid/photo/content/:key", Photos.PhotoGetByKey)
+	router.DELETE("/api/hub/:hid/node/:nid/photo/content/:key", Photos.PhotoDelByKey)
 
 	ln, err := net.Listen("tcp", ":" + strconv.Itoa(port))
 	if err != nil {

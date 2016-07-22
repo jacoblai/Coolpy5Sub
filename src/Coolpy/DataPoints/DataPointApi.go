@@ -15,6 +15,7 @@ import (
 	"Coolpy/Gens"
 	"Coolpy/Controller"
 	"Coolpy/Mtsvc"
+	"Coolpy/Photos"
 )
 
 var validate *validator.Validate
@@ -610,7 +611,7 @@ func DPGetRange(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	dpInterval := qs.Get("interval")
-	interval, err := strconv.ParseFloat(dpInterval,10)
+	interval, err := strconv.ParseFloat(dpInterval, 10)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
 		return
@@ -668,6 +669,15 @@ func DPGetRange(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
 	} else if n.Type == Nodes.NodeTypeEnum.Gen {
 		c, err := Gens.GetRange(dpkey + "," + start.Format(time.RFC3339Nano),
+			dpkey + "," + end.Format(time.RFC3339Nano), interval, page)
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		pStr, _ := json.Marshal(&c)
+		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
+	} else if n.Type == Nodes.NodeTypeEnum.Photo {
+		c, err := Photos.GetRange(dpkey + "," + start.Format(time.RFC3339Nano),
 			dpkey + "," + end.Format(time.RFC3339Nano), interval, page)
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)

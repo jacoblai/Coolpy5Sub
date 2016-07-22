@@ -14,7 +14,8 @@ type PhotoDP struct {
 	HubId     int64
 	NodeId    int64
 	TimeStamp time.Time
-	Mime     string `validate:"required"`
+	Size      int `validate:"required"`
+	Mime      string `validate:"required"`
 	Img       []byte `validate:"required"`
 }
 
@@ -44,14 +45,14 @@ func delChan() {
 					break
 				}
 				for _, v := range vs {
-					Del(v)
+					del(v)
 				}
 			}
 		}
 	}
 }
 
-func PhotoCreate(k string, dp *PhotoDP) error {
+func photoCreate(k string, dp *PhotoDP) error {
 	json, err := json.Marshal(dp)
 	if err != nil {
 		return err
@@ -71,7 +72,7 @@ func startWith(k string) ([]string, error) {
 	return data, nil
 }
 
-func MaxGet(k string) (*PhotoDP, error) {
+func maxGet(k string) (*PhotoDP, error) {
 	data, err := redis.Strings(rds.Do("KEYSSTART", k))
 	if err != nil {
 		return nil, err
@@ -87,7 +88,7 @@ func MaxGet(k string) (*PhotoDP, error) {
 	return ndata[0], nil
 }
 
-func GetOneByKey(k string) (*PhotoDP, error) {
+func getOneByKey(k string) (*PhotoDP, error) {
 	o, err := redis.String(rds.Do("GET", k))
 	if err != nil {
 		return nil, err
@@ -97,19 +98,7 @@ func GetOneByKey(k string) (*PhotoDP, error) {
 	return h, nil
 }
 
-func Replace(k string, h *PhotoDP) error {
-	json, err := json.Marshal(h)
-	if err != nil {
-		return err
-	}
-	_, err = rds.Do("SET", k, json)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func Del(k string) error {
+func del(k string) error {
 	if len(strings.TrimSpace(k)) == 0 {
 		return errors.New("uid was nil")
 	}
