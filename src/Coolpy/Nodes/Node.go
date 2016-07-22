@@ -64,26 +64,34 @@ func delChan() {
 					break
 				}
 				for _, v := range ns {
-					k := ukeyhid + ":" + string(v.Id)
-					del(k)
-					go deldo(k)
+					ukeyhidnid := ukeyhid + ":" + string(v.Id)
+					del(ukeyhidnid)
+					go deldodps(ukeyhidnid)
 				}
 			}
 		case ukeyhidnid, ok := <-Deller.DelNode:
 			if ok {
 				del(ukeyhidnid)
-				go deldo(ukeyhidnid)
+				go deldodps(ukeyhidnid)
 			}
 		}
 	}
 }
 
-func deldo(ukeyhidnid string) {
+func deldodps(ukeyhidnid string) {
 	dpk := strings.Replace(ukeyhidnid, ":", ",", -1)
-	Deller.DelValues <- dpk
-	Deller.DelGpss <- dpk
-	Deller.DelGens <- dpk
-	Deller.DelPhotos <- dpk
+	go func(){
+		Deller.DelValues <- dpk
+	}()
+	go func(){
+		Deller.DelGpss <- dpk
+	}()
+	go func(){
+		Deller.DelGens <- dpk
+	}()
+	go func(){
+		Deller.DelPhotos <- dpk
+	}()
 }
 
 func nodeCreate(ukey string, node *Node) error {

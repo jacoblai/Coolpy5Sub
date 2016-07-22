@@ -48,23 +48,27 @@ func delChan() {
 					break
 				}
 				for _, v := range hs {
-					k := ukey + ":" + string(v.Id)
-					del(k)
-					go deldo(k)
+					ukeyhid := ukey + ":" + string(v.Id)
+					del(ukeyhid)
+					go deldos(ukeyhid)
 				}
 			}
 		case ukeyhid, ok := <-Deller.DelHub:
 			if ok {
 				del(ukeyhid)
-				go deldo(ukeyhid)
+				go deldos(ukeyhid)
 			}
 		}
 	}
 }
 
-func deldo(ukeyhid string) {
-	Deller.DelControls <- ukeyhid
-	Deller.DelNodes <- ukeyhid
+func deldos(ukeyhid string) {
+	go func(){
+		Deller.DelControls <- ukeyhid
+	}()
+	go func(){
+		Deller.DelNodes <- ukeyhid
+	}()
 }
 
 func hubCreate(hub *Hub) error {
