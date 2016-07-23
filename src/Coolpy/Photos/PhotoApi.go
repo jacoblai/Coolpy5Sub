@@ -9,6 +9,7 @@ import (
 	"Coolpy/Nodes"
 	"time"
 	"io/ioutil"
+	"bytes"
 )
 
 func PhotoPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -65,7 +66,7 @@ func PhotoPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		p.NodeId, _ = strconv.ParseInt(nid, 10, 64)
 		p.Img = img
 		p.Mime = mm
-		p.Size = len(p.Img)
+		p.Size = int64(len(p.Img))
 		err = photoCreate(dpkey + "," + p.TimeStamp.Format(time.RFC3339Nano), &p)
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
@@ -113,7 +114,19 @@ func PhotoGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			return
 		}
 		w.Header().Set("Content-Type", max.Mime)
-		w.Write(max.Img)
+		if r.Header.Get("Range") != "" {
+			f := bytes.NewReader(max.Img)
+			start_byte := parseRange(r.Header.Get("Range"))
+			if start_byte < max.Size {
+				f.Seek(start_byte, 0)
+			} else {
+				start_byte = 0
+			}
+			w.Header().Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", start_byte, max.Size - 1, max.Size))
+			f.WriteTo(w)
+		} else {
+			w.Write(max.Img)
+		}
 	} else {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "unkown type")
 	}
@@ -160,7 +173,19 @@ func PhotoGetByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 			return
 		}
 		w.Header().Set("Content-Type", one.Mime)
-		w.Write(one.Img)
+		if r.Header.Get("Range") != "" {
+			f := bytes.NewReader(one.Img)
+			start_byte := parseRange(r.Header.Get("Range"))
+			if start_byte < one.Size {
+				f.Seek(start_byte, 0)
+			} else {
+				start_byte = 0
+			}
+			w.Header().Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", start_byte, one.Size - 1, one.Size))
+			f.WriteTo(w)
+		} else {
+			w.Write(one.Img)
+		}
 	} else {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "unkown type")
 	}

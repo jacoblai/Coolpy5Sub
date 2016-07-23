@@ -14,7 +14,7 @@ type PhotoDP struct {
 	HubId     int64
 	NodeId    int64
 	TimeStamp time.Time
-	Size      int `validate:"required"`
+	Size      int64 `validate:"required"`
 	Mime      string `validate:"required"`
 	Img       []byte `validate:"required"`
 }
