@@ -59,7 +59,7 @@ func (m *Redico) Start() error {
 	m.Lock()
 	defer m.Unlock()
 
-	l, err := listen("127.0.0.1:0")
+	l, err := listen("127.0.0.1:6380")
 	if err != nil {
 		return err
 	}

@@ -217,3 +217,11 @@ func del(k string) error {
 	}
 	return nil
 }
+
+func All() ([]string, error) {
+	data, err := redis.Strings(rds.Do("KEYS", "*"))
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}

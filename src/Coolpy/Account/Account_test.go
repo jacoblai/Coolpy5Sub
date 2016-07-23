@@ -36,7 +36,7 @@ func TestAll(t *testing.T) {
 	//}
 
 	fmt.Println("findall test")
-	anp, _ := all()
+	anp, _ := All()
 	if len(anp) != 1 {
 		t.Error("allkey error")
 	}

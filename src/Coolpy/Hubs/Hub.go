@@ -48,25 +48,25 @@ func delChan() {
 					break
 				}
 				for _, v := range hs {
-					ukeyhid := ukey + ":" + string(v.Id)
-					del(ukeyhid)
-					go deldos(ukeyhid)
+					delhubs := ukey + ":" + strconv.FormatInt(v.Id, 10)
+					del(delhubs)
+					go deldos(delhubs)
 				}
 			}
-		case ukeyhid, ok := <-Deller.DelHub:
+		case delhub, ok := <-Deller.DelHub:
 			if ok {
-				del(ukeyhid)
-				go deldos(ukeyhid)
+				del(delhub)
+				go deldos(delhub)
 			}
 		}
 	}
 }
 
 func deldos(ukeyhid string) {
-	go func(){
+	go func() {
 		Deller.DelControls <- ukeyhid
 	}()
-	go func(){
+	go func() {
 		Deller.DelNodes <- ukeyhid
 	}()
 }
@@ -138,4 +138,12 @@ func del(k string) error {
 		return err
 	}
 	return nil
+}
+
+func All() ([]string, error) {
+	data, err := redis.Strings(rds.Do("KEYS", "*"))
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }

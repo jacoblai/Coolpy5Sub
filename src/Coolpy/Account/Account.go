@@ -97,7 +97,7 @@ func del(uid string) error {
 	return nil
 }
 
-func all() ([]*Person, error) {
+func All() ([]*Person, error) {
 	data, err := redis.Strings(rds.Do("KEYS", "*"))
 	if err != nil {
 		return nil, err

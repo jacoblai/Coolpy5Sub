@@ -180,3 +180,11 @@ func GetRange(start string, end string, interval float64, page int) ([]*GenDP, e
 	sortutil.DescByField(ndata, "TimeStamp")
 	return ndata, nil
 }
+
+func All() ([]string, error) {
+	data, err := redis.Strings(rds.Do("KEYS", "*"))
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
