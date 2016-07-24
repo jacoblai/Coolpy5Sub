@@ -75,10 +75,16 @@ func MaxGet(k string) (*ValueDP, error) {
 	if err != nil {
 		return nil, err
 	}
+	if len(data) <= 0 {
+		return nil, errors.New("no data")
+	}
 	sortutil.Desc(data)
 	o, _ := redis.String(rds.Do("GET", data[0]))
 	dp := &ValueDP{}
-	json.Unmarshal([]byte(o), &dp)
+	err = json.Unmarshal([]byte(o), &dp)
+	if err != nil {
+		return nil, err
+	}
 	return dp, nil
 }
 
@@ -88,7 +94,10 @@ func GetOneByKey(k string) (*ValueDP, error) {
 		return nil, err
 	}
 	h := &ValueDP{}
-	json.Unmarshal([]byte(o), &h)
+	err = json.Unmarshal([]byte(o), &h)
+	if err != nil {
+		return nil, err
+	}
 	return h, nil
 }
 
@@ -120,6 +129,9 @@ func GetRange(start string, end string, interval float64, page int) ([]*ValueDP,
 	if err != nil {
 		return nil, err
 	}
+	if len(data) <= 0 {
+		return nil, errors.New("no data")
+	}
 	sortutil.Desc(data)
 	var IntervalData []string
 	for _, v := range data {
@@ -131,7 +143,7 @@ func GetRange(start string, end string, interval float64, page int) ([]*ValueDP,
 			vtime := strings.Split(v, ",")
 			vtm, _ := time.Parse(time.RFC3339Nano, vtime[3])
 			du := otm.Sub(vtm)
-			if du.Seconds() >= interval{
+			if du.Seconds() >= interval {
 				IntervalData = append(IntervalData, v)
 			}
 		}

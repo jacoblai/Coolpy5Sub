@@ -77,15 +77,17 @@ func maxGet(k string) (*PhotoDP, error) {
 	if err != nil {
 		return nil, err
 	}
-	var ndata []*PhotoDP
-	for _, v := range data {
-		o, _ := redis.String(rds.Do("GET", v))
-		h := &PhotoDP{}
-		json.Unmarshal([]byte(o), &h)
-		ndata = append(ndata, h)
+	if len(data) <= 0 {
+		return nil, errors.New("no data")
 	}
-	sortutil.DescByField(ndata, "TimeStamp")
-	return ndata[0], nil
+	sortutil.Desc(data)
+	o, _ := redis.String(rds.Do("GET", data[0]))
+	dp := &PhotoDP{}
+	err = json.Unmarshal([]byte(o), &dp)
+	if err != nil {
+		return nil, err
+	}
+	return dp, nil
 }
 
 func getOneByKey(k string) (*PhotoDP, error) {
@@ -94,7 +96,10 @@ func getOneByKey(k string) (*PhotoDP, error) {
 		return nil, err
 	}
 	h := &PhotoDP{}
-	json.Unmarshal([]byte(o), &h)
+	err = json.Unmarshal([]byte(o), &h)
+	if err != nil {
+		return nil, err
+	}
 	return h, nil
 }
 
@@ -113,6 +118,9 @@ func GetRange(start string, end string, interval float64, page int) ([]*PhotoDP,
 	data, err := redis.Strings(rds.Do("KEYSRANGE", start, end))
 	if err != nil {
 		return nil, err
+	}
+	if len(data) <= 0 {
+		return nil, errors.New("no data")
 	}
 	sortutil.Desc(data)
 	var IntervalData []string
