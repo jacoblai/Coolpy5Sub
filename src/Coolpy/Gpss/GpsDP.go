@@ -78,15 +78,11 @@ func MaxGet(k string) (*GpsDP, error) {
 	if err != nil {
 		return nil, err
 	}
-	var ndata []*GpsDP
-	for _, v := range data {
-		o, _ := redis.String(rds.Do("GET", v))
-		h := &GpsDP{}
-		json.Unmarshal([]byte(o), &h)
-		ndata = append(ndata, h)
-	}
-	sortutil.DescByField(ndata, "TimeStamp")
-	return ndata[0], nil
+	sortutil.Desc(data)
+	o, _ := redis.String(rds.Do("GET", data[0]))
+	dp := &GpsDP{}
+	json.Unmarshal([]byte(o), &dp)
+	return dp, nil
 }
 
 func GetOneByKey(k string) (*GpsDP, error) {
