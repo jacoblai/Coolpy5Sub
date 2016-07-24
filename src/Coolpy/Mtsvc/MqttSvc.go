@@ -1,44 +1,44 @@
 package Mtsvc
 
 import (
-	"github.com/surgemq/surgemq/service"
-	"log"
+	"github.com/gomqtt/client"
+	"github.com/gomqtt/transport"
+	"github.com/gomqtt/broker"
 	"strconv"
-	"github.com/surgemq/message"
 )
 
-var svc *service.Server
+var engine *broker.Engine
+var mqport int
 
 func Host(mport int) {
-	// Create a mqtt server
-	//auth.Register("coolpy", &Manager{})
-	mqttsvr := &service.Server{
-		KeepAlive:        300, // seconds
-		ConnectTimeout:   2, // seconds
-		SessionsProvider: "mem", // keeps sessions in memory
-		Authenticator:    "mockSuccess", // always succeed
-		TopicsProvider:   "mem", // keeps topic subscriptions in memory
+	server, err := transport.Launch("tcp://:" + strconv.Itoa(mport))
+	if err != nil {
+		panic(err)
 	}
-	svc = mqttsvr
-	go func() {
-		// Listen and serve connections at mport
-		if err := mqttsvr.ListenAndServe("tcp://:" + strconv.Itoa(mport)); err != nil {
-			log.Fatal(err)
-		}
-	}()
+	engine := broker.NewEngine()
+	engine.Accept(server)
+	mqport = mport
 }
 
 func Close() {
-	svc.Close()
+	engine.Close()
 }
 
-func Public(k string,payload []byte) {
-	// Creates a new PUBLISH message with the appropriate contents for publishing
-	pubmsg := message.NewPublishMessage()
-	pubmsg.SetPacketId(1)
-	pubmsg.SetTopic([]byte(k))
-	pubmsg.SetPayload(payload)
-	pubmsg.SetQoS(0)
-	// Publishes to the server by sending the message
-	svc.Publish(pubmsg, nil)
+func Public(k string, payload []byte) {
+	client := client.New()
+	defer client.Close()
+	cf, err := client.Connect("tcp://127.0.0.1:"+ strconv.Itoa(mqport), nil)
+	if err != nil {
+		panic(err)
+	}
+	cf.Wait()
+	pf, err := client.Publish(k, payload, 0, false)
+	if err != nil {
+		panic(err)
+	}
+	pf.Wait()
+	err = client.Disconnect()
+	if err != nil {
+		panic(err)
+	}
 }

@@ -34,7 +34,7 @@ func main() {
 		port int
 		mport int
 	)
-	flag.IntVar(&port, "p", 8080, "tcp/ip port munber")
+	flag.IntVar(&port, "p", 6543, "tcp/ip port munber")
 	flag.IntVar(&mport, "mp", 1883, "mqtt port munber")
 	flag.Parse()
 	//初始化数据库服务
@@ -67,7 +67,7 @@ func main() {
 	Photos.Connect(redServer.Addr(), svcpwd)
 
 	//host mqtt service
-	Mtsvc.Host(mport)
+	go Mtsvc.Host(mport)
 	fmt.Println("Coolpy mqtt on port", strconv.Itoa(mport))
 
 	router := httprouter.New()
