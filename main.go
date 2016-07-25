@@ -23,6 +23,8 @@ import (
 	"Coolpy/Gens"
 	"Coolpy/Mtsvc"
 	"Coolpy/Photos"
+	"Coolpy/WebSite"
+	"log"
 )
 
 var v = "5.0.1.0"
@@ -33,9 +35,11 @@ func main() {
 	var (
 		port int
 		mport int
+		wport int
 	)
-	flag.IntVar(&port, "p", 6543, "tcp/ip port munber")
+	flag.IntVar(&port, "ap", 6543, "api port munber")
 	flag.IntVar(&mport, "mp", 1883, "mqtt port munber")
+	flag.IntVar(&wport, "wp", 8000, "www port munber")
 	flag.Parse()
 	//初始化数据库服务
 	redServer, err := Redico.Run()
@@ -109,8 +113,23 @@ func main() {
 	if err != nil {
 		fmt.Println("Can't listen: %s", err)
 	}
-	go http.Serve(ln, Cors.CORS(router))
+	go func() {
+		err := http.Serve(ln, Cors.CORS(router))
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
 	fmt.Println("Coolpy http on port", strconv.Itoa(port))
+
+	http.Handle("/www/", http.StripPrefix("/www/", http.FileServer(http.Dir("www"))))
+	http.HandleFunc("/", WebSite.IndexHandler);
+	go func() {
+		err := http.ListenAndServe(":" + strconv.Itoa(wport), nil)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+	fmt.Println("Coolpy www on port", strconv.Itoa(wport))
 	fmt.Println("Power By ICOOLPY.COM")
 
 	signalChan := make(chan os.Signal, 1)
