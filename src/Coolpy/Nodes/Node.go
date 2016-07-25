@@ -138,6 +138,9 @@ func nodeStartWith(k string) ([]*Node, error) {
 	if err != nil {
 		return nil, err
 	}
+	if len(data) <= 0 {
+		return nil, errors.New("no data")
+	}
 	var ndata []*Node
 	for _, v := range data {
 		o, _ := redis.String(rds.Do("GET", v))
@@ -154,7 +157,10 @@ func NodeGetOne(k string) (*Node, error) {
 		return nil, err
 	}
 	h := &Node{}
-	json.Unmarshal([]byte(o), &h)
+	err = json.Unmarshal([]byte(o), &h)
+	if err != nil{
+		return nil,err
+	}
 	return h, nil
 }
 

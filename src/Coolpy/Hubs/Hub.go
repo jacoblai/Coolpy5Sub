@@ -95,6 +95,9 @@ func hubStartWith(k string) ([]*Hub, error) {
 	if err != nil {
 		return nil, err
 	}
+	if len(data) <= 0 {
+		return nil, errors.New("no data")
+	}
 	var ndata []*Hub
 	for _, v := range data {
 		o, _ := redis.String(rds.Do("GET", v))
@@ -112,7 +115,10 @@ func HubGetOne(k string) (*Hub, error) {
 		return nil, err
 	}
 	h := &Hub{}
-	json.Unmarshal([]byte(o), &h)
+	err = json.Unmarshal([]byte(o), &h)
+	if err != nil {
+		return nil,err
+	}
 	return h, nil
 }
 
