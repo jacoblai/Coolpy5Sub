@@ -64,21 +64,10 @@ func Get(uid string) (*Person, error) {
 	}
 	o, _ := redis.String(rds.Do("GET", k))
 	np := &Person{}
-	json.Unmarshal([]byte(o), &np)
-	return np, nil
-}
-
-func GetByUkey(k string) (*Person, error) {
-	if len(strings.TrimSpace(k)) == 0 {
-		return nil, errors.New("uid was nil")
-	}
-	dbk, err := GetUkeyFromDb(k)
+	err = json.Unmarshal([]byte(o), &np)
 	if err != nil {
 		return nil, err
 	}
-	o, _ := redis.String(rds.Do("GET", dbk))
-	np := &Person{}
-	json.Unmarshal([]byte(o), &np)
 	return np, nil
 }
 
@@ -102,6 +91,9 @@ func All() ([]*Person, error) {
 	if err != nil {
 		return nil, err
 	}
+	if len(data) <= 0 {
+		return nil, errors.New("no data")
+	}
 	var ndata []*Person
 	for _, v := range data {
 		o, _ := redis.String(rds.Do("GET", v))
@@ -117,19 +109,22 @@ func getFromDb(uid string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	for _, v := range data {
-		return v, nil
+	if len(data) <= 0 {
+		return "", errors.New("not ext")
 	}
-	return "", errors.New("not ext")
+	return data[0], nil
 }
 
 func GetUkeyFromDb(k string) (string, error) {
+	if len(strings.TrimSpace(k)) == 0 {
+		return "", errors.New("ukey was nil")
+	}
 	data, err := redis.Strings(rds.Do("KEYS", k + ":*"))
 	if err != nil {
 		return "", err
 	}
-	for _, v := range data {
-		return v, nil
+	if len(data) <= 0 {
+		return "", errors.New("not ext")
 	}
-	return "", errors.New("not ext")
+	return data[0], nil
 }
