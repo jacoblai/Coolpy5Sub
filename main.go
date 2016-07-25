@@ -122,7 +122,10 @@ func main() {
 	fmt.Println("Coolpy http on port", strconv.Itoa(port))
 
 	http.Handle("/www/", http.StripPrefix("/www/", http.FileServer(http.Dir("www"))))
-	http.HandleFunc("/", WebSite.IndexHandler);
+	http.HandleFunc("/", WebSite.IndexHandler)
+	http.HandleFunc("/home", WebSite.HomePageHandler)
+	http.HandleFunc("/login",WebSite.LoginHandler)
+	http.HandleFunc("/logout",WebSite.LogoutHandler)
 	go func() {
 		err := http.ListenAndServe(":" + strconv.Itoa(wport), nil)
 		if err != nil {
