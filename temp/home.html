@@ -1,11 +1,5 @@
 {{define "home"}}
-{{template "homeheader"}}
-<!-- Header -->
-<header data-am-widget="header" class="am-header am-header-default">
-    <h1 class="am-header-title">
-        <a href="#title-link">{{.Uname}}!</a>
-    </h1>
-</header>
+{{template "homeheader" .Header}}
 <!-- Menu -->
 <nav data-am-widget="menu" class="am-menu  am-menu-offcanvas1" data-am-menu-offcanvas>
     <a href="javascript: void(0)" class="am-menu-toggle">
