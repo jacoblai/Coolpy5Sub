@@ -3,6 +3,7 @@ package WebSite
 import (
 	"net/http"
 	"html/template"
+	"fmt"
 )
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
@@ -11,22 +12,17 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, nil)
 }
 
-type Home struct {
-	Header
-
-}
-
-type Header struct {
-	Uname string
-}
-
 func HomePageHandler(w http.ResponseWriter, r *http.Request) {
 	userName := getUserName(r)
 	if userName != "" {
-		s1, _ := template.ParseFiles("temp/home.html", "temp/homeheader.html", "temp/homefooter.html")
-		home := &Home{ Header{ Uname:getUserName(r)}}
-		s1.ExecuteTemplate(w, "home", home)
-		s1.Execute(w, nil)
+		tmpls, err := compileTemplates("temp/home.html", "temp/homeheader.html", "temp/homefooter.html")
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
+		home := &Home{Header{Uname:getUserName(r)}}
+		tmpls.ExecuteTemplate(w, "home", home)
+		tmpls.Execute(w, nil)
 	} else {
 		http.Redirect(w, r, "/", 302)
 	}
