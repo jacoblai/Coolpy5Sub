@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/julienschmidt/httprouter"
+	"github.com/GeertJohan/go.rice"
 	"net/http"
 	"Coolpy/Cors"
 	"Coolpy/Account"
@@ -24,7 +25,6 @@ import (
 	"Coolpy/Mtsvc"
 	"Coolpy/Photos"
 	"log"
-	"path/filepath"
 )
 
 var v = "5.0.1.0"
@@ -121,19 +121,14 @@ func main() {
 	}()
 	fmt.Println("Coolpy http on port", strconv.Itoa(port))
 
-	_, err = os.Stat(filepath.Dir(os.Args[0]) + "\\www")
-	if err == nil {
-		http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("www"))))
-		go func() {
-			err := http.ListenAndServe(":" + strconv.Itoa(wport), nil)
-			if err != nil {
-				log.Fatal(err)
-			}
-		}()
-		fmt.Println("Coolpy www on port", strconv.Itoa(wport))
-	} else {
-		fmt.Println("WWW host err", err)
-	}
+	http.Handle("/", http.StripPrefix("/", http.FileServer(rice.MustFindBox("www").HTTPBox())))
+	go func() {
+		err := http.ListenAndServe(":" + strconv.Itoa(wport), nil)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+	fmt.Println("Coolpy www on port", strconv.Itoa(wport))
 	fmt.Println("Power By ICOOLPY.COM")
 
 	signalChan := make(chan os.Signal, 1)

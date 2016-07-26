@@ -45,7 +45,50 @@
       <root url="file://C:/Go/src/testing" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES />
+    <SOURCES>
+      <root url="file://C:/Go/src/index" />
+      <root url="file://C:/Go/src/archive" />
+      <root url="file://C:/Go/src/sort" />
+      <root url="file://C:/Go/src/encoding" />
+      <root url="file://C:/Go/src/sync" />
+      <root url="file://C:/Go/src/crypto" />
+      <root url="file://C:/Go/src/strconv" />
+      <root url="file://C:/Go/src/unicode" />
+      <root url="file://C:/Go/src/cmd" />
+      <root url="file://C:/Go/src/math" />
+      <root url="file://C:/Go/src/errors" />
+      <root url="file://C:/Go/src/hash" />
+      <root url="file://C:/Go/src/regexp" />
+      <root url="file://C:/Go/src/runtime" />
+      <root url="file://C:/Go/src/syscall" />
+      <root url="file://C:/Go/src/bufio" />
+      <root url="file://C:/Go/src/internal" />
+      <root url="file://C:/Go/src/expvar" />
+      <root url="file://C:/Go/src/flag" />
+      <root url="file://C:/Go/src/log" />
+      <root url="file://C:/Go/src/unsafe" />
+      <root url="file://C:/Go/src/database" />
+      <root url="file://C:/Go/src/strings" />
+      <root url="file://C:/Go/src/vendor" />
+      <root url="file://C:/Go/src/debug" />
+      <root url="file://C:/Go/src/go" />
+      <root url="file://C:/Go/src/time" />
+      <root url="file://C:/Go/src/container" />
+      <root url="file://C:/Go/src/mime" />
+      <root url="file://C:/Go/src/fmt" />
+      <root url="file://C:/Go/src/path" />
+      <root url="file://C:/Go/src/builtin" />
+      <root url="file://C:/Go/src/reflect" />
+      <root url="file://C:/Go/src/html" />
+      <root url="file://C:/Go/src/text" />
+      <root url="file://C:/Go/src/os" />
+      <root url="file://C:/Go/src/net" />
+      <root url="file://C:/Go/src/image" />
+      <root url="file://C:/Go/src/compress" />
+      <root url="file://C:/Go/src/io" />
+      <root url="file://C:/Go/src/bytes" />
+      <root url="file://C:/Go/src/testing" />
+    </SOURCES>
     <excluded>
       <root url="file://$PROJECT_DIR$" />
     </excluded>
