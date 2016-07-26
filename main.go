@@ -23,8 +23,8 @@ import (
 	"Coolpy/Gens"
 	"Coolpy/Mtsvc"
 	"Coolpy/Photos"
-	"Coolpy/WebSite"
 	"log"
+	"path/filepath"
 )
 
 var v = "5.0.1.0"
@@ -121,18 +121,19 @@ func main() {
 	}()
 	fmt.Println("Coolpy http on port", strconv.Itoa(port))
 
-	http.Handle("/www/", http.StripPrefix("/www/", http.FileServer(http.Dir("www"))))
-	http.HandleFunc("/", WebSite.IndexHandler)
-	http.HandleFunc("/home", WebSite.HomePageHandler)
-	http.HandleFunc("/login",WebSite.LoginHandler)
-	http.HandleFunc("/logout",WebSite.LogoutHandler)
-	go func() {
-		err := http.ListenAndServe(":" + strconv.Itoa(wport), nil)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
-	fmt.Println("Coolpy www on port", strconv.Itoa(wport))
+	_, err = os.Stat(filepath.Dir(os.Args[0]) + "\\www")
+	if err == nil {
+		http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("www"))))
+		go func() {
+			err := http.ListenAndServe(":" + strconv.Itoa(wport), nil)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}()
+		fmt.Println("Coolpy www on port", strconv.Itoa(wport))
+	} else {
+		fmt.Println("WWW host err", err)
+	}
 	fmt.Println("Power By ICOOLPY.COM")
 
 	signalChan := make(chan os.Signal, 1)
