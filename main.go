@@ -37,9 +37,9 @@ func main() {
 		mport int
 		wport int
 	)
-	flag.IntVar(&port, "ap", 6543, "api port munber")
-	flag.IntVar(&mport, "mp", 1883, "mqtt port munber")
-	flag.IntVar(&wport, "wp", 8000, "www port munber")
+	flag.IntVar(&port, "a", 6543, "web api port munber")
+	flag.IntVar(&mport, "m", 1883, "mqtt port munber")
+	flag.IntVar(&wport, "w", 8000, "www website port munber")
 	flag.Parse()
 	//初始化数据库服务
 	redServer, err := Redico.Run()
