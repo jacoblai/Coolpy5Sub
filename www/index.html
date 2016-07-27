@@ -1,5 +1,5 @@
-<!DOCTYPE html>
-<html>
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/html">
 <head lang="en">
     <meta charset="UTF-8">
     <title>酷痞物联 | ICOOLPY.COM</title>
@@ -23,6 +23,35 @@
             font-size: 14px;
         }
     </style>
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="dist/avalon.min.js"></script>
+    <script>
+        $(function(){
+            var vm = avalon.define({
+                $id: "loginvm",
+                username: "admin",
+                password: "admin",
+                LoginClick: function(){
+                    var pass = window.btoa(vm.username + ":" + vm.password);
+                    jQuery.ajax({
+                        method: "GET",
+                        url: 'http://127.0.0.1:6543/api/user/'+ vm.username,
+                        data: JSON.parse(JSON.stringify(vm.$model)),
+                        beforeSend: function (xhr) {
+                            xhr.setRequestHeader("Authorization", "Basic " +pass)
+                        },
+                        success: function (result) {
+                            $("#msg").html(JSON.stringify(result));
+                        },
+                        error: function (xhr, status, error) {
+                            $("#msg").html(xhr.status + " " + xhr.statusText);
+                        }
+                    })
+                }
+            })
+            avalon.scan(document.body)
+        })
+    </script>
 </head>
 <body>
 <div class="header">
@@ -32,14 +61,14 @@
     </div>
     <hr />
 </div>
-<div class="am-g">
+<div class="am-g" ms-controller="loginvm">
     <div class="am-u-lg-6 am-u-md-8 am-u-sm-centered">
-        <form method="post" class="am-form" action="/login">
+        <form class="am-form">
             <label>用户名:</label>
-            <input type="text" name="name" id="name" value="">
+            <input type="text" name="name" id="name" ms-duplex='username'>
             <br>
             <label for="password">密码:</label>
-            <input type="password" name="password" id="password" value="">
+            <input type="password" name="password" id="password" ms-duplex='password'>
             <br>
             <label for="remember-me">
                 <input id="remember-me" type="checkbox">
@@ -47,8 +76,8 @@
             </label>
             <br />
             <div class="am-cf">
-                <input type="submit" name="" value="登 录" class="am-btn am-btn-primary am-btn-sm am-fl">
-                <input type="submit" name="" value="忘记密码 ^_^? " class="am-btn am-btn-default am-btn-sm am-fr">
+                <input type="button" name="" value="登 录" ms-click="LoginClick()" class="am-btn am-btn-primary am-btn-sm am-fl">
+                <input type="button" name="" value="忘记密码 ^_^? " class="am-btn am-btn-default am-btn-sm am-fr">
             </div>
         </form>
         <hr>
