@@ -38,10 +38,10 @@
         <div class="am-u-lg-6 am-u-md-8 am-u-sm-centered">
             <form class="am-form">
                 <label>用户名:</label>
-                <input type="text" ms-duplex='username'>
+                <input type="text" ms-duplex='@username'>
                 <br>
                 <label for="password">密码:</label>
-                <input type="password" ms-duplex='password'>
+                <input type="password" ms-duplex='@password'>
                 <br>
                 <label for="remember-me">
                     <input id="remember-me" type="checkbox">
@@ -49,7 +49,7 @@
                 </label>
                 <br />
                 <div class="am-cf">
-                    <input type="button" name="" value="登 录" ms-click="LoginClick()" class="am-btn am-btn-primary am-btn-sm am-fl">
+                    <input type="button" name="" value="登 录" ms-click="@LoginClick()" class="am-btn am-btn-primary am-btn-sm am-fl">
                     <input type="button" name="" value="忘记密码 ^_^? " class="am-btn am-btn-default am-btn-sm am-fr">
                 </div>
             </form>
@@ -59,9 +59,9 @@
     </div>
 
     <script src="assets/js/jquery.min.js"></script>
-    <script src="assets/js/avalon.min.js"></script>
+    <script src="assets/js/avalon.js"></script>
     <script src="assets/js/base64.js"></script>
-    <script src="app.js"></script>
+    <script src="init.js"></script>
     <script>
         $(function () {
             var vm = avalon.define({
