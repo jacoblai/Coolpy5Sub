@@ -10,8 +10,8 @@ import (
 
 type Person struct {
 	Ukey     string `validate:"required"`
-	Uid      string `validate:"required"`
-	Pwd      string `validate:"required"`
+	Uid      string `validate:"required,min=3,max=18"`
+	Pwd      string `validate:"required,min=3,max=18"`
 	UserName string
 }
 

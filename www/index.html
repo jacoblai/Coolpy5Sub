@@ -10,6 +10,7 @@
     <meta http-equiv="Cache-Control" content="no-siteapp" />
     <link rel="alternate icon" type="image/png" href="assets/i/favicon.png">
     <link rel="stylesheet" href="assets/css/amazeui.min.css" />
+    <link href="assets/css/app.css" rel="stylesheet" />
     <style>
         .header {
             text-align: center;
@@ -34,76 +35,79 @@
         </div>
         <hr />
     </div>
-    <div class="am-g" ms-controller="loginvm">
+    <div class="am-g" id="loginModel">
         <div class="am-u-lg-6 am-u-md-8 am-u-sm-centered">
             <form class="am-form">
                 <label>用户名:</label>
-                <input type="text" ms-duplex='username'>
+                <input type="text" placeholder="用户名" data-bind="value:username">
                 <br>
-                <label for="password">密码:</label>
-                <input type="password" ms-duplex='password' ms-rules='{required:true}'>
+                <label>密码:</label>
+                <input type="password" placeholder="密码" data-bind="value:password">
                 <br>
-                <label for="remember-me">
-                    <input id="remember-me" type="checkbox" ms-rules='{required:true}'>
-                    记住密码
-                </label>
-                <br />
                 <div class="am-cf">
-                    <input type="button" name="" value="登 录" ms-click="LoginClick()" class="am-btn am-btn-primary am-btn-sm am-fl">
-                    <input type="button" name="" value="忘记密码 ^_^? " class="am-btn am-btn-default am-btn-sm am-fr">
+                    <input type="button" name="" value="登 录" data-bind="click:login" class="am-btn am-btn-primary am-btn-sm am-fr">
                 </div>
             </form>
             <hr>
             <p>© 2016 ICOOLPY.COM，Open Source Iot Platform.</p>
         </div>
+        <div class="am-modal am-modal-no-btn" tabindex="-1" id="LoginError-modal">
+            <div class="am-modal-dialog">
+                <div class="am-modal-hd">
+                    酷痞物联 v5
+                    <a href="javascript: void(0)" class="am-close am-close-spin" data-am-modal-close>&times;</a>
+                </div>
+                <div id="errtext" class="am-modal-bd" >
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="assets/js/jquery.min.js"></script>
-    <script src="assets/js/avalon.min.js"></script>
-    <script src="assets/js/base64.js"></script>
-    <script src="init.js"></script>
-    <script>
-        $(function () {
-            var vm = avalon.define({
-                $id: "loginvm",
-                username: "admin",
-                password: "admin",
-                LoginClick: function () {
-                    pass = base64.encode(vm.username + ":" + vm.password);
-                    jQuery.ajax({
-                        method: "GET",
-                        url: basicurl + '/api/user/' + vm.username,
-                        beforeSend: function (xhr) {
-                            xhr.setRequestHeader("Authorization", "Basic " + pass)
-                        },
-                        success: function (result) {
-                            if (result.ok == 1) {
-                                ukey = result.data.Ukey;
-                                window.location = "/admin.html";
+    <script src="assets/js/amazeui.min.js"></script>
+    <script src="Scripts/knockout-3.3.0.debug.js"></script>
+    <script src="Scripts/validation/knockout.validation.js"></script>
+    <script src="Scripts/validation/localization/zh-CN.js"></script>
+    <script src="Scripts/base64.js"></script>
+    <script src="Scripts-App/setting.js"></script>
+    <script type="text/javascript">
+        jQuery(document).ready(function () {
+            function loginvm() {
+                var self = this;
+                ko.validation.locale('zh-CN');
+                self.username = ko.observable('admin').extend({ required: true, minLength: 3, maxLength: 18 });
+                self.password = ko.observable('admin').extend({ required: true, minLength: 3, maxLength: 18 });
+                self.validationModel = ko.validatedObservable({
+                    username: self.username,
+                    password: self.password
+                });
+                self.login = function () {
+                    if (self.validationModel.isValid()) {
+                        pass = base64.encode(self.username() + ":" + self.password());
+                        $.ajax({
+                            method: "GET",
+                            url: basicurl + '/api/user/' + self.username(),
+                            beforeSend: function (xhr) {
+                                xhr.setRequestHeader("Authorization", "Basic " + pass)
+                            },
+                            success: function (result) {
+                                if (result.ok == 1) {
+                                    ukey = result.data.Ukey;
+                                    window.location = "/admin.html";
+                                }
+                            },
+                            error: function (xhr, status, error) {
+                                $("#errtext").html("登陆错误，用户身份验证失败！");
+                                $('#LoginError-modal').modal('open');
+                                self.password("");
                             }
-                        },
-                        error: function (xhr, status, error) {
-                            window.location = "/";
-                        }
-                    })
-                },
-                validate: {
-                    onError: function (reasons) {
-                        reasons.forEach(function (reason) {
-                            console.log(reason.getMessage())
                         })
-                    },
-                    onValidateAll: function (reasons) {
-                        if (reasons.length) {
-                            console.log('有表单没有通过')
-                        } else {
-                            console.log('全部通过')
-                        }
                     }
-                }
-            })
-            avalon.scan(document.body)
-        })
+                };
+            }
+            var dvvm = new loginvm();
+            ko.applyBindings(ko.validatedObservable(dvvm), document.getElementById("loginModel"));
+        });
     </script>
 </body>
 </html>
