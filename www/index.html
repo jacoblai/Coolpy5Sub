@@ -83,6 +83,11 @@
                 });
                 self.login = function () {
                     if (self.validationModel.isValid()) {
+                        if (/.*[\u4e00-\u9fa5]+.*$/.test(self.username()) || /.*[\u4e00-\u9fa5]+.*$/.test(self.password())) {
+                            $("#errtext").html("登陆错误，用户身名密码中不能含有中文！");
+                            $('#LoginError-modal').modal('open');
+                            return
+                        }
                         pass = base64.encode(self.username() + ":" + self.password());
                         $.ajax({
                             method: "GET",
@@ -93,7 +98,7 @@
                             success: function (result) {
                                 if (result.ok == 1) {
                                     ukey = result.data.Ukey;
-                                    window.location = "/master.html";
+                                    window.location.href = "/master.html";
                                 }
                             },
                             error: function (xhr, status, error) {

@@ -18,8 +18,8 @@ type Hub struct {
 	Tabs      []string
 	Public    bool
 	Local     string `validate:"required"`
-	Latitude  float64 `validate:"gte=-90,lte=90"`
-	Longitude float64 `validate:"gte=-180,lte=180"`
+	Latitude  float64 `validate:"latitude"`
+	Longitude float64 `validate:"longitude"`
 }
 
 var rds redis.Conn
