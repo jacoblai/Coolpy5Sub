@@ -69,6 +69,7 @@
     <script src="Scripts/validation/knockout.validation.js"></script>
     <script src="Scripts/validation/localization/zh-CN.js"></script>
     <script src="Scripts/base64.js"></script>
+    <script src="Scripts-App/jquery.session.js"></script>
     <script src="Scripts-App/setting.js"></script>
     <script type="text/javascript">
         jQuery(document).ready(function () {
@@ -97,7 +98,9 @@
                             },
                             success: function (result) {
                                 if (result.ok == 1) {
-                                    ukey = result.data.Ukey;
+                                    $.session.clear();
+                                    $.session.set('uid', self.username());
+                                    $.session.set('pass', "Basic " + pass);
                                     window.location.href = "index.html#!/pages/index";
                                 }
                             },
@@ -110,6 +113,13 @@
                     }
                 };
             }
+
+            function cookieTime() {
+                end = new Date();
+                end = new Date(end.valueOf() + 20 * 60 * 1000);
+                return end;
+            }
+
             var dvvm = new loginvm();
             ko.applyBindings(ko.validatedObservable(dvvm), document.getElementById("loginModel"));
         });

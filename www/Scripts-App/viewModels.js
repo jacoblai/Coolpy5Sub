@@ -1,7 +1,15 @@
-﻿$.ajaxSetup({
+﻿if ($.session.get('pass') == undefined) {
+    window.location.href = "login.html";
+}
+
+window.onbeforeunload = function () {
+    $.session.clear();
+}
+
+$.ajaxSetup({
     cache: false,
     beforeSend: function (xhr) {
-        xhr.setRequestHeader("Authorization", "Basic " + localStorage.getItem('token'));
+        xhr.setRequestHeader("Authorization", $.session.get('pass'));
     }
 });
 
@@ -31,7 +39,21 @@ var viewModels;
             ko.validation.locale('zh-CN');
         }
         var self = this;
-
+        self.main_uid = ko.observable()
+        self.LoadUserInfo = function () {
+            $.ajax({
+                method: "GET",
+                url: basicurl + '/api/user/' + $.session.get('uid'),
+                success: function (result) {
+                    if (result.ok == 1) {
+                        self.main_uid(result.data.Uid)
+                    }
+                },
+                error: function (xhr, status, error) {
+                }
+            })
+        }
+        self.LoadUserInfo()
         return BaseVM;
     })();
     viewModels.BaseVM = BaseVM;
@@ -46,5 +68,4 @@ var viewModels;
         return IndexVM;
     })(BaseVM);
     viewModels.IndexVM = IndexVM;
-
 })(viewModels || (viewModels = {}));
