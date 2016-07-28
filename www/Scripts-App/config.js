@@ -3,6 +3,11 @@
             cacheView: true, isDefault: true, vmFactory: function (callback) {
                 callback(new viewModels.IndexVM());
             }, title: "用户管理"
+        }),
+        new routing.routes.NavigationRoute("pages/cpwd", "mg_changepwd.html", {
+            cacheView: true, vmFactory: function (callback) {
+                callback(new viewModels.cpwdVM());
+            }, title: "更新个人信息"
         })
 ];
 var router = new routing.Router("views-placeholder", // ID of element in which will be loaded views.

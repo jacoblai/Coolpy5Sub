@@ -54,6 +54,11 @@ var viewModels;
             })
         }
         self.LoadUserInfo()
+
+        self.users = function () {
+            gotoview("pages/index", "", new Array());
+        };
+
         return BaseVM;
     })();
     viewModels.BaseVM = BaseVM;
@@ -62,10 +67,23 @@ var viewModels;
         __extends(IndexVM, _super);
         var self = this;
         function IndexVM() { _super.call(self); }
+
         IndexVM.prototype.onNavigatedTo = function () {
 
         }
         return IndexVM;
     })(BaseVM);
     viewModels.IndexVM = IndexVM;
+
+    var cpwdVM = (function (_super) {
+        __extends(cpwdVM, _super);
+        var self = this;
+        function cpwdVM() { _super.call(self); }
+        cpwdVM.prototype.onNavigatedTo = function () {
+
+        }
+        return cpwdVM;
+    })(BaseVM);
+    viewModels.cpwdVM = cpwdVM;
+
 })(viewModels || (viewModels = {}));
