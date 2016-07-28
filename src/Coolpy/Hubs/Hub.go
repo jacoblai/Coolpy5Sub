@@ -59,6 +59,9 @@ func delChan() {
 				go deldos(delhub)
 			}
 		}
+		if Deller.DelHubs == nil && Deller.DelHub == nil {
+			break
+		}
 	}
 }
 

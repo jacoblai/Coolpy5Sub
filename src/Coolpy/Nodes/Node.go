@@ -75,6 +75,9 @@ func delChan() {
 				go deldodps(delnode)
 			}
 		}
+		if Deller.DelNodes == nil && Deller.DelNode == nil {
+			break
+		}
 	}
 }
 

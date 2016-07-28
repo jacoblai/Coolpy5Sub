@@ -47,6 +47,9 @@ func delChan() {
 				}
 			}
 		}
+		if Deller.DelGens == nil {
+			break
+		}
 	}
 }
 

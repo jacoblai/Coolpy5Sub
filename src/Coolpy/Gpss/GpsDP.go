@@ -50,6 +50,9 @@ func delChan() {
 				}
 			}
 		}
+		if Deller.DelGpss == nil {
+			break
+		}
 	}
 }
 

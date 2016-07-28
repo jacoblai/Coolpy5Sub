@@ -64,6 +64,9 @@ func delChan() {
 				del(ukeyhidnid)
 			}
 		}
+		if Deller.DelControls == nil && Deller.DelControl == nil {
+			break
+		}
 	}
 }
 

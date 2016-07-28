@@ -25,6 +25,7 @@ import (
 	"Coolpy/Mtsvc"
 	"Coolpy/Photos"
 	"log"
+	"Coolpy/Deller"
 )
 
 var v = "5.0.1.0"
@@ -71,7 +72,11 @@ func main() {
 	Photos.Connect(redServer.Addr(), svcpwd)
 
 	//host mqtt service
-	go Mtsvc.Host(mport)
+	go func() {
+		msvc := &Mtsvc.MqttSvc{}
+		msvc.Host(mport)
+		defer msvc.Engine.Close()
+	}()
 	fmt.Println("Coolpy mqtt on port", strconv.Itoa(mport))
 
 	router := httprouter.New()
@@ -109,12 +114,12 @@ func main() {
 	router.GET("/api/hub/:hid/node/:nid/photo/content/:key", Photos.PhotoGetByKey)
 	router.DELETE("/api/hub/:hid/node/:nid/photo/content/:key", Photos.PhotoDelByKey)
 
-	ln, err := net.Listen("tcp", ":" + strconv.Itoa(port))
-	if err != nil {
-		fmt.Println("Can't listen: %s", err)
-	}
 	go func() {
-		err := http.Serve(ln, Cors.CORS(router))
+		ln, err := net.Listen("tcp", ":" + strconv.Itoa(port))
+		if err != nil {
+			fmt.Println("Can't listen:", err)
+		}
+		err = http.Serve(ln, Cors.CORS(router))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -136,8 +141,16 @@ func main() {
 	signal.Notify(signalChan, os.Interrupt)
 	go func() {
 		for _ = range signalChan {
-			ln.Close()
-			Mtsvc.Close()
+			close(Deller.DelControl)
+			close(Deller.DelControls)
+			close(Deller.DelHub)
+			close(Deller.DelHubs)
+			close(Deller.DelNode)
+			close(Deller.DelNodes)
+			close(Deller.DelValues)
+			close(Deller.DelGpss)
+			close(Deller.DelGens)
+			close(Deller.DelPhotos)
 			cleanupDone <- true
 		}
 	}()

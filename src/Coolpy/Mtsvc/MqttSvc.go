@@ -5,40 +5,42 @@ import (
 	"github.com/gomqtt/transport"
 	"github.com/gomqtt/broker"
 	"strconv"
+	"fmt"
 )
 
-var engine *broker.Engine
-var mqport int
+type MqttSvc struct {
+	Engine *broker.Engine
+}
 
-func Host(mport int) {
-	server, err := transport.Launch("tcp://:" + strconv.Itoa(mport))
+var Mport int
+
+func (m *MqttSvc) Host(mport int) {
+	Mport = mport
+	server, err := transport.Launch("tcp://:" + strconv.Itoa(Mport))
 	if err != nil {
 		panic(err)
 	}
 	engine := broker.NewEngine()
 	engine.Accept(server)
-	mqport = mport
-}
-
-func Close() {
-	engine.Close()
+	m.Engine = broker.NewEngine()
+	m.Engine.Accept(server)
 }
 
 func Public(k string, payload []byte) {
 	client := client.New()
 	defer client.Close()
-	cf, err := client.Connect("tcp://127.0.0.1:"+ strconv.Itoa(mqport), nil)
+	cf, err := client.Connect("tcp://127.0.0.1:"+ strconv.Itoa(Mport), nil)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
 	cf.Wait()
 	pf, err := client.Publish(k, payload, 0, false)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
 	pf.Wait()
 	err = client.Disconnect()
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
 }

@@ -49,6 +49,9 @@ func delChan() {
 				}
 			}
 		}
+		if Deller.DelPhotos == nil {
+			break
+		}
 	}
 }
 
