@@ -6,13 +6,21 @@ import (
 	"strings"
 	"errors"
 	"github.com/garyburd/redigo/redis"
+	"regexp"
 )
 
 type Person struct {
 	Ukey     string `validate:"required"`
-	Uid      string `validate:"required,min=3,max=18,regex=^[a-zA-Z0-9_]{3,18}$"`
-	Pwd      string `validate:"required,min=3,max=18,regex=^[a-zA-Z0-9_]{3,18}$"`
-	UserName string `validate:"regex=^[\\u4e00-\\u9fa5_a-zA-Z0-9-]{1,16}$"`
+	Uid      string `validate:"required,min=3,max=18"`
+	Pwd      string `validate:"required,min=3,max=18"`
+	UserName string `validate:"min=2,max=64"`
+	Email string `validate:"email"`
+}
+
+func ValidateUidPwd(vstr string) bool {
+	up := regexp.MustCompile("^[a-zA-Z0-9_]{3,18}$")
+	re := up.MatchString(vstr)
+	return re
 }
 
 var rds redis.Conn

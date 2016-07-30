@@ -21,8 +21,8 @@ func CreateAdmin() {
 		p := New()
 		p.Pwd = "admin"
 		p.Uid = "admin"
-		p.CreateUkey()
 		p.UserName = "admin"
+		p.CreateUkey()
 		create(p)
 	}
 }
@@ -54,10 +54,14 @@ func UserPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "uid ext")
 		return
 	}
+	if !ValidateUidPwd(p.Uid) || !ValidateUidPwd(p.Pwd) {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "invalid Uid or Pwd")
+		return
+	}
 	p.CreateUkey()
-	errs := validate.Struct(p)
-	if errs != nil {
-		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "invalid")
+	err = validate.Struct(p)
+	if err != nil {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 		return
 	}
 	err = create(&p)
@@ -98,8 +102,17 @@ func UserPut(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "uidne")
 		return
 	}
+	if !ValidateUidPwd(p.Pwd){
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "invalid")
+		return
+	}
 	op.UserName = p.UserName
 	op.Pwd = p.Pwd
+	err = validate.Struct(op)
+	if err != nil {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+		return
+	}
 	del(p.Uid)
 	create(op)
 	pStr, _ := json.Marshal(op)
