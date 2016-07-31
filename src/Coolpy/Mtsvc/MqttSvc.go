@@ -20,8 +20,6 @@ func (m *MqttSvc) Host(mport int) {
 	if err != nil {
 		panic(err)
 	}
-	engine := broker.NewEngine()
-	engine.Accept(server)
 	m.Engine = broker.NewEngine()
 	m.Engine.Accept(server)
 }
