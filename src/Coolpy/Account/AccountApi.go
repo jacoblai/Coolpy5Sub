@@ -22,6 +22,7 @@ func CreateAdmin() {
 		p.Pwd = "admin"
 		p.Uid = "admin"
 		p.UserName = "admin"
+		p.Email="mail.icoolpy.com"
 		p.CreateUkey()
 		create(p)
 	}
