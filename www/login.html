@@ -183,8 +183,8 @@
                 })
 
                 ko.validation.locale('zh-CN');
-                self.username = ko.observable('admin').extend({ required: true, minLength: 3, maxLength: 18 });
-                self.password = ko.observable('admin').extend({ required: true, minLength: 3, maxLength: 18 });
+                self.username = ko.observable('').extend({ required: true, minLength: 3, maxLength: 18 });
+                self.password = ko.observable('').extend({ required: true, minLength: 3, maxLength: 18 });
                 self.validationModel = ko.validatedObservable({
                     username: self.username,
                     password: self.password
