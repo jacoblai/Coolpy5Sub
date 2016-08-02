@@ -26,6 +26,8 @@ import (
 	"log"
 	"Coolpy/Deller"
 	"Coolpy/CoSystem"
+	"io/ioutil"
+	"strings"
 )
 
 func main() {
@@ -110,7 +112,7 @@ func main() {
 	router.GET("/api/hub/:hid/node/:nid/photo/content", Photos.PhotoGet)
 	router.GET("/api/hub/:hid/node/:nid/photo/content/:key", Photos.PhotoGetByKey)
 	router.DELETE("/api/hub/:hid/node/:nid/photo/content/:key", Photos.PhotoDelByKey)
-        //系统api
+	//系统api
 	router.GET("/api/sys/version", CoSystem.VersionGet)
 	go func() {
 		ln, err := net.Listen("tcp", ":" + strconv.Itoa(port))
@@ -123,6 +125,18 @@ func main() {
 		}
 	}()
 	fmt.Println("Coolpy http on port", strconv.Itoa(port))
+	if port != 6543 {
+		//当api端口号被启动参数修改时即自动更新www相关连接参数
+		f, err := ioutil.ReadFile("www/scripts-app/setting.js")
+		if err != nil {
+			fmt.Println(err)
+		}
+		nstring := strings.Replace(string(f), "6543", strconv.Itoa(port), -1)
+		err = ioutil.WriteFile("www/scripts-app/setting.js", []byte(nstring), 0644)
+		if err != nil{
+			fmt.Println(err)
+		}
+	}
 
 	http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("www"))))
 	go func() {
