@@ -147,7 +147,6 @@ var viewModels;
                 success: function (result) {
                     App.unblockUI();
                     if (result.ok == 1) {
-                        self.mg_user_users.removeAll();
                         self.mg_user_users(result.data);
                     } else {
                         bootbox.alert(result.err);

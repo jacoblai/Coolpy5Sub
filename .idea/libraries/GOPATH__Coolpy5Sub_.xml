@@ -28,6 +28,8 @@
       <root url="file://C:/Go/src/debug" />
       <root url="file://C:/Go/src/go" />
       <root url="file://C:/Go/src/time" />
+      <root url="file://C:/Go/src/github.com" />
+      <root url="file://C:/Go/src/gopkg.in" />
       <root url="file://C:/Go/src/container" />
       <root url="file://C:/Go/src/mime" />
       <root url="file://C:/Go/src/fmt" />
@@ -73,6 +75,8 @@
       <root url="file://C:/Go/src/debug" />
       <root url="file://C:/Go/src/go" />
       <root url="file://C:/Go/src/time" />
+      <root url="file://C:/Go/src/github.com" />
+      <root url="file://C:/Go/src/gopkg.in" />
       <root url="file://C:/Go/src/container" />
       <root url="file://C:/Go/src/mime" />
       <root url="file://C:/Go/src/fmt" />
