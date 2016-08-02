@@ -144,7 +144,7 @@ func UserDel(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	fmt.Fprintf(w, `{"ok":%d}`, 1)
 }
 
-func UserAll(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func UserAll(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	v, err := r.Cookie("islogin")
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "dosn't login")
@@ -163,7 +163,7 @@ func UserAll(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
 }
 
-func UserApiKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func UserApiKey(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	v, err := r.Cookie("islogin")
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "dosn't login")
@@ -177,7 +177,7 @@ func UserApiKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	fmt.Fprintf(w, `{"ok":%d,"data":"%v"}`, 1, p.Ukey)
 }
 
-func UserNewApiKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func UserNewApiKey(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	v, err := r.Cookie("islogin")
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "dosn't login")
