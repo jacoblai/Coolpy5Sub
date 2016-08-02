@@ -104,10 +104,12 @@ func All() ([]*Person, error) {
 	}
 	var ndata []*Person
 	for _, v := range data {
-		o, _ := redis.String(rds.Do("GET", v))
-		np := &Person{}
-		json.Unmarshal([]byte(o), &np)
-		ndata = append(ndata, np)
+		if !strings.HasSuffix(v,"admin") {
+			o, _ := redis.String(rds.Do("GET", v))
+			np := &Person{}
+			json.Unmarshal([]byte(o), &np)
+			ndata = append(ndata, np)
+		}
 	}
 	return ndata, nil
 }

@@ -21,8 +21,8 @@ func CreateAdmin() {
 		p := New()
 		p.Pwd = "admin"
 		p.Uid = "admin"
-		p.UserName = "admin"
-		p.Email="mail.icoolpy.com"
+		p.UserName = "超级管理员"
+		p.Email="超级管理员不需要邮箱"
 		p.CreateUkey()
 		create(p)
 	}
@@ -109,6 +109,7 @@ func UserPut(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 	op.UserName = p.UserName
 	op.Pwd = p.Pwd
+	op.Email = p.Email
 	err = validate.Struct(op)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
