@@ -26,13 +26,11 @@ import (
 	"Coolpy/Photos"
 	"log"
 	"Coolpy/Deller"
+	"Coolpy/CoSystem"
 )
 
-var v = "5.0.1.0"
-var kv = "alpha"
-
 func main() {
-	fmt.Println("Coolpy Version:", v, kv)
+	fmt.Println("Coolpy Version:", CoSystem.CpVersion)
 	var (
 		port int
 		mport int
@@ -113,7 +111,8 @@ func main() {
 	router.GET("/api/hub/:hid/node/:nid/photo/content", Photos.PhotoGet)
 	router.GET("/api/hub/:hid/node/:nid/photo/content/:key", Photos.PhotoGetByKey)
 	router.DELETE("/api/hub/:hid/node/:nid/photo/content/:key", Photos.PhotoDelByKey)
-
+        //系统api
+	router.GET("/api/sys/version", CoSystem.VersionGet)
 	go func() {
 		ln, err := net.Listen("tcp", ":" + strconv.Itoa(port))
 		if err != nil {
