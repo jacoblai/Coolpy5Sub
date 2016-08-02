@@ -1,0 +1,244 @@
+﻿<!DOCTYPE html>
+<!--[if IE 8]> <html lang="en" class="ie8 no-js"> <![endif]-->
+<!--[if IE 9]> <html lang="en" class="ie9 no-js"> <![endif]-->
+<!--[if !IE]><!-->
+<html lang="en">
+<!--<![endif]-->
+<!-- BEGIN HEAD -->
+<head>
+    <meta charset="utf-8" />
+    <title>酷痞物联 v5</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <meta content="" name="description" />
+    <meta content="" name="author" />
+    <!-- BEGIN GLOBAL MANDATORY STYLES -->
+    <link href="assets/global/plugins/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+    <link href="assets/global/plugins/simple-line-icons/simple-line-icons.min.css" rel="stylesheet" type="text/css" />
+    <link href="assets/global/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="assets/global/plugins/uniform/css/uniform.default.css" rel="stylesheet" type="text/css" />
+    <link href="assets/global/plugins/bootstrap-switch/css/bootstrap-switch.min.css" rel="stylesheet" type="text/css" />
+    <!-- END GLOBAL MANDATORY STYLES -->
+    <!-- BEGIN PAGE LEVEL PLUGINS -->
+    <link href="assets/global/plugins/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+    <link href="assets/global/plugins/select2/css/select2-bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <!-- END PAGE LEVEL PLUGINS -->
+    <!-- BEGIN THEME GLOBAL STYLES -->
+    <link href="assets/global/css/components.min.css" rel="stylesheet" id="style_components" type="text/css" />
+    <link href="assets/global/css/plugins.min.css" rel="stylesheet" type="text/css" />
+    <link href="assets/global/css/custom.css" rel="stylesheet" />
+    <!-- END THEME GLOBAL STYLES -->
+    <!-- BEGIN PAGE LEVEL STYLES -->
+    <link href="assets/pages/css/login-5.min.css" rel="stylesheet" type="text/css" />
+    <!-- END PAGE LEVEL STYLES -->
+    <!-- BEGIN THEME LAYOUT STYLES -->
+    <!-- END THEME LAYOUT STYLES -->
+    <link rel="shortcut icon" href="favicon.png" />
+</head>
+<!-- END HEAD -->
+<body class=" login" id="loginModel">
+    <!-- BEGIN : LOGIN PAGE 5-2 -->
+    <div class="user-login-5">
+        <div class="row bs-reset">
+            <div class="col-md-6 login-container bs-reset">
+                <img class="login-logo login-6" src="favicon.png" />
+                <div class="login-content">
+                    <h1>酷痞物联 v<span data-bind="text:version"></span></h1>
+                    <p>OPENWRT，LINUX，WINDOWS，MAC，高性能跨操作系统私有云平台</p>
+                    <form action="javascript:;" class="login-form">
+                        <div class="alert alert-danger display-hide">
+                            <button class="close" data-close="alert"></button>
+                            <span>请输入你的用户名及密码. </span>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-6">
+                                <input class="form-control form-control-solid placeholder-no-fix form-group" 
+                                       type="text" autocomplete="off" placeholder="用户名" data-bind="value:username" required />
+                            </div>
+                            <div class="col-xs-6">
+                                <input class="form-control form-control-solid placeholder-no-fix form-group" 
+                                       type="password" autocomplete="off" placeholder="密码" data-bind="value:password" required />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div class="rem-password">
+                                    <p>
+                                        记住密码
+                                        <input type="checkbox" class="rem-checkbox" />
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-sm-8 text-right">
+                                <div class="forgot-password">
+                                    <a href="javascript:;" id="forget-password" class="forget-password">忘记密码?</a>
+                                </div>
+                                <button class="btn blue" data-bind="click:login">登陆</button>
+                            </div>
+                        </div>
+                    </form>
+                    <!-- BEGIN FORGOT PASSWORD FORM -->
+                    <form class="forget-form" action="javascript:;" method="post">
+                        <h3 class="font-green">忘记密码 ?</h3>
+                        <p> 输入你的邮箱地址重置账号密码 </p>
+                        <div class="form-group">
+                            <input class="form-control placeholder-no-fix" type="text" autocomplete="off" placeholder="Email" name="email" />
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" id="back-btn" class="btn grey btn-default">返回</button>
+                            <button type="submit" class="btn blue btn-success uppercase pull-right">提交</button>
+                        </div>
+                    </form>
+                    <!-- END FORGOT PASSWORD FORM -->
+                </div>
+                <div class="login-footer">
+                    <div class="row bs-reset">
+                        <div class="col-xs-5 bs-reset">
+                            <ul class="login-social">
+                                <li>
+                                    <a href="javascript:;">
+                                        <i class="icon-social-facebook"></i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="javascript:;">
+                                        <i class="icon-social-twitter"></i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="javascript:;">
+                                        <i class="icon-social-dribbble"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-xs-7 bs-reset">
+                            <div class="login-copyright text-right">
+                                <p>Copyright &copy; 酷痞物联 2016 ICOOLPY.COM，Open Source Iot Platform.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 bs-reset">
+                <div class="login-bg"> </div>
+            </div>
+        </div>
+    </div>
+    <!-- END : LOGIN PAGE 5-2 -->
+    <!--[if lt IE 9]>
+    <script src="assets/global/plugins/respond.min.js"></script>
+    <script src="assets/global/plugins/excanvas.min.js"></script>
+    <![endif]-->
+    <!-- BEGIN CORE PLUGINS -->
+    <script src="assets/global/plugins/jquery.min.js" type="text/javascript"></script>
+    <script src="assets/global/plugins/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
+    <script src="assets/global/plugins/js.cookie.min.js" type="text/javascript"></script>
+    <script src="assets/global/plugins/bootstrap-hover-dropdown/bootstrap-hover-dropdown.min.js" type="text/javascript"></script>
+    <script src="assets/global/plugins/jquery-slimscroll/jquery.slimscroll.min.js" type="text/javascript"></script>
+    <script src="assets/global/plugins/jquery.blockui.min.js" type="text/javascript"></script>
+    <script src="assets/global/plugins/uniform/jquery.uniform.min.js" type="text/javascript"></script>
+    <script src="assets/global/plugins/bootstrap-switch/js/bootstrap-switch.min.js" type="text/javascript"></script>
+    <!-- END CORE PLUGINS -->
+    <!-- BEGIN PAGE LEVEL PLUGINS -->
+    <script src="assets/global/plugins/select2/js/select2.full.min.js" type="text/javascript"></script>
+    <script src="assets/global/plugins/backstretch/jquery.backstretch.min.js" type="text/javascript"></script>
+    <script src="assets/global/plugins/bootbox/bootbox.min.js" type="text/javascript"></script>
+    <!-- END PAGE LEVEL PLUGINS -->
+    <!-- BEGIN THEME GLOBAL SCRIPTS -->
+    <script src="assets/global/scripts/app.js" type="text/javascript"></script>
+    <!-- END THEME GLOBAL SCRIPTS -->
+    <!-- BEGIN PAGE LEVEL SCRIPTS -->
+    <script src="assets/pages/scripts/ui-blockui.min.js" type="text/javascript"></script>
+    <script src="assets/pages/scripts/ui-bootbox.min.js" type="text/javascript"></script>
+    <script src="assets/pages/scripts/login-5.js" type="text/javascript"></script>
+    <!-- END PAGE LEVEL SCRIPTS -->
+    <!-- BEGIN THEME LAYOUT SCRIPTS -->
+    <script src="scripts/knockout-3.3.0.debug.js"></script>
+    <script src="scripts/validation/knockout.validation.js"></script>
+    <script src="scripts/validation/localization/zh-CN.js"></script>
+    <script src="scripts/base64.js"></script>
+    <script src="scripts/jquery.session.js"></script>
+    <script src="scripts-app/setting.js"></script>
+    <!-- END THEME LAYOUT SCRIPTS -->
+    <script type="text/javascript">
+        jQuery(document).ready(function () {
+            function loginvm() {
+                var self = this;
+                self.version = ko.observable();
+
+                $.support.cors = true;
+                $.ajax({
+                    method: "GET",
+                    url: basicurl + '/api/sys/version',
+                    success: function (result) {
+                        if (result.ok == 1) {
+                            self.version(result.data);
+                        } 
+                    },
+                    error: function (xhr, status, error) {
+                        bootbox.alert("未能连接到酷痞服务器错误：" + xhr.responseText);
+                        return
+                    }
+                })
+
+                ko.validation.locale('zh-CN');
+                self.username = ko.observable('admin').extend({ required: true, minLength: 3, maxLength: 18 });
+                self.password = ko.observable('admin').extend({ required: true, minLength: 3, maxLength: 18 });
+                self.validationModel = ko.validatedObservable({
+                    username: self.username,
+                    password: self.password
+                });
+                self.login = function () {
+                    if (self.validationModel.isValid()) {
+                        if (/.*[\u4e00-\u9fa5]+.*$/.test(self.username()) || /.*[\u4e00-\u9fa5]+.*$/.test(self.password())) {
+                            bootbox.alert("登陆错误，用户身名密码中不能含有中文！");
+                            return
+                        }
+                        App.blockUI({
+                            boxed: true
+                        });
+                        pass = base64.encode(self.username() + ":" + self.password());
+                        $.support.cors = true;
+                        $.ajax({
+                            method: "GET",
+                            url: basicurl + '/api/user/' + self.username(),
+                            beforeSend: function (xhr) {
+                                xhr.setRequestHeader("Authorization", "Basic " + pass)
+                            },
+                            success: function (result) {
+                                App.unblockUI();
+                                if (result.ok == 1) {
+                                    $.session.clear();
+                                    $.session.set('uid', self.username());
+                                    $.session.set('pass', "Basic " + pass);
+                                    window.location.href = "index.html#!/pages/users";
+                                } else {
+                                    bootbox.alert(result.err);
+                                }
+                            },
+                            error: function (xhr, status, error) {
+                                App.unblockUI();
+                                bootbox.alert("登陆错误，用户身份验证失败！");
+                                self.password("");
+                            }
+                        })
+                    } else {
+                        bootbox.alert("登陆错误，用户名或密码不能空！");
+                        self.password("");
+                    }
+                };
+            }
+
+            function cookieTime() {
+                end = new Date();
+                end = new Date(end.valueOf() + 20 * 60 * 1000);
+                return end;
+            }
+
+            var dvvm = new loginvm();
+            ko.applyBindings(ko.validatedObservable(dvvm), document.getElementById("loginModel"));
+        });
+    </script>
+</body>
+</html>

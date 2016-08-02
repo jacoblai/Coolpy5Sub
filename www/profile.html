@@ -1,0 +1,69 @@
+﻿<!-- BEGIN CONTENT BODY -->
+<div class="page-content">
+    <!-- BEGIN PAGE HEADER-->
+    <!-- BEGIN PAGE BAR -->
+    <div class="page-bar">
+        <ul class="page-breadcrumb">
+            <li>
+                <a href="javascript:;" data-bind="navigate: 'pages/index'">首页</a>
+                <i class="fa fa-circle"></i>
+            </li>
+            <li>
+                <span>个人中心</span>
+            </li>
+        </ul>
+    </div>
+    <!-- END PAGE BAR -->
+    <!-- BEGIN PAGE TITLE-->
+    <h3 class="page-title">
+        用户管理
+        <small>管理用户个人资料</small>
+    </h3>
+    <!-- END PAGE TITLE-->
+    <!-- END PAGE HEADER-->
+    <div class="profile">
+        <div class="tabbable-line tabbable-full-width">
+            <ul class="nav nav-tabs">
+                <li class="active">
+                    <a href="#tab_1_3" data-toggle="tab"> 用户账户 </a>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane active" id="tab_1_3">
+                    <div class="row profile-account">
+                        <div class="col-md-3">
+                            <ul class="ver-inline-menu tabbable margin-bottom-10">
+                                <li class="active">
+                                    <a data-toggle="tab" href="#tab_3-3">
+                                        <i class="fa fa-lock"></i> 修改密码
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-9">
+                            <div class="tab-content">
+                                <div id="tab_3-3" class="tab-pane active">
+                                    <form action="#">
+                                        <div class="form-group">
+                                            <label class="control-label">新密码</label>
+                                            <input type="password" class="form-control" data-bind="value:npwd" />
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">重复新密码</label>
+                                            <input type="password" class="form-control" data-bind="value:npwd1" />
+                                        </div>
+                                        <div class="margin-top-10">
+                                            <a href="javascript:;" class="btn green" data-bind="click:changepwdsave"> 提交 </a>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <!--end col-md-9-->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- END CONTENT BODY -->
