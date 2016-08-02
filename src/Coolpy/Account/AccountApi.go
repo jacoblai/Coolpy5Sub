@@ -21,8 +21,8 @@ func CreateAdmin() {
 		p := New()
 		p.Pwd = "admin"
 		p.Uid = "admin"
-		p.UserName = "超级管理员"
-		p.Email="超级管理员不需要邮箱"
+		p.UserName = "SuperAdmin"
+		p.Email="SuperAdmin@icoolpy.com"
 		p.CreateUkey()
 		create(p)
 	}
