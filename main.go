@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/julienschmidt/httprouter"
-	"github.com/GeertJohan/go.rice"
 	"net/http"
 	"Coolpy/Cors"
 	"Coolpy/Account"
@@ -125,7 +124,7 @@ func main() {
 	}()
 	fmt.Println("Coolpy http on port", strconv.Itoa(port))
 
-	http.Handle("/", http.StripPrefix("/", http.FileServer(rice.MustFindBox("www").HTTPBox())))
+	http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("www"))))
 	go func() {
 		err := http.ListenAndServe(":" + strconv.Itoa(wport), nil)
 		if err != nil {
