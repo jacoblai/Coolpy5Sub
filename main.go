@@ -74,7 +74,6 @@ func main() {
 	go func() {
 		msvc := &Mtsvc.MqttSvc{}
 		msvc.Host(mport)
-		defer msvc.Engine.Close()
 	}()
 	fmt.Println("Coolpy mqtt on port", strconv.Itoa(mport))
 

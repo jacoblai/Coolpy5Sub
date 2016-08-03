@@ -36,9 +36,7 @@ func DPPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			DPPut(w, r, ps)
 			return
 		} else {
-			nps := httprouter.Params{
-				httprouter.Param{"key", qs.Get("key")},
-			}
+			nps := append(ps, httprouter.Param{"key", qs.Get("key")})
 			DPPutByKey(w, r, nps)
 			return
 		}
