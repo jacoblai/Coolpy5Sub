@@ -20,6 +20,16 @@ func init() {
 
 func NodePost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	defer r.Body.Close()
+	//post接口允许模拟put提交
+	//node节点put api/hub/:hid/nodes?method=put&nid=3
+	qs := r.URL.Query()
+	if qs.Get("method") == "put" {
+		if qs.Get("nid") != "" {
+			nps := append(ps, httprouter.Param{"nid", qs.Get("nid")})
+			NodePut(w, r, nps)
+			return
+		}
+	}
 	hid := ps.ByName("hid")
 	if hid == "" {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
@@ -87,6 +97,13 @@ func NodesGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 func NodeGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	defer r.Body.Close()
+	//get接口允许模拟delete提交
+	//node节点put api/hub/:hid/node/:nid?method=delete
+	qs := r.URL.Query()
+	if qs.Get("method") == "delete" {
+		NodeDel(w, r, ps)
+		return
+	}
 	hid := ps.ByName("hid")
 	if hid == "" {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")

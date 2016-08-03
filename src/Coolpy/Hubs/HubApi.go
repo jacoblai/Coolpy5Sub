@@ -16,8 +16,18 @@ func init() {
 	validate = validator.New(config)
 }
 
-func HubPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func HubPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	defer r.Body.Close()
+	//post接口允许模拟put提交
+	//hub节点put api/hubs?method=put&hid=1
+	qs := r.URL.Query()
+	if qs.Get("method") == "put" {
+		if qs.Get("hid") != "" {
+			nps := append(ps, httprouter.Param{"hid", qs.Get("hid")})
+			HubPut(w, r, nps)
+			return
+		}
+	}
 	decoder := json.NewDecoder(r.Body)
 	var h Hub
 	err := decoder.Decode(&h)
@@ -65,6 +75,13 @@ func HubsGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 func HubGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	defer r.Body.Close()
+	//get接口允许模拟delete提交
+	//hub节点put api/hub/:hid?method=delete
+	qs := r.URL.Query()
+	if qs.Get("method") == "delete" {
+		HubDel(w, r, ps)
+		return
+	}
 	hid := ps.ByName("hid")
 	if hid == "" {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params ukey")
