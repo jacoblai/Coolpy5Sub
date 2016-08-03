@@ -350,6 +350,13 @@ func DPPut(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 func DPGetByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	defer r.Body.Close()
+	//get接口允许模拟delete提交
+	//模拟控制器put api/hub/:hid/node/:nid/datapoint/:key?method=delete
+	qs := r.URL.Query()
+	if qs.Get("method") == "delete" {
+		DPDelByKey(w, r, ps)
+		return
+	}
 	dpKey := ps.ByName("key")
 	if dpKey == "" {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
