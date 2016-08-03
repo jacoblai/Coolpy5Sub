@@ -183,8 +183,8 @@
                 })
 
                 ko.validation.locale('zh-CN');
-                self.username = ko.observable('').extend({ required: true, minLength: 3, maxLength: 18 });
-                self.password = ko.observable('').extend({ required: true, minLength: 3, maxLength: 18 });
+                self.username = ko.observable('').extend({ required: true, minLength: 3, maxLength: 128 });
+                self.password = ko.observable('').extend({ required: true, minLength: 3, maxLength: 128 });
                 self.validationModel = ko.validatedObservable({
                     username: self.username,
                     password: self.password
@@ -229,13 +229,6 @@
                     }
                 };
             }
-
-            function cookieTime() {
-                end = new Date();
-                end = new Date(end.valueOf() + 20 * 60 * 1000);
-                return end;
-            }
-
             var dvvm = new loginvm();
             ko.applyBindings(ko.validatedObservable(dvvm), document.getElementById("loginModel"));
         });

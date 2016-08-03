@@ -73,16 +73,14 @@ var viewModels;
         var self = this;
         function IndexVM() { _super.call(self); }
 
-        self.npwd = ko.observable().extend({ required: true, minLength: 3, maxLength: 18 });
-        self.npwd1 = ko.observable().extend({ required: true, minLength: 3, maxLength: 18 });
+        self.npwd = ko.observable().extend({ required: true, minLength: 3, maxLength: 128 });
+        self.npwd1 = ko.observable().extend({ required: true, minLength: 3, maxLength: 128 });
         self.index_npwd_validationModel = ko.validatedObservable({
             npwd: self.npwd,
             npwd1: self.npwd1
         });
 
         self.changepwdsave = function () {
-            var d = self.npwd();
-            var dd = self.npwd1();
             if (self.index_npwd_validationModel.isValid()) {
                 if (self.npwd() !== self.npwd1()) {
                     bootbox.alert("两次新密码不一致！");
@@ -168,9 +166,9 @@ var viewModels;
             $('#m_user_add').modal('toggle');
         }
 
-        self.um_UserName = ko.observable().extend({ minLength: 2, maxLength: 18 });
-        self.um_UserId = ko.observable().extend({ required: true, minLength: 3, maxLength: 18 });
-        self.um_PassWord = ko.observable().extend({ required: true, minLength: 3, maxLength: 18 });
+        self.um_UserName = ko.observable().extend({ minLength: 2, maxLength: 128 });
+        self.um_UserId = ko.observable().extend({ required: true, minLength: 3, maxLength: 128 });
+        self.um_PassWord = ko.observable().extend({ required: true, minLength: 3, maxLength: 128 });
         self.um_Email = ko.observable().extend({ minLength: 3, maxLength: 128 });
         self.um_ukey = ko.observable();
         self.users_newuser_validationModel = ko.validatedObservable({

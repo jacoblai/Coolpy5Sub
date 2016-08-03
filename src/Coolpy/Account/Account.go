@@ -18,7 +18,7 @@ type Person struct {
 }
 
 func ValidateUidPwd(vstr string) bool {
-	up := regexp.MustCompile("^[a-zA-Z0-9_]{3,18}$")
+	up := regexp.MustCompile("^[a-zA-Z0-9_]{3,128}$")
 	re := up.MatchString(vstr)
 	return re
 }
