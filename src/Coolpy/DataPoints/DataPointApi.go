@@ -27,6 +27,22 @@ func init() {
 
 func DPPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	defer r.Body.Close()
+	//post接口允许模拟put提交
+	//模拟控制器put api/hub/:hid/node/:nid/datapoints?method=put
+	//模拟传感器put api/hub/:hid/node/:nid/datapoints?method=put&key=2015-11-12T02:10:55.5245871Z
+	qs := r.URL.Query()
+	if qs.Get("method") == "put" {
+		if qs.Get("key") == "" {
+			DPPut(w, r, ps)
+			return
+		} else {
+			nps := httprouter.Params{
+				httprouter.Param{"key", qs.Get("key")},
+			}
+			DPPutByKey(w, r, nps)
+			return
+		}
+	}
 	hid := ps.ByName("hid")
 	if hid == "" {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params err")
@@ -269,7 +285,7 @@ func DPPut(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			return
 		}
 		pStr, _ := json.Marshal(&c)
-		Mtsvc.Public(key, pStr)
+		go Mtsvc.Public(key, pStr)
 		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
 	} else if n.Type == Nodes.NodeTypeEnum.RangeControl {
 		decoder := json.NewDecoder(r.Body)
@@ -300,7 +316,7 @@ func DPPut(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			return
 		}
 		pStr, _ := json.Marshal(&c)
-		Mtsvc.Public(key, pStr)
+		go Mtsvc.Public(key, pStr)
 		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
 	} else if n.Type == Nodes.NodeTypeEnum.GenControl {
 		decoder := json.NewDecoder(r.Body)
@@ -327,7 +343,7 @@ func DPPut(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			return
 		}
 		pStr, _ := json.Marshal(&c)
-		Mtsvc.Public(key, pStr)
+		go Mtsvc.Public(key, pStr)
 		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
 	} else {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "unkown type")
