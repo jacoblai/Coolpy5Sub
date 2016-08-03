@@ -165,11 +165,12 @@
         jQuery(document).ready(function () {
             function loginvm() {
                 var self = this;
-                self.version = ko.observable();
+                self.version = ko.observable("");
 
                 $.support.cors = true;
                 $.ajax({
                     method: "GET",
+                    timeout : 1200,
                     url: basicurl + '/api/sys/version',
                     success: function (result) {
                         if (result.ok == 1) {
@@ -177,7 +178,7 @@
                         } 
                     },
                     error: function (xhr, status, error) {
-                        bootbox.alert("未能连接到酷痞服务器错误：" + xhr.responseText);
+                        bootbox.alert("未能连接到酷痞服务器错误，请检查网络是否正常");
                         return
                     }
                 })
@@ -190,6 +191,10 @@
                     password: self.password
                 });
                 self.login = function () {
+                    if (self.version() === ""){
+                        bootbox.alert("未能连接到酷痞服务器错误，请检查网络是否正常");
+                        return
+                    }
                     if (self.validationModel.isValid()) {
                         if (/.*[\u4e00-\u9fa5]+.*$/.test(self.username()) || /.*[\u4e00-\u9fa5]+.*$/.test(self.password())) {
                             bootbox.alert("登陆错误，用户身名密码中不能含有中文！");
