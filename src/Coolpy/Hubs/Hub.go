@@ -15,7 +15,7 @@ type Hub struct {
 	Ukey      string
 	Title     string `validate:"required"`
 	About     string
-	Tabs      []string
+	Tags      []string
 	Public    bool
 	Local     string `validate:"required"`
 	Latitude  float64 `validate:"gte=-90,lte=90"`

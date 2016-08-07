@@ -132,7 +132,7 @@ func HubPut(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	oh.Local = h.Local
 	oh.Longitude = h.Longitude
 	oh.Public = h.Public
-	oh.Tabs = h.Tabs
+	oh.Tags = h.Tags
 	oh.Title = h.Title
 	hubReplace(oh)
 	pStr, _ := json.Marshal(&oh)
