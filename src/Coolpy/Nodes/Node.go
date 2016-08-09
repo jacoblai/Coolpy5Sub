@@ -17,7 +17,7 @@ type Node struct {
 	HubId int64 `validate:"required"`
 	Title string `validate:"required"`
 	About string
-	Tabs  []string
+	Tags  []string
 	Type  int `validate:"required"`
 }
 

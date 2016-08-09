@@ -161,7 +161,7 @@ func NodePut(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 	on.About = n.About
 	on.Title = n.Title
-	on.Tabs = n.Tabs
+	on.Tags = n.Tags
 	nodeReplace(ukey.Value + ":" + hid + ":" + nid, on)
 	pStr, _ := json.Marshal(&on)
 	fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
