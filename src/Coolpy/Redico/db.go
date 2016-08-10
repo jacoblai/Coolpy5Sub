@@ -1,7 +1,6 @@
 package Redico
 
 import (
-	"sort"
 	"strconv"
 	"sync"
 	"github.com/syndtr/goleveldb/leveldb"
@@ -70,8 +69,8 @@ func (db *RedicoDB) allKeys() []string {
 	for iter.Next() {
 		keys = append(keys, string(iter.Key()))
 	}
-	iter.Release()
-	sort.Strings(keys) // To make things deterministic.
+	defer iter.Release()
+	//sort.Strings(keys) // To make things deterministic.
 	return keys
 }
 
@@ -81,7 +80,7 @@ func (db *RedicoDB) keyStart(k string) []string {
 	for iter.Next() {
 		keys = append(keys, string(iter.Key()))
 	}
-	iter.Release()
+	defer iter.Release()
 	return keys
 }
 
@@ -91,7 +90,7 @@ func (db *RedicoDB) keyRange(min string, max string) []string {
 	for ok := iter.Seek([]byte(min)); ok && bytes.Compare(iter.Key(), []byte(max)) <= 0; ok = iter.Next() {
 		keys = append(keys, string(iter.Key()))
 	}
-	iter.Release()
+	defer iter.Release()
 	return keys
 }
 
