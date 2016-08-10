@@ -19,19 +19,25 @@ type PhotoDP struct {
 	Img       []byte `validate:"required"`
 }
 
-var rds redis.Conn
+var rdsPool *redis.Pool
 
 func Connect(addr string, pwd string) {
-	c, err := redis.Dial("tcp", addr)
-	if err != nil {
-		panic(err)
+	rdsPool = &redis.Pool{
+		MaxIdle:     10,
+		IdleTimeout: time.Second * 300,
+		Dial: func() (redis.Conn, error) {
+			conn, err := redis.Dial("tcp", addr)
+			if err != nil {
+				return nil, err
+			}
+			_, err = conn.Do("AUTH", pwd)
+			if err != nil {
+				return nil, err
+			}
+			conn.Do("SELECT", "8")
+			return conn, nil
+		},
 	}
-	_, err = c.Do("AUTH", pwd)
-	if err != nil {
-		panic(err)
-	}
-	rds = c
-	rds.Do("SELECT", "8")
 	go delChan()
 }
 
@@ -60,6 +66,8 @@ func photoCreate(k string, dp *PhotoDP) error {
 	if err != nil {
 		return err
 	}
+	rds := rdsPool.Get()
+	defer rds.Close()
 	_, err = rds.Do("SET", k, json)
 	if err != nil {
 		return err
@@ -68,6 +76,8 @@ func photoCreate(k string, dp *PhotoDP) error {
 }
 
 func startWith(k string) ([]string, error) {
+	rds := rdsPool.Get()
+	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYSSTART", k))
 	if err != nil {
 		return nil, err
@@ -76,6 +86,8 @@ func startWith(k string) ([]string, error) {
 }
 
 func maxGet(k string) (*PhotoDP, error) {
+	rds := rdsPool.Get()
+	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYSSTART", k))
 	if err != nil {
 		return nil, err
@@ -94,6 +106,8 @@ func maxGet(k string) (*PhotoDP, error) {
 }
 
 func getOneByKey(k string) (*PhotoDP, error) {
+	rds := rdsPool.Get()
+	defer rds.Close()
 	o, err := redis.String(rds.Do("GET", k))
 	if err != nil {
 		return nil, err
@@ -110,6 +124,8 @@ func del(k string) error {
 	if len(strings.TrimSpace(k)) == 0 {
 		return errors.New("uid was nil")
 	}
+	rds := rdsPool.Get()
+	defer rds.Close()
 	_, err := redis.Int(rds.Do("DEL", k))
 	if err != nil {
 		return err
@@ -118,6 +134,8 @@ func del(k string) error {
 }
 
 func GetRange(start string, end string, interval float64, page int) ([]*PhotoDP, error) {
+	rds := rdsPool.Get()
+	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYSRANGE", start, end))
 	if err != nil {
 		return nil, err
@@ -183,6 +201,8 @@ func GetRange(start string, end string, interval float64, page int) ([]*PhotoDP,
 }
 
 func All() ([]string, error) {
+	rds := rdsPool.Get()
+	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYS", "*"))
 	if err != nil {
 		return nil, err

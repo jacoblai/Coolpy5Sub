@@ -20,19 +20,25 @@ type GpsDP struct {
 	Offset    int
 }
 
-var rds redis.Conn
+var rdsPool *redis.Pool
 
 func Connect(addr string, pwd string) {
-	c, err := redis.Dial("tcp", addr)
-	if err != nil {
-		panic(err)
+	rdsPool = &redis.Pool{
+		MaxIdle:     10,
+		IdleTimeout: time.Second * 300,
+		Dial: func() (redis.Conn, error) {
+			conn, err := redis.Dial("tcp", addr)
+			if err != nil {
+				return nil, err
+			}
+			_, err = conn.Do("AUTH", pwd)
+			if err != nil {
+				return nil, err
+			}
+			conn.Do("SELECT", "6")
+			return conn, nil
+		},
 	}
-	_, err = c.Do("AUTH", pwd)
-	if err != nil {
-		panic(err)
-	}
-	rds = c
-	rds.Do("SELECT", "6")
 	go delChan()
 }
 
@@ -61,6 +67,8 @@ func GpsCreate(k string, dp *GpsDP) error {
 	if err != nil {
 		return err
 	}
+	rds := rdsPool.Get()
+	defer rds.Close()
 	_, err = rds.Do("SET", k, json)
 	if err != nil {
 		return err
@@ -69,6 +77,8 @@ func GpsCreate(k string, dp *GpsDP) error {
 }
 
 func startWith(k string) ([]string, error) {
+	rds := rdsPool.Get()
+	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYSSTART", k))
 	if err != nil {
 		return nil, err
@@ -77,6 +87,8 @@ func startWith(k string) ([]string, error) {
 }
 
 func MaxGet(k string) (*GpsDP, error) {
+	rds := rdsPool.Get()
+	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYSSTART", k))
 	if err != nil {
 		return nil, err
@@ -95,6 +107,8 @@ func MaxGet(k string) (*GpsDP, error) {
 }
 
 func GetOneByKey(k string) (*GpsDP, error) {
+	rds := rdsPool.Get()
+	defer rds.Close()
 	o, err := redis.String(rds.Do("GET", k))
 	if err != nil {
 		return nil, err
@@ -112,6 +126,8 @@ func Replace(k string, h *GpsDP) error {
 	if err != nil {
 		return err
 	}
+	rds := rdsPool.Get()
+	defer rds.Close()
 	_, err = rds.Do("SET", k, json)
 	if err != nil {
 		return err
@@ -123,6 +139,8 @@ func Del(k string) error {
 	if len(strings.TrimSpace(k)) == 0 {
 		return errors.New("uid was nil")
 	}
+	rds := rdsPool.Get()
+	defer rds.Close()
 	_, err := redis.Int(rds.Do("DEL", k))
 	if err != nil {
 		return err
@@ -131,6 +149,8 @@ func Del(k string) error {
 }
 
 func GetRange(start string, end string, interval float64, page int) ([]*GpsDP, error) {
+	rds := rdsPool.Get()
+	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYSRANGE", start, end))
 	if err != nil {
 		return nil, err
@@ -196,6 +216,8 @@ func GetRange(start string, end string, interval float64, page int) ([]*GpsDP, e
 }
 
 func All() ([]string, error) {
+	rds := rdsPool.Get()
+	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYS", "*"))
 	if err != nil {
 		return nil, err

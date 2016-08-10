@@ -10,6 +10,7 @@ import (
 	"github.com/syndtr/goleveldb/leveldb/errors"
 	"strings"
 	"Coolpy/Deller"
+	"time"
 )
 
 type Node struct {
@@ -38,19 +39,25 @@ func (c *NodeType) GetName(v int) string {
 	return NodeReflectType.Field(v).Name
 }
 
-var rds redis.Conn
+var rdsPool *redis.Pool
 
 func Connect(addr string, pwd string) {
-	c, err := redis.Dial("tcp", addr)
-	if err != nil {
-		panic(err)
+	rdsPool = &redis.Pool{
+		MaxIdle:     10,
+		IdleTimeout: time.Second * 300,
+		Dial: func() (redis.Conn, error) {
+			conn, err := redis.Dial("tcp", addr)
+			if err != nil {
+				return nil, err
+			}
+			_, err = conn.Do("AUTH", pwd)
+			if err != nil {
+				return nil, err
+			}
+			conn.Do("SELECT", "3")
+			return conn, nil
+		},
 	}
-	_, err = c.Do("AUTH", pwd)
-	if err != nil {
-		panic(err)
-	}
-	rds = c
-	rds.Do("SELECT", "3")
 	go delChan()
 }
 
@@ -108,6 +115,8 @@ func nodeCreate(ukey string, node *Node) error {
 		return err
 	}
 	key := ukey + ":" + strconv.FormatInt(node.HubId, 10) + ":" + strconv.FormatInt(node.Id, 10)
+	rds := rdsPool.Get()
+	defer rds.Close()
 	_, err = rds.Do("SET", key, json)
 	if err != nil {
 		return err
@@ -137,6 +146,8 @@ func nodeCreate(ukey string, node *Node) error {
 }
 
 func nodeStartWith(k string) ([]*Node, error) {
+	rds := rdsPool.Get()
+	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYSSTART", k))
 	if err != nil {
 		return nil, err
@@ -155,6 +166,8 @@ func nodeStartWith(k string) ([]*Node, error) {
 }
 
 func NodeGetOne(k string) (*Node, error) {
+	rds := rdsPool.Get()
+	defer rds.Close()
 	o, err := redis.String(rds.Do("GET", k))
 	if err != nil {
 		return nil, err
@@ -172,6 +185,8 @@ func nodeReplace(k string, h *Node) error {
 	if err != nil {
 		return err
 	}
+	rds := rdsPool.Get()
+	defer rds.Close()
 	_, err = rds.Do("SET", k, json)
 	if err != nil {
 		return err
@@ -183,6 +198,8 @@ func del(k string) error {
 	if len(strings.TrimSpace(k)) == 0 {
 		return errors.New("uid was nil")
 	}
+	rds := rdsPool.Get()
+	defer rds.Close()
 	_, err := redis.Int(rds.Do("DEL", k))
 	if err != nil {
 		return err
@@ -191,6 +208,8 @@ func del(k string) error {
 }
 
 func All() ([]string, error) {
+	rds := rdsPool.Get()
+	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYS", "*"))
 	if err != nil {
 		return nil, err

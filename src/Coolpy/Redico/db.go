@@ -39,12 +39,12 @@ func (db *RedicoDB) exists(k string) bool {
 	return ok
 }
 
-var bufPool = sync.Pool{
-	New:func() interface{} {
-		buf := make([]byte, 8)
-		return buf
-	},
-}
+//var bufPool = sync.Pool{
+//	New:func() interface{} {
+//		buf := make([]byte, 8)
+//		return buf
+//	},
+//}
 
 // change int key value
 func (db *RedicoDB) stringIncr(k string, delta int) (int, error) {
@@ -66,10 +66,10 @@ func (db *RedicoDB) stringIncr(k string, delta int) (int, error) {
 func (db *RedicoDB) allKeys() []string {
 	var keys []string
 	iter := db.leveldb.NewIterator(nil, nil)
+	defer iter.Release()
 	for iter.Next() {
 		keys = append(keys, string(iter.Key()))
 	}
-	defer iter.Release()
 	//sort.Strings(keys) // To make things deterministic.
 	return keys
 }
@@ -77,20 +77,20 @@ func (db *RedicoDB) allKeys() []string {
 func (db *RedicoDB) keyStart(k string) []string {
 	var keys []string
 	iter := db.leveldb.NewIterator(util.BytesPrefix([]byte(k)), nil)
+	defer iter.Release()
 	for iter.Next() {
 		keys = append(keys, string(iter.Key()))
 	}
-	defer iter.Release()
 	return keys
 }
 
 func (db *RedicoDB) keyRange(min string, max string) []string {
 	var keys []string
 	iter := db.leveldb.NewIterator(nil, nil)
+	defer iter.Release()
 	for ok := iter.Seek([]byte(min)); ok && bytes.Compare(iter.Key(), []byte(max)) <= 0; ok = iter.Next() {
 		keys = append(keys, string(iter.Key()))
 	}
-	defer iter.Release()
 	return keys
 }
 

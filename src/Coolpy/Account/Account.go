@@ -7,6 +7,7 @@ import (
 	"errors"
 	"github.com/garyburd/redigo/redis"
 	"regexp"
+	"time"
 )
 
 type Person struct {
@@ -23,19 +24,25 @@ func ValidateUidPwd(vstr string) bool {
 	return re
 }
 
-var rds redis.Conn
+var rdsPool *redis.Pool
 
 func Connect(addr string, pwd string) {
-	c, err := redis.Dial("tcp", addr)
-	if err != nil {
-		panic(err)
+	rdsPool = &redis.Pool{
+		MaxIdle:     10,
+		IdleTimeout: time.Second * 300,
+		Dial: func() (redis.Conn, error) {
+			conn, err := redis.Dial("tcp", addr)
+			if err != nil {
+				return nil, err
+			}
+			_, err = conn.Do("AUTH", pwd)
+			if err != nil {
+				return nil, err
+			}
+			conn.Do("SELECT", "1")
+			return conn, nil
+		},
 	}
-	_, err = c.Do("AUTH", pwd)
-	if err != nil {
-		panic(err)
-	}
-	rds = c
-	_, err = redis.String(rds.Do("SELECT", "1"));
 }
 
 func New() *Person {
@@ -55,6 +62,8 @@ func create(ps *Person) error {
 		return err
 	}
 	k := ps.Ukey + ":" + ps.Uid
+	rds := rdsPool.Get()
+	defer rds.Close()
 	_, err = rds.Do("SET", k, json)
 	if err != nil {
 		return err
@@ -70,7 +79,12 @@ func Get(uid string) (*Person, error) {
 	if err != nil {
 		return nil, err
 	}
-	o, _ := redis.String(rds.Do("GET", k))
+	rds := rdsPool.Get()
+	defer rds.Close()
+	o, err := redis.String(rds.Do("GET", k))
+	if err != nil {
+		return nil, err
+	}
 	np := &Person{}
 	err = json.Unmarshal([]byte(o), &np)
 	if err != nil {
@@ -87,6 +101,8 @@ func del(uid string) error {
 	if err != nil {
 		return err
 	}
+	rds := rdsPool.Get()
+	defer rds.Close()
 	_, err = redis.Int(rds.Do("DEL", k))
 	if err != nil {
 		return err
@@ -95,6 +111,8 @@ func del(uid string) error {
 }
 
 func All() ([]*Person, error) {
+	rds := rdsPool.Get()
+	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYS", "*"))
 	if err != nil {
 		return nil, err
@@ -115,6 +133,8 @@ func All() ([]*Person, error) {
 }
 
 func getFromDb(uid string) (string, error) {
+	rds := rdsPool.Get()
+	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYS", "*:" + uid))
 	if err != nil {
 		return "", err
@@ -129,6 +149,8 @@ func GetUkeyFromDb(k string) (string, error) {
 	if len(strings.TrimSpace(k)) == 0 {
 		return "", errors.New("ukey was nil")
 	}
+	rds := rdsPool.Get()
+	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYS", k + ":*"))
 	if err != nil {
 		return "", err
