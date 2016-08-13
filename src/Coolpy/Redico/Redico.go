@@ -32,6 +32,8 @@ type Redico struct {
 
 type txCmd func(*redeo.Responder, *connCtx)
 
+var datapath string
+
 // connCtx has all state for a single connection.
 type connCtx struct {
 	selectedDB       int            // selected DB
@@ -48,7 +50,8 @@ func NewRedico() *Redico {
 	}
 }
 
-func Run() (*Redico, error) {
+func Run(absPath string) (*Redico, error) {
+	datapath = absPath
 	m := NewRedico()
 	return m, m.Start()
 }

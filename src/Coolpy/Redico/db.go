@@ -21,7 +21,7 @@ func newRedicoDB(id int, l *sync.Mutex) RedicoDB {
 	rdb := RedicoDB{
 		id:            id,
 		master:        l,
-		DbPath: "data/" + strconv.Itoa(id),
+		DbPath: datapath + "/data/" + strconv.Itoa(id),
 	}
 	o := &opt.Options{
 		Compression:opt.NoCompression,

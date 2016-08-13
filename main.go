@@ -41,8 +41,14 @@ func main() {
 	flag.IntVar(&mport, "m", 1883, "mqtt port munber")
 	flag.IntVar(&wport, "w", 8000, "www website port munber")
 	flag.Parse()
+
+	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	//初始化数据库服务
-	redServer, err := Redico.Run()
+	redServer, err := Redico.Run(dir)
 	if err != nil {
 		panic(err)
 	}
@@ -125,18 +131,14 @@ func main() {
 	}()
 	fmt.Println("Coolpy http on port", strconv.Itoa(port))
 
-	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
-	if err != nil {
-		log.Fatal(err)
-	}
 	//当api端口号被启动参数修改时即自动更新www相关连接参数
-	settingpath := dir + "\\www\\scripts-app\\setting.js"
+	settingpath := dir + "/www/scripts-app/setting.js"
 	nstring := "var basicurl=\"http://\"+ window.location.hostname +\":" +strconv.Itoa(port)+ "\""
 	err = ioutil.WriteFile(settingpath, []byte(nstring), 0644)
 	if err != nil{
 		fmt.Println(err)
 	}
-	http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir(dir + "\\www"))))
+	http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir(dir + "/www"))))
 	go func() {
 		err := http.ListenAndServe(":" + strconv.Itoa(wport), nil)
 		if err != nil {
