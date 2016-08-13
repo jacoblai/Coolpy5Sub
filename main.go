@@ -28,6 +28,7 @@ import (
 	"Coolpy/CoSystem"
 	"io/ioutil"
 	"strings"
+	"path/filepath"
 )
 
 func main() {
@@ -124,20 +125,25 @@ func main() {
 		}
 	}()
 	fmt.Println("Coolpy http on port", strconv.Itoa(port))
+
+	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	if err != nil {
+		log.Fatal(err)
+	}
 	if port != 6543 {
 		//当api端口号被启动参数修改时即自动更新www相关连接参数
-		f, err := ioutil.ReadFile("www/scripts-app/setting.js")
+		settingpath := dir + "\\www\\scripts-app\\setting.js"
+		f, err := ioutil.ReadFile(settingpath)
 		if err != nil {
 			fmt.Println(err)
 		}
 		nstring := strings.Replace(string(f), "6543", strconv.Itoa(port), -1)
-		err = ioutil.WriteFile("www/scripts-app/setting.js", []byte(nstring), 0644)
+		err = ioutil.WriteFile(settingpath, []byte(nstring), 0644)
 		if err != nil{
 			fmt.Println(err)
 		}
 	}
-
-	http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("www"))))
+	http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir(dir + "\\www"))))
 	go func() {
 		err := http.ListenAndServe(":" + strconv.Itoa(wport), nil)
 		if err != nil {
