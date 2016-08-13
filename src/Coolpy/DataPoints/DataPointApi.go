@@ -16,6 +16,7 @@ import (
 	"Coolpy/Controller"
 	"Coolpy/Mtsvc"
 	"Coolpy/Photos"
+	"io/ioutil"
 )
 
 var validate *validator.Validate
@@ -119,30 +120,22 @@ func DPPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		pStr, _ := json.Marshal(&v)
 		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
 	} else if n.Type == Nodes.NodeTypeEnum.Gen {
-		decoder := json.NewDecoder(r.Body)
-		var v Gens.GenDP
-		err = decoder.Decode(&v)
+		injson,err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
 		}
-		errs := validate.Struct(v)
-		if errs != nil {
-			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "invalid")
+		if !Gens.IsJson(injson) {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "value must json")
 			return
 		}
-		if v.TimeStamp.IsZero() {
-			v.TimeStamp = time.Now().UTC().Add(time.Hour * 8)
-		}
-		v.HubId, _ = strconv.ParseInt(hid, 10, 64)
-		v.NodeId, _ = strconv.ParseInt(nid, 10, 64)
-		err = Gens.GenCreate(dpkey + "," + v.TimeStamp.Format(time.RFC3339Nano), &v)
+		timeStamp := time.Now().UTC().Add(time.Hour * 8).Format(time.RFC3339Nano)
+		err = Gens.GenCreate(dpkey + "," + timeStamp, injson)
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
 		}
-		pStr, _ := json.Marshal(&v)
-		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
+		fmt.Fprintf(w, `{"ok":%d,"data":"%v"}`, 1, timeStamp)
 	} else {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "unkown type")
 	}

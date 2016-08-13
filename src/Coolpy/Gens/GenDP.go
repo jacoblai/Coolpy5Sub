@@ -59,14 +59,15 @@ func delChan() {
 	}
 }
 
-func GenCreate(k string, dp *GenDP) error {
-	json, err := json.Marshal(dp)
-	if err != nil {
-		return err
-	}
+func IsJson(s []byte) bool {
+	var js map[string]interface{}
+	return json.Unmarshal(s, &js) == nil
+}
+
+func GenCreate(k string, gen []byte) error {
 	rds := rdsPool.Get()
 	defer rds.Close()
-	_, err = rds.Do("SET", k, json)
+	_, err := rds.Do("SET", k, string(gen))
 	if err != nil {
 		return err
 	}
@@ -145,7 +146,7 @@ func Del(k string) error {
 	return nil
 }
 
-func GetRange(start string, end string, interval float64, page int) ([]*GenDP, error) {
+func GetRange(start string, end string, interval float64, page int) ([]interface{}, error) {
 	rds := rdsPool.Get()
 	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYSRANGE", start, end))
@@ -201,14 +202,13 @@ func GetRange(start string, end string, interval float64, page int) ([]*GenDP, e
 	} else {
 		return nil, errors.New("page not ext")
 	}
-	var ndata []*GenDP
+	var ndata []interface{}
 	for _, v := range pageData {
 		o, _ := redis.String(rds.Do("GET", v))
-		h := &GenDP{}
-		json.Unmarshal([]byte(o), &h)
-		ndata = append(ndata, h)
+		var js map[string]interface{}
+		json.Unmarshal([]byte(o), &js)
+		ndata = append(ndata, js)
 	}
-	sortutil.DescByField(ndata, "TimeStamp")
 	return ndata, nil
 }
 
