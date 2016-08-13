@@ -27,7 +27,6 @@ import (
 	"Coolpy/Deller"
 	"Coolpy/CoSystem"
 	"io/ioutil"
-	"strings"
 	"path/filepath"
 )
 
@@ -130,18 +129,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if port != 6543 {
-		//当api端口号被启动参数修改时即自动更新www相关连接参数
-		settingpath := dir + "\\www\\scripts-app\\setting.js"
-		f, err := ioutil.ReadFile(settingpath)
-		if err != nil {
-			fmt.Println(err)
-		}
-		nstring := strings.Replace(string(f), "6543", strconv.Itoa(port), -1)
-		err = ioutil.WriteFile(settingpath, []byte(nstring), 0644)
-		if err != nil{
-			fmt.Println(err)
-		}
+	//当api端口号被启动参数修改时即自动更新www相关连接参数
+	settingpath := dir + "\\www\\scripts-app\\setting.js"
+	nstring := "var basicurl=\"http://\"+ window.location.hostname +\":" +strconv.Itoa(port)+ "\""
+	err = ioutil.WriteFile(settingpath, []byte(nstring), 0644)
+	if err != nil{
+		fmt.Println(err)
 	}
 	http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir(dir + "\\www"))))
 	go func() {

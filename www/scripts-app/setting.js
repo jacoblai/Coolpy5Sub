@@ -1,1 +1,1 @@
-﻿var basicurl = "http://"+ window.location.hostname +":6543"
+var basicurl="http://"+ window.location.hostname +":6543"
