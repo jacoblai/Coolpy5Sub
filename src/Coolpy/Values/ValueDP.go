@@ -208,7 +208,6 @@ func GetRange(start string, end string, interval float64, page int) ([]*ValueDP,
 		json.Unmarshal([]byte(o), &h)
 		ndata = append(ndata, h)
 	}
-	sortutil.DescByField(ndata, "TimeStamp")
 	return ndata, nil
 }
 
