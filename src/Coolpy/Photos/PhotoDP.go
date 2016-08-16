@@ -133,7 +133,7 @@ func del(k string) error {
 	return nil
 }
 
-func GetRange(start string, end string, interval float64, page int) ([]*PhotoDP, error) {
+func GetRange(start string, end string, interval float64, page int) ([]string, error) {
 	rds := rdsPool.Get()
 	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYSRANGE", start, end))
@@ -143,60 +143,23 @@ func GetRange(start string, end string, interval float64, page int) ([]*PhotoDP,
 	if len(data) <= 0 {
 		return nil, errors.New("no data")
 	}
-	sortutil.Desc(data)
 	var IntervalData []string
 	for _, v := range data {
 		if len(IntervalData) == 0 {
-			IntervalData = append(IntervalData, v)
+			fk:= strings.Split(v, ",")
+			IntervalData = append(IntervalData, fk[2])
 		} else {
-			otime := strings.Split(IntervalData[len(IntervalData) - 1], ",")
-			otm, _ := time.Parse(time.RFC3339Nano, otime[3])
+			otime := IntervalData[len(IntervalData) - 1]
+			otm, _ := time.Parse(time.RFC3339Nano, otime)
 			vtime := strings.Split(v, ",")
-			vtm, _ := time.Parse(time.RFC3339Nano, vtime[3])
-			du := otm.Sub(vtm)
+			vtm, _ := time.Parse(time.RFC3339Nano, vtime[2])
+			du := vtm.Sub(otm)
 			if du.Seconds() >= interval {
-				IntervalData = append(IntervalData, v)
+				IntervalData = append(IntervalData, vtime[2])
 			}
 		}
 	}
-	pageSize := 50
-	allcount := len(IntervalData)
-	lastPageSize := allcount % pageSize
-	totalPage := (allcount + pageSize - 1) / pageSize
-	if page > totalPage {
-		return nil, errors.New("pages out of range")
-	}
-	var pageData []string
-	if page == 1 {
-		if totalPage == page {
-			//只有一页
-			pageData = IntervalData[:allcount]
-		} else {
-			//不止一页的第一页
-			pageData = IntervalData[:pageSize]
-		}
-	} else if page < totalPage {
-		//中间页
-		cursor := (pageSize * page) - pageSize //起启位计算
-		pageData = IntervalData[cursor:cursor + pageSize]
-	} else if page == totalPage {
-		//尾页
-		if lastPageSize == 0 {
-			pageData = IntervalData[allcount - pageSize:]
-		} else {
-			pageData = IntervalData[allcount - lastPageSize:]
-		}
-	} else {
-		return nil, errors.New("page not ext")
-	}
-	var ndata []*PhotoDP
-	for _, v := range pageData {
-		o, _ := redis.String(rds.Do("GET", v))
-		h := &PhotoDP{}
-		json.Unmarshal([]byte(o), &h)
-		ndata = append(ndata, h)
-	}
-	return ndata, nil
+	return IntervalData, nil
 }
 
 func All() ([]string, error) {

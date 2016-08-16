@@ -41,7 +41,7 @@ func PhotoPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	key := ukey + ":" + hid + ":" + nid
-	dpkey := ukey + "," + hid + "," + nid
+	dpkey := hid + "," + nid
 	n, err := Nodes.NodeGetOne(key)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext or node not in hub")
@@ -101,7 +101,7 @@ func PhotoGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	key := ukey + ":" + hid + ":" + nid
-	dpkey := ukey + "," + hid + "," + nid
+	dpkey := hid + "," + nid
 	n, err := Nodes.NodeGetOne(key)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext or node not in hub")
@@ -160,7 +160,7 @@ func PhotoGetByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 		return
 	}
 	key := ukey + ":" + hid + ":" + nid
-	dpkey := ukey + "," + hid + "," + nid
+	dpkey := hid + "," + nid
 	n, err := Nodes.NodeGetOne(key)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext or node not in hub")
@@ -219,7 +219,7 @@ func PhotoDelByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 		return
 	}
 	key := ukey + ":" + hid + ":" + nid
-	dpkey := ukey + "," + hid + "," + nid
+	dpkey := hid + "," + nid
 	n, err := Nodes.NodeGetOne(key)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext or node not in hub")
