@@ -155,54 +155,23 @@ func GetRange(start string, end string, interval float64, page int) ([]*GenDP, e
 	if len(data) <= 0 {
 		return nil, errors.New("no data")
 	}
-	sortutil.Desc(data)
 	var IntervalData []string
 	for _, v := range data {
 		if len(IntervalData) == 0 {
 			IntervalData = append(IntervalData, v)
 		} else {
 			otime := strings.Split(IntervalData[len(IntervalData) - 1], ",")
-			otm, _ := time.Parse(time.RFC3339Nano, otime[3])
+			otm, _ := time.Parse(time.RFC3339Nano, otime[2])
 			vtime := strings.Split(v, ",")
-			vtm, _ := time.Parse(time.RFC3339Nano, vtime[3])
-			du := otm.Sub(vtm)
+			vtm, _ := time.Parse(time.RFC3339Nano, vtime[2])
+			du := vtm.Sub(otm)
 			if du.Seconds() >= interval {
 				IntervalData = append(IntervalData, v)
 			}
 		}
 	}
-	pageSize := 50
-	allcount := len(IntervalData)
-	lastPageSize := allcount % pageSize
-	totalPage := (allcount + pageSize - 1) / pageSize
-	if page > totalPage {
-		return nil, errors.New("pages out of range")
-	}
-	var pageData []string
-	if page == 1 {
-		if totalPage == page {
-			//只有一页
-			pageData = IntervalData[:allcount]
-		} else {
-			//不止一页的第一页
-			pageData = IntervalData[:pageSize]
-		}
-	} else if page < totalPage {
-		//中间页
-		cursor := (pageSize * page) - pageSize //起启位计算
-		pageData = IntervalData[cursor:cursor + pageSize]
-	} else if page == totalPage {
-		//尾页
-		if lastPageSize == 0 {
-			pageData = IntervalData[allcount - pageSize:]
-		} else {
-			pageData = IntervalData[allcount - lastPageSize:]
-		}
-	} else {
-		return nil, errors.New("page not ext")
-	}
 	var ndata []*GenDP
-	for _, v := range pageData {
+	for _, v := range IntervalData {
 		o, _ := redis.String(rds.Do("GET", v))
 		h := &GenDP{}
 		json.Unmarshal([]byte(o), &h)

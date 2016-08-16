@@ -62,7 +62,7 @@ func DPPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	key := ukey + ":" + hid + ":" + nid
-	dpkey := ukey + "," + hid + "," + nid
+	dpkey := hid + "," + nid
 	n, err := Nodes.NodeGetOne(key)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext or node not in hub")
@@ -141,6 +141,10 @@ func DPPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
 		}
+		if err != nil {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+			return
+		}
 		pStr, _ := json.Marshal(&v)
 		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
 	} else {
@@ -171,7 +175,7 @@ func DPGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	key := ukey + ":" + hid + ":" + nid
-	dpkey := ukey + "," + hid + "," + nid
+	dpkey := hid + "," + nid
 	n, err := Nodes.NodeGetOne(key)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext or node not in hub")
@@ -383,7 +387,7 @@ func DPGetByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	key := ukey + ":" + hid + ":" + nid
-	dpkey := ukey + "," + hid + "," + nid
+	dpkey := hid + "," + nid
 	n, err := Nodes.NodeGetOne(key)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext or node not in hub")
@@ -446,7 +450,7 @@ func DPPutByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	key := ukey + ":" + hid + ":" + nid
-	dpkey := ukey + "," + hid + "," + nid
+	dpkey := hid + "," + nid
 	n, err := Nodes.NodeGetOne(key)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext or node not in hub")
@@ -566,7 +570,7 @@ func DPDelByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	key := ukey + ":" + hid + ":" + nid
-	dpkey := ukey + "," + hid + "," + nid
+	dpkey := hid + "," + nid
 	n, err := Nodes.NodeGetOne(key)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext or node not in hub")
@@ -664,7 +668,7 @@ func DPGetRange(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	key := ukey + ":" + hid + ":" + nid
-	dpkey := ukey + "," + hid + "," + nid
+	dpkey := hid + "," + nid
 	n, err := Nodes.NodeGetOne(key)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext or node not in hub")
