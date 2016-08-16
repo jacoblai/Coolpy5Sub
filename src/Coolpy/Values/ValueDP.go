@@ -155,17 +155,16 @@ func GetRange(start string, end string, interval float64, page int) ([]*ValueDP,
 	if len(data) <= 0 {
 		return nil, errors.New("no data")
 	}
-	sortutil.Desc(data)
 	var IntervalData []string
 	for _, v := range data {
 		if len(IntervalData) == 0 {
 			IntervalData = append(IntervalData, v)
 		} else {
 			otime := strings.Split(IntervalData[len(IntervalData) - 1], ",")
-			otm, _ := time.Parse(time.RFC3339Nano, otime[3])
+			otm, _ := time.Parse(time.RFC3339Nano, otime[2])
 			vtime := strings.Split(v, ",")
-			vtm, _ := time.Parse(time.RFC3339Nano, vtime[3])
-			du := otm.Sub(vtm)
+			vtm, _ := time.Parse(time.RFC3339Nano, vtime[2])
+			du := vtm.Sub(otm)
 			if du.Seconds() >= interval {
 				IntervalData = append(IntervalData, v)
 			}
