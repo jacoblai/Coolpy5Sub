@@ -151,8 +151,13 @@ func PhotoGetByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	}
 	ukey := r.Header.Get("U-ApiKey")
 	if ukey == "" {
-		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not post")
-		return
+		qs := r.URL.Query()
+		if qs.Get("ukey") != "" {
+			ukey = qs.Get("ukey")
+		} else {
+			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not post")
+			return
+		}
 	}
 	_, err := Account.GetUkeyFromDb(ukey)
 	if err != nil {
