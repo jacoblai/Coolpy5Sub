@@ -1,9 +1,9 @@
 package Mtsvc
 
 import (
-	"github.com/gomqtt/client"
-	"github.com/gomqtt/transport"
-	"github.com/gomqtt/broker"
+	"github.com/jacoblai/client"
+	"github.com/jacoblai/transport"
+	"github.com/jacoblai/broker"
 	"strconv"
 	"fmt"
 )
