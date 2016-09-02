@@ -33,13 +33,10 @@ import (
 func main() {
 	fmt.Println("Coolpy Version:", CoSystem.CpVersion)
 	var (
-		port int
-		mport int
-		wport int
+		port   = flag.Int("a", 6543, "web api port munber")
+		mport = flag.Int( "m", 1883, "mqtt port munber")
+		wport  = flag.Int( "w", 8000, "www website port munber")
 	)
-	flag.IntVar(&port, "a", 6543, "web api port munber")
-	flag.IntVar(&mport, "m", 1883, "mqtt port munber")
-	flag.IntVar(&wport, "w", 8000, "www website port munber")
 	flag.Parse()
 
 	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
@@ -79,9 +76,9 @@ func main() {
 	//host mqtt service
 	go func() {
 		msvc := &Mtsvc.MqttSvc{}
-		msvc.Host(mport)
+		msvc.Host(*mport)
 	}()
-	fmt.Println("Coolpy mqtt on port", strconv.Itoa(mport))
+	fmt.Println("Coolpy mqtt on port", strconv.Itoa(*mport))
 
 	router := httprouter.New()
 	//用户管理api
@@ -120,7 +117,7 @@ func main() {
 	//系统api
 	router.GET("/api/sys/version", CoSystem.VersionGet)
 	go func() {
-		ln, err := net.Listen("tcp", ":" + strconv.Itoa(port))
+		ln, err := net.Listen("tcp", ":" + strconv.Itoa(*port))
 		if err != nil {
 			fmt.Println("Can't listen:", err)
 		}
@@ -129,23 +126,23 @@ func main() {
 			log.Fatal(err)
 		}
 	}()
-	fmt.Println("Coolpy http on port", strconv.Itoa(port))
+	fmt.Println("Coolpy http on port", strconv.Itoa(*port))
 
 	//当api端口号被启动参数修改时即自动更新www相关连接参数
 	settingpath := dir + "/www/scripts-app/setting.js"
-	nstring := "var basicurl=\"http://\"+ window.location.hostname +\":" +strconv.Itoa(port)+ "\""
+	nstring := "var basicurl=\"http://\"+ window.location.hostname +\":" +strconv.Itoa(*port)+ "\""
 	err = ioutil.WriteFile(settingpath, []byte(nstring), 0644)
 	if err != nil{
 		fmt.Println(err)
 	}
 	http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir(dir + "/www"))))
 	go func() {
-		err := http.ListenAndServe(":" + strconv.Itoa(wport), nil)
+		err := http.ListenAndServe(":" + strconv.Itoa(*wport), nil)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}()
-	fmt.Println("Coolpy www on port", strconv.Itoa(wport))
+	fmt.Println("Coolpy www on port", strconv.Itoa(*wport))
 	fmt.Println("Power By ICOOLPY.COM")
 
 	signalChan := make(chan os.Signal, 1)
