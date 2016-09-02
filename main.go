@@ -28,9 +28,11 @@ import (
 	"Coolpy/CoSystem"
 	"io/ioutil"
 	"path/filepath"
+	"runtime"
 )
 
 func main() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
 	fmt.Println("Coolpy Version:", CoSystem.CpVersion)
 	var (
 		port   = flag.Int("a", 6543, "web api port munber")
