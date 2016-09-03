@@ -1,10 +1,9 @@
-package Controller
+package Coolpy
 
 import (
 	"github.com/garyburd/redigo/redis"
 	"strconv"
 	"encoding/json"
-	"Coolpy/Deller"
 	"strings"
 	"errors"
 	"time"
@@ -31,10 +30,10 @@ type RangeControl struct {
 	Step   int64
 }
 
-var rdsPool *redis.Pool
+var ctrlrdsPool *redis.Pool
 
-func Connect(addr string, pwd string) {
-	rdsPool = &redis.Pool{
+func CtrlConnect(addr string, pwd string) {
+	ctrlrdsPool = &redis.Pool{
 		MaxIdle:     10,
 		IdleTimeout: time.Second * 300,
 		Dial: func() (redis.Conn, error) {
@@ -50,30 +49,15 @@ func Connect(addr string, pwd string) {
 			return conn, nil
 		},
 	}
-	go delChan()
 }
 
-func delChan() {
-	for {
-		select {
-		case k, ok := <-Deller.DelControls:
-			if ok {
-				cs, err := ctrlStartWith(k)
-				if err != nil {
-					break
-				}
-				for _, v := range cs {
-					del(v)
-				}
-			}
-		case ukeyhidnid, ok := <-Deller.DelControl:
-			if ok {
-				del(ukeyhidnid)
-			}
-		}
-		if Deller.DelControls == nil && Deller.DelControl == nil {
-			break
-		}
+func DelControls(k string) {
+	cs, err := ctrlStartWith(k)
+	if err != nil {
+		return
+	}
+	for _, v := range cs {
+		ctrldel(v)
 	}
 }
 
@@ -82,7 +66,7 @@ func ReplaceSwitcher(k string, s *Switcher) error {
 	if err != nil {
 		return err
 	}
-	rds := rdsPool.Get()
+	rds := ctrlrdsPool.Get()
 	defer rds.Close()
 	_, err = rds.Do("SET", k, json)
 	if err != nil {
@@ -92,7 +76,7 @@ func ReplaceSwitcher(k string, s *Switcher) error {
 }
 
 func GetSwitcher(k string) (*Switcher, error) {
-	rds := rdsPool.Get()
+	rds := ctrlrdsPool.Get()
 	defer rds.Close()
 	o, err := redis.String(rds.Do("GET", k))
 	if err != nil {
@@ -117,7 +101,7 @@ func BeginSwitcher(ukey string, Hubid int64, Nodeid int64) error {
 	if err != nil {
 		return err
 	}
-	rds := rdsPool.Get()
+	rds := ctrlrdsPool.Get()
 	defer rds.Close()
 	_, err = rds.Do("SET", key, json)
 	if err != nil {
@@ -131,7 +115,7 @@ func ReplaceRangeControl(k string, s *RangeControl) error {
 	if err != nil {
 		return err
 	}
-	rds := rdsPool.Get()
+	rds := ctrlrdsPool.Get()
 	defer rds.Close()
 	_, err = rds.Do("SET", k, json)
 	if err != nil {
@@ -141,7 +125,7 @@ func ReplaceRangeControl(k string, s *RangeControl) error {
 }
 
 func GetRangeControl(k string) (*RangeControl, error) {
-	rds := rdsPool.Get()
+	rds := ctrlrdsPool.Get()
 	defer rds.Close()
 	o, err := redis.String(rds.Do("GET", k))
 	if err != nil {
@@ -169,7 +153,7 @@ func BeginRangeControl(ukey string, Hubid int64, Nodeid int64) error {
 	if err != nil {
 		return err
 	}
-	rds := rdsPool.Get()
+	rds := ctrlrdsPool.Get()
 	defer rds.Close()
 	_, err = rds.Do("SET", key, json)
 	if err != nil {
@@ -183,7 +167,7 @@ func ReplaceGenControl(k string, s *GenControl) error {
 	if err != nil {
 		return err
 	}
-	rds := rdsPool.Get()
+	rds := ctrlrdsPool.Get()
 	defer rds.Close()
 	_, err = rds.Do("SET", k, json)
 	if err != nil {
@@ -193,7 +177,7 @@ func ReplaceGenControl(k string, s *GenControl) error {
 }
 
 func GetGenControl(k string) (*GenControl, error) {
-	rds := rdsPool.Get()
+	rds := ctrlrdsPool.Get()
 	defer rds.Close()
 	o, err := redis.String(rds.Do("GET", k))
 	if err != nil {
@@ -218,7 +202,7 @@ func BeginGenControl(ukey string, Hubid int64, Nodeid int64) error {
 	if err != nil {
 		return err
 	}
-	rds := rdsPool.Get()
+	rds := ctrlrdsPool.Get()
 	defer rds.Close()
 	_, err = rds.Do("SET", key, json)
 	if err != nil {
@@ -228,7 +212,7 @@ func BeginGenControl(ukey string, Hubid int64, Nodeid int64) error {
 }
 
 func ctrlStartWith(k string) ([]string, error) {
-	rds := rdsPool.Get()
+	rds := ctrlrdsPool.Get()
 	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYSSTART", k))
 	if err != nil {
@@ -240,11 +224,11 @@ func ctrlStartWith(k string) ([]string, error) {
 	return data, nil
 }
 
-func del(k string) error {
+func ctrldel(k string) error {
 	if len(strings.TrimSpace(k)) == 0 {
 		return errors.New("uid was nil")
 	}
-	rds := rdsPool.Get()
+	rds := ctrlrdsPool.Get()
 	defer rds.Close()
 	_, err := redis.Int(rds.Do("DEL", k))
 	if err != nil {
@@ -253,8 +237,8 @@ func del(k string) error {
 	return nil
 }
 
-func All() ([]string, error) {
-	rds := rdsPool.Get()
+func ctrlAll() ([]string, error) {
+	rds := ctrlrdsPool.Get()
 	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYS", "*"))
 	if err != nil {

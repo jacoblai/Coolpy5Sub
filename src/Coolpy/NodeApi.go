@@ -1,22 +1,12 @@
-package Nodes
+package Coolpy
 
 import (
-	"gopkg.in/go-playground/validator.v8"
 	"fmt"
 	"net/http"
 	"github.com/julienschmidt/httprouter"
 	"encoding/json"
 	"strconv"
-	"Coolpy/Hubs"
-	"Coolpy/Deller"
 )
-
-var validate *validator.Validate
-
-func init() {
-	config := &validator.Config{TagName: "validate"}
-	validate = validator.New(config)
-}
 
 func NodePost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	defer r.Body.Close()
@@ -53,13 +43,13 @@ func NodePost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	n.HubId = nhid
-	errs := validate.Struct(n)
+	errs := CpValidate.Struct(n)
 	if errs != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "invalid")
 		return
 	}
 	ukey, _ := r.Cookie("ukey")
-	_, err = Hubs.HubGetOne(ukey.Value + ":" + hid)
+	_, err = HubGetOne(ukey.Value + ":" + hid)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext")
 		return
@@ -201,10 +191,6 @@ func NodeDel(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func delone(ukeyhidnid string) {
-	go func(){
-		Deller.DelNode <- ukeyhidnid
-	}()
-	go func(){
-		Deller.DelControl <- ukeyhidnid
-	}()
+	nodedel(ukeyhidnid)
+	ctrldel(ukeyhidnid)
 }

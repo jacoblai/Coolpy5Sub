@@ -1,22 +1,12 @@
-package Hubs
+package Coolpy
 
 import (
-	"gopkg.in/go-playground/validator.v8"
 	"net/http"
 	"github.com/julienschmidt/httprouter"
 	"encoding/json"
 	"fmt"
-	"Coolpy/Deller"
-	"Coolpy/Nodes"
-	"Coolpy/Controller"
+	"strconv"
 )
-
-var validate *validator.Validate
-
-func init() {
-	config := &validator.Config{TagName: "validate"}
-	validate = validator.New(config)
-}
 
 func HubPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	defer r.Body.Close()
@@ -42,7 +32,7 @@ func HubPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "dosn't login")
 		return
 	}
-	errs := validate.Struct(h)
+	errs := CpValidate.Struct(h)
 	if errs != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "invalid")
 		return
@@ -110,16 +100,17 @@ func HubsAll(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var Rhub []*RHub
 	for _, h := range ndata {
 		nhub := &RHub{Id:h.Id, Ukey:h.Ukey, Title:h.Title, About:h.About, Tags:h.Tags, Public:h.Public}
-		key := ukey + ":" + h.Id + ":"
-		nodes, _ := Nodes.NodeStartWith(key)
+		strid :=strconv.FormatInt(h.Id, 10)
+		key := ukey.Value + ":" + strid + ":"
+		nodes, _ := NodeStartWith(key)
 		for _, n := range nodes {
 			nnode := &RNode{Id:n.Id, Title:n.Title, About:n.About, Tags:n.Tags, Type:n.Type}
-			if n.Type == Nodes.NodeTypeEnum.Switcher {
-				nnode.Ctrler, _ = Controller.GetSwitcher(key + n.Id)
-			} else if n.Type == Nodes.NodeTypeEnum.GenControl {
-				nnode.Ctrler, _ = Controller.GetGenControl(key + n.Id)
-			} else if n.Type == Nodes.NodeTypeEnum.RangeControl {
-				nnode.Ctrler, _ = Controller.GetRangeControl(key + n.Id)
+			if n.Type == NodeTypeEnum.Switcher {
+				nnode.Ctrler, _ = GetSwitcher(key + strid)
+			} else if n.Type == NodeTypeEnum.GenControl {
+				nnode.Ctrler, _ = GetGenControl(key + strid)
+			} else if n.Type == NodeTypeEnum.RangeControl {
+				nnode.Ctrler, _ = GetRangeControl(key + strid)
 			}
 			nhub.RNodes = append(nhub.RNodes, nnode)
 		}
@@ -215,8 +206,6 @@ func HubDel(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	//delete all sub node
-	go func() {
-		Deller.DelHub <- key
-	}()
+	hubdel(key)
 	fmt.Fprintf(w, `{"ok":%d}`, 1)
 }

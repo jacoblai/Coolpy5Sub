@@ -1,4 +1,4 @@
-package Gens
+package Coolpy
 
 import (
 	"github.com/garyburd/redigo/redis"
@@ -7,7 +7,6 @@ import (
 	"github.com/pmylund/sortutil"
 	"strings"
 	"errors"
-	"Coolpy/Deller"
 )
 
 type GenDP struct {
@@ -17,10 +16,10 @@ type GenDP struct {
 	Value     string `validate:"required"`
 }
 
-var rdsPool *redis.Pool
+var GendprdsPool *redis.Pool
 
-func Connect(addr string, pwd string) {
-	rdsPool = &redis.Pool{
+func GendpConnect(addr string, pwd string) {
+	GendprdsPool = &redis.Pool{
 		MaxIdle:     10,
 		IdleTimeout: time.Second * 300,
 		Dial: func() (redis.Conn, error) {
@@ -36,26 +35,15 @@ func Connect(addr string, pwd string) {
 			return conn, nil
 		},
 	}
-	go delChan()
 }
 
-func delChan() {
-	for {
-		select {
-		case k, ok := <-Deller.DelGens:
-			if ok {
-				vs, err := startWith(k)
-				if err != nil {
-					break
-				}
-				for _, v := range vs {
-					Del(v)
-				}
-			}
-		}
-		if Deller.DelGens == nil {
-			break
-		}
+func delGens(k string) {
+	vs, err := GendpstartWith(k)
+	if err != nil {
+		return
+	}
+	for _, v := range vs {
+		GendpDel(v)
 	}
 }
 
@@ -64,7 +52,7 @@ func GenCreate(k string, dp *GenDP) error {
 	if err != nil {
 		return err
 	}
-	rds := rdsPool.Get()
+	rds := GendprdsPool.Get()
 	defer rds.Close()
 	_, err = rds.Do("SET", k, json)
 	if err != nil {
@@ -73,8 +61,8 @@ func GenCreate(k string, dp *GenDP) error {
 	return nil
 }
 
-func startWith(k string) ([]string, error) {
-	rds := rdsPool.Get()
+func GendpstartWith(k string) ([]string, error) {
+	rds := GendprdsPool.Get()
 	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYSSTART", k))
 	if err != nil {
@@ -83,8 +71,8 @@ func startWith(k string) ([]string, error) {
 	return data, nil
 }
 
-func MaxGet(k string) (*GenDP, error) {
-	rds := rdsPool.Get()
+func GendpMaxGet(k string) (*GenDP, error) {
+	rds := GendprdsPool.Get()
 	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYSSTART", k))
 	if err != nil {
@@ -103,8 +91,8 @@ func MaxGet(k string) (*GenDP, error) {
 	return dp, nil
 }
 
-func GetOneByKey(k string) (*GenDP, error) {
-	rds := rdsPool.Get()
+func GendpGetOneByKey(k string) (*GenDP, error) {
+	rds := GendprdsPool.Get()
 	defer rds.Close()
 	o, err := redis.String(rds.Do("GET", k))
 	if err != nil {
@@ -118,12 +106,12 @@ func GetOneByKey(k string) (*GenDP, error) {
 	return h, nil
 }
 
-func Replace(k string, h *GenDP) error {
+func GendpReplace(k string, h *GenDP) error {
 	json, err := json.Marshal(h)
 	if err != nil {
 		return err
 	}
-	rds := rdsPool.Get()
+	rds := GendprdsPool.Get()
 	defer rds.Close()
 	_, err = rds.Do("SET", k, json)
 	if err != nil {
@@ -132,11 +120,11 @@ func Replace(k string, h *GenDP) error {
 	return nil
 }
 
-func Del(k string) error {
+func GendpDel(k string) error {
 	if len(strings.TrimSpace(k)) == 0 {
 		return errors.New("uid was nil")
 	}
-	rds := rdsPool.Get()
+	rds := GendprdsPool.Get()
 	defer rds.Close()
 	_, err := redis.Int(rds.Do("DEL", k))
 	if err != nil {
@@ -145,8 +133,8 @@ func Del(k string) error {
 	return nil
 }
 
-func GetRange(start string, end string, interval float64, page int) ([]*GenDP, error) {
-	rds := rdsPool.Get()
+func GendpGetRange(start string, end string, interval float64, page int) ([]*GenDP, error) {
+	rds := GendprdsPool.Get()
 	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYSRANGE", start, end))
 	if err != nil {
@@ -180,8 +168,8 @@ func GetRange(start string, end string, interval float64, page int) ([]*GenDP, e
 	return ndata, nil
 }
 
-func All() ([]string, error) {
-	rds := rdsPool.Get()
+func GendpAll() ([]string, error) {
+	rds := GendprdsPool.Get()
 	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYS", "*"))
 	if err != nil {

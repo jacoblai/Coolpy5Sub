@@ -1,12 +1,10 @@
-package Photos
+package Coolpy
 
 import (
 	"fmt"
 	"strconv"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
-	"Coolpy/Account"
-	"Coolpy/Nodes"
 	"time"
 	"io/ioutil"
 	"bytes"
@@ -29,7 +27,7 @@ func PhotoPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not post")
 		return
 	}
-	_, err := Account.GetUkeyFromDb(ukey)
+	_, err := AccGetUkeyFromDb(ukey)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not ext")
 		return
@@ -42,12 +40,12 @@ func PhotoPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 	key := ukey + ":" + hid + ":" + nid
 	dpkey := hid + "," + nid
-	n, err := Nodes.NodeGetOne(key)
+	n, err := NodeGetOne(key)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext or node not in hub")
 		return
 	}
-	if n.Type == Nodes.NodeTypeEnum.Photo {
+	if n.Type == NodeTypeEnum.Photo {
 		img, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "read err")
@@ -95,20 +93,20 @@ func PhotoGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not post")
 		return
 	}
-	_, err := Account.GetUkeyFromDb(ukey)
+	_, err := AccGetUkeyFromDb(ukey)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not ext")
 		return
 	}
 	key := ukey + ":" + hid + ":" + nid
 	dpkey := hid + "," + nid
-	n, err := Nodes.NodeGetOne(key)
+	n, err := NodeGetOne(key)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext or node not in hub")
 		return
 	}
-	if n.Type == Nodes.NodeTypeEnum.Photo {
-		max, err := maxGet(dpkey + ",")
+	if n.Type == NodeTypeEnum.Photo {
+		max, err := PhotomaxGet(dpkey + ",")
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
@@ -159,20 +157,20 @@ func PhotoGetByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 			return
 		}
 	}
-	_, err := Account.GetUkeyFromDb(ukey)
+	_, err := AccGetUkeyFromDb(ukey)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not ext")
 		return
 	}
 	key := ukey + ":" + hid + ":" + nid
 	dpkey := hid + "," + nid
-	n, err := Nodes.NodeGetOne(key)
+	n, err := NodeGetOne(key)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext or node not in hub")
 		return
 	}
-	if n.Type == Nodes.NodeTypeEnum.Photo {
-		one, err := getOneByKey(dpkey + "," + dpKey)
+	if n.Type == NodeTypeEnum.Photo {
+		one, err := PhotogetOneByKey(dpkey + "," + dpKey)
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
@@ -218,25 +216,25 @@ func PhotoDelByKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not post")
 		return
 	}
-	_, err := Account.GetUkeyFromDb(ukey)
+	_, err := AccGetUkeyFromDb(ukey)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "ukey not ext")
 		return
 	}
 	key := ukey + ":" + hid + ":" + nid
 	dpkey := hid + "," + nid
-	n, err := Nodes.NodeGetOne(key)
+	n, err := NodeGetOne(key)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext or node not in hub")
 		return
 	}
-	if n.Type == Nodes.NodeTypeEnum.Photo {
-		c, err := getOneByKey(dpkey + "," + dpKey)
+	if n.Type == NodeTypeEnum.Photo {
+		c, err := PhotogetOneByKey(dpkey + "," + dpKey)
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
 		}
-		err = del(dpkey + "," + dpKey)
+		err = Photodel(dpkey + "," + dpKey)
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return

@@ -1,4 +1,4 @@
-package Photos
+package Coolpy
 
 import (
 	"bytes"

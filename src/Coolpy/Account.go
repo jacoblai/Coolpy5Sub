@@ -1,4 +1,4 @@
-package Account
+package Coolpy
 
 import (
 	"github.com/satori/go.uuid"
@@ -15,7 +15,7 @@ type Person struct {
 	Uid      string `validate:"required"`
 	Pwd      string `validate:"required"`
 	UserName string
-	Email string
+	Email    string
 }
 
 func ValidateUidPwd(vstr string) bool {
@@ -24,10 +24,10 @@ func ValidateUidPwd(vstr string) bool {
 	return re
 }
 
-var rdsPool *redis.Pool
+var accrdsPool *redis.Pool
 
-func Connect(addr string, pwd string) {
-	rdsPool = &redis.Pool{
+func AccConnect(addr string, pwd string) {
+	accrdsPool = &redis.Pool{
 		MaxIdle:     10,
 		IdleTimeout: time.Second * 300,
 		Dial: func() (redis.Conn, error) {
@@ -45,7 +45,7 @@ func Connect(addr string, pwd string) {
 	}
 }
 
-func New() *Person {
+func AccNew() *Person {
 	return &Person{}
 }
 
@@ -53,7 +53,7 @@ func (p *Person) CreateUkey() {
 	p.Ukey = uuid.NewV4().String()
 }
 
-func create(ps *Person) error {
+func Acccreate(ps *Person) error {
 	if len(strings.TrimSpace(ps.Uid)) == 0 {
 		return errors.New("uid was nil")
 	}
@@ -62,7 +62,7 @@ func create(ps *Person) error {
 		return err
 	}
 	k := ps.Ukey + ":" + ps.Uid
-	rds := rdsPool.Get()
+	rds := accrdsPool.Get()
 	defer rds.Close()
 	_, err = rds.Do("SET", k, json)
 	if err != nil {
@@ -71,15 +71,15 @@ func create(ps *Person) error {
 	return nil
 }
 
-func Get(uid string) (*Person, error) {
+func AccGet(uid string) (*Person, error) {
 	if len(strings.TrimSpace(uid)) == 0 {
 		return nil, errors.New("uid was nil")
 	}
-	k, err := getFromDb(uid)
+	k, err := AccgetFromDb(uid)
 	if err != nil {
 		return nil, err
 	}
-	rds := rdsPool.Get()
+	rds := accrdsPool.Get()
 	defer rds.Close()
 	o, err := redis.String(rds.Do("GET", k))
 	if err != nil {
@@ -93,15 +93,15 @@ func Get(uid string) (*Person, error) {
 	return np, nil
 }
 
-func del(uid string) error {
+func Accdel(uid string) error {
 	if len(strings.TrimSpace(uid)) == 0 {
 		return errors.New("uid was nil")
 	}
-	k, err := getFromDb(uid)
+	k, err := AccgetFromDb(uid)
 	if err != nil {
 		return err
 	}
-	rds := rdsPool.Get()
+	rds := accrdsPool.Get()
 	defer rds.Close()
 	_, err = redis.Int(rds.Do("DEL", k))
 	if err != nil {
@@ -110,8 +110,8 @@ func del(uid string) error {
 	return nil
 }
 
-func All() ([]*Person, error) {
-	rds := rdsPool.Get()
+func AccAll() ([]*Person, error) {
+	rds := accrdsPool.Get()
 	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYS", "*"))
 	if err != nil {
@@ -122,7 +122,7 @@ func All() ([]*Person, error) {
 	}
 	var ndata []*Person
 	for _, v := range data {
-		if !strings.HasSuffix(v,"admin") {
+		if !strings.HasSuffix(v, "admin") {
 			o, _ := redis.String(rds.Do("GET", v))
 			np := &Person{}
 			json.Unmarshal([]byte(o), &np)
@@ -132,8 +132,8 @@ func All() ([]*Person, error) {
 	return ndata, nil
 }
 
-func getFromDb(uid string) (string, error) {
-	rds := rdsPool.Get()
+func AccgetFromDb(uid string) (string, error) {
+	rds := accrdsPool.Get()
 	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYS", "*:" + uid))
 	if err != nil {
@@ -145,11 +145,11 @@ func getFromDb(uid string) (string, error) {
 	return data[0], nil
 }
 
-func GetUkeyFromDb(k string) (string, error) {
+func AccGetUkeyFromDb(k string) (string, error) {
 	if len(strings.TrimSpace(k)) == 0 {
 		return "", errors.New("ukey was nil")
 	}
-	rds := rdsPool.Get()
+	rds := accrdsPool.Get()
 	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYS", k + ":*"))
 	if err != nil {

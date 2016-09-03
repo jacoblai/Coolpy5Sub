@@ -1,14 +1,13 @@
-package Hubs
+package Coolpy
 
 import (
 	"github.com/garyburd/redigo/redis"
-	"Coolpy/Incr"
 	"encoding/json"
 	"strconv"
 	"strings"
 	"errors"
-	"Coolpy/Deller"
 	"time"
+	"fmt"
 )
 
 type Hub struct {
@@ -23,10 +22,10 @@ type Hub struct {
 	//Longitude float64 `validate:"gte=-180,lte=180"`
 }
 
-var rdsPool *redis.Pool
+var hubrdsPool *redis.Pool
 
-func Connect(addr string, pwd string) {
-	rdsPool = &redis.Pool{
+func HubConnect(addr string, pwd string) {
+	hubrdsPool = &redis.Pool{
 		MaxIdle:     10,
 		IdleTimeout: time.Second * 300,
 		Dial: func() (redis.Conn, error) {
@@ -42,47 +41,12 @@ func Connect(addr string, pwd string) {
 			return conn, nil
 		},
 	}
-	go delChan()
 }
 
-func delChan() {
-	for {
-		select {
-		case ukey, ok := <-Deller.DelHubs:
-			if ok {
-				hs, err := hubStartWith(ukey)
-				if err != nil {
-					break
-				}
-				for _, v := range hs {
-					delhubs := ukey + ":" + strconv.FormatInt(v.Id, 10)
-					del(delhubs)
-					go deldos(delhubs)
-				}
-			}
-		case delhub, ok := <-Deller.DelHub:
-			if ok {
-				del(delhub)
-				go deldos(delhub)
-			}
-		}
-		if Deller.DelHubs == nil && Deller.DelHub == nil {
-			break
-		}
-	}
-}
 
-func deldos(ukeyhid string) {
-	go func() {
-		Deller.DelControls <- ukeyhid
-	}()
-	go func() {
-		Deller.DelNodes <- ukeyhid
-	}()
-}
 
 func hubCreate(hub *Hub) error {
-	v, err := Incr.HubInrc()
+	v, err := HubInrc()
 	if err != nil {
 		return err
 	}
@@ -92,7 +56,7 @@ func hubCreate(hub *Hub) error {
 	if err != nil {
 		return err
 	}
-	rds := rdsPool.Get()
+	rds := hubrdsPool.Get()
 	defer rds.Close()
 	key := hub.Ukey + ":" + strconv.FormatInt(hub.Id, 10)
 	_, err = rds.Do("SET", key, json)
@@ -103,7 +67,7 @@ func hubCreate(hub *Hub) error {
 }
 
 func hubStartWith(k string) ([]*Hub, error) {
-	rds := rdsPool.Get()
+	rds := hubrdsPool.Get()
 	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYSSTART", k))
 	if err != nil {
@@ -124,7 +88,7 @@ func hubStartWith(k string) ([]*Hub, error) {
 }
 
 func HubGetOne(k string) (*Hub, error) {
-	rds := rdsPool.Get()
+	rds := hubrdsPool.Get()
 	defer rds.Close()
 	o, err := redis.String(rds.Do("GET", k))
 	if err != nil {
@@ -144,7 +108,7 @@ func hubReplace(h *Hub) error {
 		return err
 	}
 	key := h.Ukey + ":" + strconv.FormatInt(h.Id, 10)
-	rds := rdsPool.Get()
+	rds := hubrdsPool.Get()
 	defer rds.Close()
 	_, err = rds.Do("SET", key, json)
 	if err != nil {
@@ -153,12 +117,27 @@ func hubReplace(h *Hub) error {
 	return nil
 }
 
-func del(k string) error {
+func delhubs(ukey string) {
+	hs, err := hubStartWith(ukey)
+	if err != nil {
+		fmt.Println("del hub err", err)
+		return
+	}
+	for _, v := range hs {
+		delhubs := ukey + ":" + strconv.FormatInt(v.Id, 10)
+		hubdel(delhubs)
+	}
+}
+
+func hubdel(k string) error {
 	if len(strings.TrimSpace(k)) == 0 {
 		return errors.New("uid was nil")
 	}
-	rds := rdsPool.Get()
+	rds := hubrdsPool.Get()
 	defer rds.Close()
+
+	deldos(k)
+
 	_, err := redis.Int(rds.Do("DEL", k))
 	if err != nil {
 		return err
@@ -166,8 +145,13 @@ func del(k string) error {
 	return nil
 }
 
-func All() ([]string, error) {
-	rds := rdsPool.Get()
+func deldos(ukeyhid string) {
+	DelControls(ukeyhid)
+	delnodes(ukeyhid)
+}
+
+func hubAll() ([]string, error) {
+	rds := hubrdsPool.Get()
 	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYS", "*"))
 	if err != nil {

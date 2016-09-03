@@ -1,4 +1,4 @@
-package Account
+package Coolpy5Test
 
 import (
 	"testing"

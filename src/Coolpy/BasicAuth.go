@@ -1,4 +1,4 @@
-package Basicauth
+package Coolpy
 
 import (
 	"net/http"
@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"encoding/base64"
 	"github.com/julienschmidt/httprouter"
-	"Coolpy/Account"
 )
 
 func Auth(next httprouter.Handle)httprouter.Handle  {
@@ -19,7 +18,7 @@ func Auth(next httprouter.Handle)httprouter.Handle  {
 			payload, err := base64.StdEncoding.DecodeString(auth[len(basicAuthPrefix):])
 			if err == nil {
 				pair := bytes.SplitN(payload, []byte(":"), 2)
-				p ,err := Account.Get(string(pair[0]))
+				p ,err := AccGet(string(pair[0]))
 				if len(pair) == 2 && err == nil && p.Pwd == string(pair[1]) {
 					r.AddCookie(&http.Cookie{
 						Name:  "islogin",

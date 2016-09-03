@@ -1,15 +1,12 @@
-package Nodes
+package Coolpy
 
 import (
 	"reflect"
 	"github.com/garyburd/redigo/redis"
-	"Coolpy/Incr"
 	"encoding/json"
 	"strconv"
-	"Coolpy/Controller"
 	"github.com/syndtr/goleveldb/leveldb/errors"
 	"strings"
-	"Coolpy/Deller"
 	"time"
 )
 
@@ -39,10 +36,10 @@ func (c *NodeType) GetName(v int) string {
 	return NodeReflectType.Field(v).Name
 }
 
-var rdsPool *redis.Pool
+var noderdsPool *redis.Pool
 
-func Connect(addr string, pwd string) {
-	rdsPool = &redis.Pool{
+func NodeConnect(addr string, pwd string) {
+	noderdsPool = &redis.Pool{
 		MaxIdle:     10,
 		IdleTimeout: time.Second * 300,
 		Dial: func() (redis.Conn, error) {
@@ -58,54 +55,10 @@ func Connect(addr string, pwd string) {
 			return conn, nil
 		},
 	}
-	go delChan()
-}
-
-func delChan() {
-	for {
-		select {
-		case ukeyhid, ok := <-Deller.DelNodes:
-			if ok {
-				ns, err := NodeStartWith(ukeyhid + ":")
-				if err != nil {
-					break
-				}
-				for _, v := range ns {
-					delnodes := ukeyhid + ":" + strconv.FormatInt(v.Id, 10)
-					del(delnodes)
-					go deldodps(delnodes)
-				}
-			}
-		case delnode, ok := <-Deller.DelNode:
-			if ok {
-				del(delnode)
-				go deldodps(delnode)
-			}
-		}
-		if Deller.DelNodes == nil && Deller.DelNode == nil {
-			break
-		}
-	}
-}
-
-func deldodps(ukeyhidnid string) {
-	dpk := strings.Replace(ukeyhidnid, ":", ",", -1)
-	go func(){
-		Deller.DelValues <- dpk
-	}()
-	go func(){
-		Deller.DelGpss <- dpk
-	}()
-	go func(){
-		Deller.DelGens <- dpk
-	}()
-	go func(){
-		Deller.DelPhotos <- dpk
-	}()
 }
 
 func nodeCreate(ukey string, node *Node) error {
-	v, err := Incr.NodeInrc()
+	v, err := NodeInrc()
 	if err != nil {
 		return err
 	}
@@ -115,7 +68,7 @@ func nodeCreate(ukey string, node *Node) error {
 		return err
 	}
 	key := ukey + ":" + strconv.FormatInt(node.HubId, 10) + ":" + strconv.FormatInt(node.Id, 10)
-	rds := rdsPool.Get()
+	rds := noderdsPool.Get()
 	defer rds.Close()
 	_, err = rds.Do("SET", key, json)
 	if err != nil {
@@ -127,17 +80,17 @@ func nodeCreate(ukey string, node *Node) error {
 	}
 	//初始化控制器
 	if node.Type == NodeTypeEnum.Switcher {
-		err := Controller.BeginSwitcher(ukey, node.HubId, node.Id)
+		err := BeginSwitcher(ukey, node.HubId, node.Id)
 		if err != nil {
 			return errors.New("init error")
 		}
 	} else if node.Type == NodeTypeEnum.GenControl {
-		err := Controller.BeginGenControl(ukey, node.HubId, node.Id)
+		err := BeginGenControl(ukey, node.HubId, node.Id)
 		if err != nil {
 			return errors.New("init error")
 		}
 	} else if node.Type == NodeTypeEnum.RangeControl {
-		err := Controller.BeginRangeControl(ukey, node.HubId, node.Id)
+		err := BeginRangeControl(ukey, node.HubId, node.Id)
 		if err != nil {
 			return errors.New("init error")
 		}
@@ -146,7 +99,7 @@ func nodeCreate(ukey string, node *Node) error {
 }
 
 func NodeStartWith(k string) ([]*Node, error) {
-	rds := rdsPool.Get()
+	rds := noderdsPool.Get()
 	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYSSTART", k))
 	if err != nil {
@@ -166,7 +119,7 @@ func NodeStartWith(k string) ([]*Node, error) {
 }
 
 func NodeGetOne(k string) (*Node, error) {
-	rds := rdsPool.Get()
+	rds := noderdsPool.Get()
 	defer rds.Close()
 	o, err := redis.String(rds.Do("GET", k))
 	if err != nil {
@@ -185,7 +138,7 @@ func nodeReplace(k string, h *Node) error {
 	if err != nil {
 		return err
 	}
-	rds := rdsPool.Get()
+	rds := noderdsPool.Get()
 	defer rds.Close()
 	_, err = rds.Do("SET", k, json)
 	if err != nil {
@@ -194,12 +147,26 @@ func nodeReplace(k string, h *Node) error {
 	return nil
 }
 
-func del(k string) error {
+func delnodes(ukeyhid string) {
+	ns, err := NodeStartWith(ukeyhid + ":")
+	if err != nil {
+		return
+	}
+	for _, v := range ns {
+		delnodes := ukeyhid + ":" + strconv.FormatInt(v.Id, 10)
+		nodedel(delnodes)
+	}
+}
+
+func nodedel(k string) error {
 	if len(strings.TrimSpace(k)) == 0 {
 		return errors.New("uid was nil")
 	}
-	rds := rdsPool.Get()
+	rds := noderdsPool.Get()
 	defer rds.Close()
+
+	deldodps(k)
+
 	_, err := redis.Int(rds.Do("DEL", k))
 	if err != nil {
 		return err
@@ -207,8 +174,16 @@ func del(k string) error {
 	return nil
 }
 
-func All() ([]string, error) {
-	rds := rdsPool.Get()
+func deldodps(ukeyhidnid string) {
+	dpk := strings.Replace(ukeyhidnid, ":", ",", -1)
+	delValues(dpk)
+	delGpss(dpk)
+	delGens(dpk)
+	delPhotos(dpk)
+}
+
+func nodeAll() ([]string, error) {
+	rds := noderdsPool.Get()
 	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYS", "*"))
 	if err != nil {

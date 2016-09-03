@@ -1,14 +1,14 @@
-package Incr
+package Coolpy
 
 import (
 	"github.com/garyburd/redigo/redis"
 	"time"
 )
 
-var rdsPool *redis.Pool
+var inrcrdsPool *redis.Pool
 
-func Connect(addr string, pwd string) {
-	rdsPool = &redis.Pool{
+func InrcConnect(addr string, pwd string) {
+	inrcrdsPool = &redis.Pool{
 		MaxIdle:     10,
 		IdleTimeout: time.Second * 300,
 		Dial: func() (redis.Conn, error) {
@@ -24,7 +24,7 @@ func Connect(addr string, pwd string) {
 			return conn, nil
 		},
 	}
-	rds := rdsPool.Get()
+	rds := inrcrdsPool.Get()
 	defer rds.Close()
 	if _, err := redis.String(rds.Do("GET", "hubid")); err != nil {
 		rds.Do("SET", "hubid", "0")
@@ -35,7 +35,7 @@ func Connect(addr string, pwd string) {
 }
 
 func HubInrc() (int64, error) {
-	rds := rdsPool.Get()
+	rds := inrcrdsPool.Get()
 	defer rds.Close()
 	v, err := redis.Int64(rds.Do("INCR", "hubid"))
 	if err != nil {
@@ -45,7 +45,7 @@ func HubInrc() (int64, error) {
 }
 
 func NodeInrc() (int64, error) {
-	rds := rdsPool.Get()
+	rds := inrcrdsPool.Get()
 	defer rds.Close()
 	v, err := redis.Int64(rds.Do("INCR", "nodeid"))
 	if err != nil {

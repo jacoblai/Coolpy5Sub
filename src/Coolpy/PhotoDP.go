@@ -1,9 +1,8 @@
-package Photos
+package Coolpy
 
 import (
 	"time"
 	"github.com/garyburd/redigo/redis"
-	"Coolpy/Deller"
 	"encoding/json"
 	"github.com/pmylund/sortutil"
 	"strings"
@@ -19,10 +18,10 @@ type PhotoDP struct {
 	Img       []byte `validate:"required"`
 }
 
-var rdsPool *redis.Pool
+var photordsPool *redis.Pool
 
-func Connect(addr string, pwd string) {
-	rdsPool = &redis.Pool{
+func PhotoConnect(addr string, pwd string) {
+	photordsPool = &redis.Pool{
 		MaxIdle:     10,
 		IdleTimeout: time.Second * 300,
 		Dial: func() (redis.Conn, error) {
@@ -38,26 +37,15 @@ func Connect(addr string, pwd string) {
 			return conn, nil
 		},
 	}
-	go delChan()
 }
 
-func delChan() {
-	for {
-		select {
-		case k, ok := <-Deller.DelPhotos:
-			if ok {
-				vs, err := startWith(k)
-				if err != nil {
-					break
-				}
-				for _, v := range vs {
-					del(v)
-				}
-			}
-		}
-		if Deller.DelPhotos == nil {
-			break
-		}
+func delPhotos(k string) {
+	vs, err := PhotostartWith(k)
+	if err != nil {
+		return
+	}
+	for _, v := range vs {
+		Photodel(v)
 	}
 }
 
@@ -66,7 +54,7 @@ func photoCreate(k string, dp *PhotoDP) error {
 	if err != nil {
 		return err
 	}
-	rds := rdsPool.Get()
+	rds := photordsPool.Get()
 	defer rds.Close()
 	_, err = rds.Do("SET", k, json)
 	if err != nil {
@@ -75,8 +63,8 @@ func photoCreate(k string, dp *PhotoDP) error {
 	return nil
 }
 
-func startWith(k string) ([]string, error) {
-	rds := rdsPool.Get()
+func PhotostartWith(k string) ([]string, error) {
+	rds := photordsPool.Get()
 	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYSSTART", k))
 	if err != nil {
@@ -85,8 +73,8 @@ func startWith(k string) ([]string, error) {
 	return data, nil
 }
 
-func maxGet(k string) (*PhotoDP, error) {
-	rds := rdsPool.Get()
+func PhotomaxGet(k string) (*PhotoDP, error) {
+	rds := photordsPool.Get()
 	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYSSTART", k))
 	if err != nil {
@@ -105,8 +93,8 @@ func maxGet(k string) (*PhotoDP, error) {
 	return dp, nil
 }
 
-func getOneByKey(k string) (*PhotoDP, error) {
-	rds := rdsPool.Get()
+func PhotogetOneByKey(k string) (*PhotoDP, error) {
+	rds := photordsPool.Get()
 	defer rds.Close()
 	o, err := redis.String(rds.Do("GET", k))
 	if err != nil {
@@ -120,11 +108,11 @@ func getOneByKey(k string) (*PhotoDP, error) {
 	return h, nil
 }
 
-func del(k string) error {
+func Photodel(k string) error {
 	if len(strings.TrimSpace(k)) == 0 {
 		return errors.New("uid was nil")
 	}
-	rds := rdsPool.Get()
+	rds := photordsPool.Get()
 	defer rds.Close()
 	_, err := redis.Int(rds.Do("DEL", k))
 	if err != nil {
@@ -133,8 +121,8 @@ func del(k string) error {
 	return nil
 }
 
-func GetRange(start string, end string, interval float64, page int) ([]string, error) {
-	rds := rdsPool.Get()
+func PhotoGetRange(start string, end string, interval float64, page int) ([]string, error) {
+	rds := photordsPool.Get()
 	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYSRANGE", start, end))
 	if err != nil {
@@ -162,8 +150,8 @@ func GetRange(start string, end string, interval float64, page int) ([]string, e
 	return IntervalData, nil
 }
 
-func All() ([]string, error) {
-	rds := rdsPool.Get()
+func PhotoAll() ([]string, error) {
+	rds := photordsPool.Get()
 	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYS", "*"))
 	if err != nil {

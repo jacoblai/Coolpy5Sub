@@ -1,30 +1,21 @@
-package Account
+package Coolpy
 
 import (
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"encoding/json"
-	"gopkg.in/go-playground/validator.v8"
 	"fmt"
-	"Coolpy/Deller"
 )
 
-var validate *validator.Validate
-
-func init() {
-	config := &validator.Config{TagName: "validate"}
-	validate = validator.New(config)
-}
-
 func CreateAdmin() {
-	if u, _ := Get("admin"); u == nil {
-		p := New()
+	if u, _ := AccGet("admin"); u == nil {
+		p := AccNew()
 		p.Pwd = "admin"
 		p.Uid = "admin"
 		p.UserName = "SuperAdmin"
 		p.Email = "SuperAdmin@icoolpy.com"
 		p.CreateUkey()
-		create(p)
+		Acccreate(p)
 	}
 }
 
@@ -50,7 +41,7 @@ func UserPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "admin uid")
 		return
 	}
-	_, err = Get(p.Uid)
+	_, err = AccGet(p.Uid)
 	if err == nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "uid ext")
 		return
@@ -60,12 +51,12 @@ func UserPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		return
 	}
 	p.CreateUkey()
-	err = validate.Struct(p)
+	err = CpValidate.Struct(p)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 		return
 	}
-	err = create(&p)
+	err = Acccreate(&p)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 		return
@@ -75,7 +66,7 @@ func UserPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 }
 
 func UserGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	p, err := Get(ps.ByName("uid"))
+	p, err := AccGet(ps.ByName("uid"))
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 		return
@@ -94,7 +85,7 @@ func UserPut(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 		return
 	}
-	op, err := Get(ps.ByName("uid"))
+	op, err := AccGet(ps.ByName("uid"))
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "params nuid")
 		return
@@ -116,13 +107,13 @@ func UserPut(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	if p.Email != "" {
 		op.Email = p.Email
 	}
-	err = validate.Struct(op)
+	err = CpValidate.Struct(op)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 		return
 	}
-	del(p.Uid)
-	create(op)
+	Accdel(p.Uid)
+	Acccreate(op)
 	pStr, _ := json.Marshal(op)
 	fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
 }
@@ -146,7 +137,7 @@ func UserDel(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "dosn't Admin")
 		return
 	}
-	del(uid)
+	Accdel(uid)
 	fmt.Fprintf(w, `{"ok":%d}`, 1)
 }
 
@@ -160,7 +151,7 @@ func UserAll(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "dosn't Admin")
 		return
 	}
-	ndata, err := All()
+	ndata, err := AccAll()
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 		return
@@ -175,7 +166,7 @@ func UserApiKey(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "dosn't login")
 		return
 	}
-	p, err := Get(v.Value)
+	p, err := AccGet(v.Value)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 		return
@@ -189,18 +180,16 @@ func UserNewApiKey(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "dosn't login")
 		return
 	}
-	p, err := Get(v.Value)
+	p, err := AccGet(v.Value)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 		return
 	}
 	uc, _ := r.Cookie("ukey")
 	//delete all sub hub and node
-	go func() {
-		Deller.DelHubs <- uc.Value
-	}()
-	del(p.Uid)
+	delhubs(uc.Value)
+	Accdel(p.Uid)
 	p.CreateUkey()
-	create(p)
+	Acccreate(p)
 	fmt.Fprintf(w, `{"ok":%d,"data":"%v"}`, 1, p.Ukey)
 }
