@@ -127,8 +127,8 @@ func NodeGetOne(k string) (*Node, error) {
 	}
 	h := &Node{}
 	err = json.Unmarshal([]byte(o), &h)
-	if err != nil{
-		return nil,err
+	if err != nil {
+		return nil, err
 	}
 	return h, nil
 }
@@ -175,7 +175,8 @@ func nodedel(k string) error {
 }
 
 func deldodps(ukeyhidnid string) {
-	dpk := strings.Replace(ukeyhidnid, ":", ",", -1)
+	spstr := strings.Split(ukeyhidnid, ":")
+	dpk := spstr[1] + "," + spstr[2]
 	delValues(dpk)
 	delGpss(dpk)
 	delGens(dpk)
