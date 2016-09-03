@@ -18,9 +18,9 @@ type Hub struct {
 	About     string
 	Tags      []string
 	Public    bool
-	Local     string `validate:"required"`
-	Latitude  float64 `validate:"gte=-90,lte=90"`
-	Longitude float64 `validate:"gte=-180,lte=180"`
+	//Local     string `validate:"required"`
+	//Latitude  float64 `validate:"gte=-90,lte=90"`
+	//Longitude float64 `validate:"gte=-180,lte=180"`
 }
 
 var rdsPool *redis.Pool

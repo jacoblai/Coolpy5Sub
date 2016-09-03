@@ -128,9 +128,9 @@ func HubPut(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	oh.About = h.About
-	oh.Latitude = h.Latitude
-	oh.Local = h.Local
-	oh.Longitude = h.Longitude
+	//oh.Latitude = h.Latitude
+	//oh.Local = h.Local
+	//oh.Longitude = h.Longitude
 	oh.Public = h.Public
 	oh.Tags = h.Tags
 	oh.Title = h.Title
