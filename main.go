@@ -35,9 +35,9 @@ func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	fmt.Println("Coolpy Version:", CoSystem.CpVersion)
 	var (
-		port   = flag.Int("a", 6543, "web api port munber")
-		mport = flag.Int( "m", 1883, "mqtt port munber")
-		wport  = flag.Int( "w", 8000, "www website port munber")
+		port = flag.Int("a", 6543, "web api port munber")
+		mport = flag.Int("m", 1883, "mqtt port munber")
+		wport = flag.Int("w", 8000, "www website port munber")
 	)
 	flag.Parse()
 
@@ -94,6 +94,7 @@ func main() {
 	//hubs管理api
 	router.POST("/api/hubs", Basicauth.Auth(Hubs.HubPost))
 	router.GET("/api/hubs", Basicauth.Auth(Hubs.HubsGet))
+	router.GET("/api/hubs/all", Basicauth.Auth(Hubs.HubsAll))
 	router.GET("/api/hub/:hid", Basicauth.Auth(Hubs.HubGet))
 	router.PUT("/api/hub/:hid", Basicauth.Auth(Hubs.HubPut))
 	router.DELETE("/api/hub/:hid", Basicauth.Auth(Hubs.HubDel))
@@ -132,9 +133,9 @@ func main() {
 
 	//当api端口号被启动参数修改时即自动更新www相关连接参数
 	settingpath := dir + "/www/scripts-app/setting.js"
-	nstring := "var basicurl=\"http://\"+ window.location.hostname +\":" +strconv.Itoa(*port)+ "\""
+	nstring := "var basicurl=\"http://\"+ window.location.hostname +\":" + strconv.Itoa(*port) + "\""
 	err = ioutil.WriteFile(settingpath, []byte(nstring), 0644)
-	if err != nil{
+	if err != nil {
 		fmt.Println(err)
 	}
 	http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir(dir + "/www"))))

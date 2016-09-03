@@ -66,7 +66,7 @@ func delChan() {
 		select {
 		case ukeyhid, ok := <-Deller.DelNodes:
 			if ok {
-				ns, err := nodeStartWith(ukeyhid + ":")
+				ns, err := NodeStartWith(ukeyhid + ":")
 				if err != nil {
 					break
 				}
@@ -145,7 +145,7 @@ func nodeCreate(ukey string, node *Node) error {
 	return nil
 }
 
-func nodeStartWith(k string) ([]*Node, error) {
+func NodeStartWith(k string) ([]*Node, error) {
 	rds := rdsPool.Get()
 	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYSSTART", k))

@@ -7,6 +7,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"Coolpy/Deller"
+	"Coolpy/Nodes"
+	"Coolpy/Controller"
 )
 
 var validate *validator.Validate
@@ -70,6 +72,60 @@ func HubsGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	pStr, _ := json.Marshal(&ndata)
+	fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
+}
+
+type RHub struct {
+	Id     int64
+	Ukey   string
+	Title  string
+	About  string
+	Tags   []string
+	Public bool
+	RNodes []*RNode
+}
+
+type RNode struct {
+	Id     int64
+	Title  string
+	About  string
+	Tags   []string
+	Type   int
+	Ctrler interface{}
+}
+
+func HubsAll(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	defer r.Body.Close()
+	_, err := r.Cookie("islogin")
+	if err != nil {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "dosn't login")
+		return
+	}
+	ukey, _ := r.Cookie("ukey")
+	ndata, err := hubStartWith(ukey.Value)
+	if err != nil {
+		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
+		return
+	}
+	var Rhub []*RHub
+	for _, h := range ndata {
+		nhub := &RHub{Id:h.Id, Ukey:h.Ukey, Title:h.Title, About:h.About, Tags:h.Tags, Public:h.Public}
+		key := ukey + ":" + h.Id + ":"
+		nodes, _ := Nodes.NodeStartWith(key)
+		for _, n := range nodes {
+			nnode := &RNode{Id:n.Id, Title:n.Title, About:n.About, Tags:n.Tags, Type:n.Type}
+			if n.Type == Nodes.NodeTypeEnum.Switcher {
+				nnode.Ctrler, _ = Controller.GetSwitcher(key + n.Id)
+			} else if n.Type == Nodes.NodeTypeEnum.GenControl {
+				nnode.Ctrler, _ = Controller.GetGenControl(key + n.Id)
+			} else if n.Type == Nodes.NodeTypeEnum.RangeControl {
+				nnode.Ctrler, _ = Controller.GetRangeControl(key + n.Id)
+			}
+			nhub.RNodes = append(nhub.RNodes, nnode)
+		}
+		Rhub = append(Rhub, nhub)
+	}
+	pStr, _ := json.Marshal(&Rhub)
 	fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
 }
 

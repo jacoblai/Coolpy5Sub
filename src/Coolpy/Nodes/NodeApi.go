@@ -86,7 +86,7 @@ func NodesGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	ukey, _ := r.Cookie("ukey")
-	ndata, err := nodeStartWith(ukey.Value + ":" + hid + ":")
+	ndata, err := NodeStartWith(ukey.Value + ":" + hid + ":")
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "hub not ext or node not in hub")
 		return
