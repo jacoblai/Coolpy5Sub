@@ -67,7 +67,6 @@ func HubsGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 type RHub struct {
 	Id     int64
-	Ukey   string
 	Title  string
 	About  string
 	Tags   []string
@@ -76,12 +75,12 @@ type RHub struct {
 }
 
 type RNode struct {
-	Id     int64
-	Title  string
-	About  string
-	Tags   []string
-	Type   int
-	Ctrler interface{}
+	Id        int64
+	Title     string
+	About     string
+	Tags      []string
+	Type      int
+	CtrlerVal string
 }
 
 func HubsAll(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -99,18 +98,22 @@ func HubsAll(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 	var Rhub []*RHub
 	for _, h := range ndata {
-		nhub := &RHub{Id:h.Id, Ukey:h.Ukey, Title:h.Title, About:h.About, Tags:h.Tags, Public:h.Public}
-		strid :=strconv.FormatInt(h.Id, 10)
+		nhub := &RHub{Id:h.Id, Title:h.Title, About:h.About, Tags:h.Tags, Public:h.Public}
+		strid := strconv.FormatInt(h.Id, 10)
 		key := ukey.Value + ":" + strid + ":"
 		nodes, _ := NodeStartWith(key)
 		for _, n := range nodes {
 			nnode := &RNode{Id:n.Id, Title:n.Title, About:n.About, Tags:n.Tags, Type:n.Type}
 			if n.Type == NodeTypeEnum.Switcher {
-				nnode.Ctrler, _ = GetSwitcher(key + strid)
+				sws, _ := GetSwitcher(key + strconv.FormatInt(n.Id, 10))
+				nnode.CtrlerVal = strconv.Itoa(sws.Svalue)
 			} else if n.Type == NodeTypeEnum.GenControl {
-				nnode.Ctrler, _ = GetGenControl(key + strid)
+				gen, _ := GetGenControl(key + strconv.FormatInt(n.Id, 10))
+				nnode.CtrlerVal = gen.Gvalue
 			} else if n.Type == NodeTypeEnum.RangeControl {
-				nnode.Ctrler, _ = GetRangeControl(key + strid)
+				ran, _ := GetRangeControl(key + strconv.FormatInt(n.Id, 10))
+				//val,min,max,step
+				nnode.CtrlerVal = strconv.FormatInt(ran.Rvalue, 10) + "," + strconv.FormatInt(ran.Min, 10) + "," + strconv.FormatInt(ran.Max, 10) + "," + strconv.FormatInt(ran.Step, 10)
 			}
 			nhub.RNodes = append(nhub.RNodes, nnode)
 		}

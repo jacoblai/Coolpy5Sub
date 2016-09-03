@@ -81,7 +81,6 @@ func hubStartWith(k string) ([]*Hub, error) {
 		o, _ := redis.String(rds.Do("GET", v))
 		h := &Hub{}
 		json.Unmarshal([]byte(o), &h)
-		h.Ukey = ""
 		ndata = append(ndata, h)
 	}
 	return ndata, nil
@@ -150,7 +149,7 @@ func deldos(ukeyhid string) {
 	delnodes(ukeyhid)
 }
 
-func hubAll() ([]string, error) {
+func HubAll() ([]string, error) {
 	rds := hubrdsPool.Get()
 	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYS", "*"))

@@ -237,7 +237,7 @@ func ctrldel(k string) error {
 	return nil
 }
 
-func ctrlAll() ([]string, error) {
+func CtrlAll() ([]string, error) {
 	rds := ctrlrdsPool.Get()
 	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYS", "*"))

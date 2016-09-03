@@ -3,15 +3,16 @@ package Coolpy5Test
 import (
 	"testing"
 	"fmt"
+	"Coolpy"
 )
 
 func TestAll(t *testing.T) {
 	fmt.Println("start test")
-	np := New()
+	np := Coolpy.AccNew()
 	np.Uid = "jo111"
 	np.Pwd = "pwd111afasdfasdfasdfasdfasdfasdfqfiweuriquweoruqowieruajsdfkajsdlkfjalskdjfklasjdfklajsdkl"
 	np.CreateUkey()
-	err := create(np)
+	err := Coolpy.Acccreate(np)
 	if err != nil {
 		t.Error(err)
 	} else {
@@ -19,7 +20,7 @@ func TestAll(t *testing.T) {
 	}
 
 	fmt.Println("get test")
-	data, err := Get(np.Uid)
+	data, err := Coolpy.AccGet(np.Uid)
 	if data.Uid == np.Uid {
 		fmt.Println("find ok")
 	} else {
@@ -36,7 +37,7 @@ func TestAll(t *testing.T) {
 	//}
 
 	fmt.Println("findall test")
-	anp, _ := All()
+	anp, _ := Coolpy.AccAll()
 	if len(anp) != 1 {
 		t.Error("allkey error")
 	}

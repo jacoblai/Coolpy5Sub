@@ -2,38 +2,30 @@ package Coolpy5Test
 
 import (
 	"testing"
-	"Coolpy/Hubs"
-	"Coolpy/Account"
-	"Coolpy/Nodes"
-	"Coolpy/Controller"
-	"Coolpy/Values"
-	"Coolpy/Gpss"
-	"Coolpy/Gens"
-	"Coolpy/Photos"
 	"fmt"
+	"Coolpy"
 )
 
 func TestCoolpy5(t *testing.T) {
 	Addr := "127.0.0.1:6380"
 	svcpwd := "icoolpy.com"
 	//初始化用户账号服务1
-	Account.Connect(Addr, svcpwd)
-	//hub库2
-	Hubs.Connect(Addr, svcpwd)
+	Coolpy.AccConnect(Addr, svcpwd)
+	Coolpy.HubConnect(Addr, svcpwd)
 	//node库3
-	Nodes.Connect(Addr, svcpwd)
+	Coolpy.NodeConnect(Addr, svcpwd)
 	//控制器库4
-	Controller.Connect(Addr, svcpwd)
+	Coolpy.CtrlConnect(Addr, svcpwd)
 	//数据结点value库5
-	Values.Connect(Addr, svcpwd)
+	Coolpy.ValdpConnect(Addr, svcpwd)
 	//数据结点gps库6
-	Gpss.Connect(Addr, svcpwd)
+	Coolpy.GpsdpConnect(Addr, svcpwd)
 	//数据结点gen库7
-	Gens.Connect(Addr, svcpwd)
+	Coolpy.GendpConnect(Addr, svcpwd)
 	//数据结点img库8
-	Photos.Connect(Addr, svcpwd)
+	Coolpy.PhotoConnect(Addr, svcpwd)
 
-	acs,err := Account.All()
+	acs,err := Coolpy.AccAll()
 	if err !=nil{
 		t.Error(err)
 	}
@@ -41,7 +33,7 @@ func TestCoolpy5(t *testing.T) {
 		fmt.Println("users",v)
 	}
 
-	hubs,err := Hubs.All()
+	hubs,err := Coolpy.HubAll()
 	if err !=nil{
 		t.Error(err)
 	}
@@ -49,7 +41,7 @@ func TestCoolpy5(t *testing.T) {
 		fmt.Println("hubs",v)
 	}
 
-	nodes,err := Nodes.All()
+	nodes,err := Coolpy.NodeAll()
 	if err !=nil{
 		t.Error(err)
 	}
@@ -57,7 +49,7 @@ func TestCoolpy5(t *testing.T) {
 		fmt.Println("nodes",v)
 	}
 
-	Control,err := Controller.All()
+	Control,err := Coolpy.CtrlAll()
 	if err !=nil{
 		t.Error(err)
 	}
@@ -65,7 +57,7 @@ func TestCoolpy5(t *testing.T) {
 		fmt.Println("Control",v)
 	}
 
-	vals,err := Values.All()
+	vals,err := Coolpy.ValdpAll()
 	if err !=nil{
 		t.Error(err)
 	}
@@ -73,7 +65,7 @@ func TestCoolpy5(t *testing.T) {
 		fmt.Println("vals",v)
 	}
 
-	gpss,err := Gpss.All()
+	gpss,err := Coolpy.GpsdpAll()
 	if err !=nil{
 		t.Error(err)
 	}
@@ -81,7 +73,7 @@ func TestCoolpy5(t *testing.T) {
 		fmt.Println("gpss",v)
 	}
 
-	gens,err := Gens.All()
+	gens,err := Coolpy.GendpAll()
 	if err !=nil{
 		t.Error(err)
 	}
@@ -89,7 +81,7 @@ func TestCoolpy5(t *testing.T) {
 		fmt.Println("gens",v)
 	}
 
-	photos,err := Photos.All()
+	photos,err := Coolpy.PhotoAll()
 	if err !=nil{
 		t.Error(err)
 	}

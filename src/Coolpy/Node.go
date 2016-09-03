@@ -182,7 +182,7 @@ func deldodps(ukeyhidnid string) {
 	delPhotos(dpk)
 }
 
-func nodeAll() ([]string, error) {
+func NodeAll() ([]string, error) {
 	rds := noderdsPool.Get()
 	defer rds.Close()
 	data, err := redis.Strings(rds.Do("KEYS", "*"))
