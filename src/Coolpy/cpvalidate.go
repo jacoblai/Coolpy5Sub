@@ -1,10 +1,11 @@
 package Coolpy
 
-import "gopkg.in/go-playground/validator.v8"
+import (
+	"gopkg.in/go-playground/validator.v9"
+)
 
 var CpValidate *validator.Validate
 
 func init() {
-	config := &validator.Config{TagName: "validate"}
-	CpValidate = validator.New(config)
+	CpValidate = validator.New()
 }
