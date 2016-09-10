@@ -12,7 +12,7 @@ import (
 type Switcher struct {
 	HubId  int64
 	NodeId int64
-	Svalue int `validate:"required"`
+	Svalue int
 }
 
 type GenControl struct {
@@ -24,7 +24,7 @@ type GenControl struct {
 type RangeControl struct {
 	HubId  int64
 	NodeId int64
-	Rvalue int64 `validate:"required"`
+	Rvalue int64
 	Min    int64
 	Max    int64
 	Step   int64

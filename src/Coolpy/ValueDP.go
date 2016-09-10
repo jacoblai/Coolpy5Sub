@@ -13,7 +13,7 @@ type ValueDP struct {
 	HubId     int64
 	NodeId    int64
 	TimeStamp time.Time
-	Value     float64 `validate:"required"`
+	Value     float64
 }
 
 var valdprdsPool *redis.Pool
