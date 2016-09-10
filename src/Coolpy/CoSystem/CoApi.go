@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-var CpVersion = "5.0.2.1"
+var CpVersion = "5.0.2.2"
 
 func VersionGet(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
 	fmt.Fprintf(w, `{"ok":%d,"data":"%v"}`, 1, CpVersion)
