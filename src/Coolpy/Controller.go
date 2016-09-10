@@ -30,6 +30,12 @@ type RangeControl struct {
 	Step   int64
 }
 
+type RangeMeta struct {
+	Min  int64
+	Max  int64
+	Step int64
+}
+
 var ctrlrdsPool *redis.Pool
 
 func CtrlConnect(addr string, pwd string) {
@@ -139,15 +145,15 @@ func GetRangeControl(k string) (*RangeControl, error) {
 	return h, nil
 }
 
-func BeginRangeControl(ukey string, Hubid int64, Nodeid int64) error {
+func BeginRangeControl(ukey string, Hubid int64, Nodeid int64, meta RangeMeta) error {
 	key := ukey + ":" + strconv.FormatInt(Hubid, 10) + ":" + strconv.FormatInt(Nodeid, 10)
 	o := RangeControl{
 		HubId:Hubid,
 		NodeId:Nodeid,
 		Rvalue:0,
-		Min:0,
-		Max:255,
-		Step:5,
+		Min:meta.Min,
+		Max:meta.Max,
+		Step:meta.Step,
 	}
 	json, err := json.Marshal(o)
 	if err != nil {

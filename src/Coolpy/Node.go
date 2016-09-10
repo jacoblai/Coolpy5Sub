@@ -3,11 +3,11 @@ package Coolpy
 import (
 	"reflect"
 	"github.com/garyburd/redigo/redis"
-	"encoding/json"
 	"strconv"
 	"github.com/syndtr/goleveldb/leveldb/errors"
 	"strings"
 	"time"
+	"encoding/json"
 )
 
 type Node struct {
@@ -17,6 +17,7 @@ type Node struct {
 	About string
 	Tags  []string
 	Type  int `validate:"required"`
+	Meta  RangeMeta
 }
 
 type NodeType struct {
@@ -63,14 +64,14 @@ func nodeCreate(ukey string, node *Node) error {
 		return err
 	}
 	node.Id = v
-	json, err := json.Marshal(node)
+	jnode, err := json.Marshal(node)
 	if err != nil {
 		return err
 	}
 	key := ukey + ":" + strconv.FormatInt(node.HubId, 10) + ":" + strconv.FormatInt(node.Id, 10)
 	rds := noderdsPool.Get()
 	defer rds.Close()
-	_, err = rds.Do("SET", key, json)
+	_, err = rds.Do("SET", key, jnode)
 	if err != nil {
 		return err
 	}
@@ -90,7 +91,7 @@ func nodeCreate(ukey string, node *Node) error {
 			return errors.New("init error")
 		}
 	} else if node.Type == NodeTypeEnum.RangeControl {
-		err := BeginRangeControl(ukey, node.HubId, node.Id)
+		err := BeginRangeControl(ukey, node.HubId, node.Id, node.Meta)
 		if err != nil {
 			return errors.New("init error")
 		}
