@@ -147,6 +147,12 @@ func GetRangeControl(k string) (*RangeControl, error) {
 
 func BeginRangeControl(ukey string, Hubid int64, Nodeid int64, meta RangeMeta) error {
 	key := ukey + ":" + strconv.FormatInt(Hubid, 10) + ":" + strconv.FormatInt(Nodeid, 10)
+	if meta.Max == 0 {
+		meta.Max = 255
+	}
+	if meta.Step == 0 {
+		meta.Step = 5
+	}
 	o := RangeControl{
 		HubId:Hubid,
 		NodeId:Nodeid,

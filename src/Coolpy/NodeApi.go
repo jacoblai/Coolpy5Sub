@@ -6,6 +6,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"encoding/json"
 	"strconv"
+	"strings"
 )
 
 func NodePost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -60,7 +61,12 @@ func NodePost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	pStr, _ := json.Marshal(&n)
-	fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
+	if n.Type != NodeTypeEnum.RangeControl {
+		npStr := strings.Replace(string(pStr), `,"Meta":{"Min":0,"Max":0,"Step":0}`, ``, -1)
+		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, npStr)
+	}else {
+		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
+	}
 }
 
 func NodesGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {

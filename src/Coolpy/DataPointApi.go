@@ -55,28 +55,28 @@ func DPPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 	if n.Type == NodeTypeEnum.Value {
 		decoder := json.NewDecoder(r.Body)
-		var vdp ValueDP
-		err = decoder.Decode(&vdp)
+		var v ValueDP
+		err = decoder.Decode(&v)
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
 		}
-		if vdp.TimeStamp.IsZero() {
-			vdp.TimeStamp = time.Now().UTC().Add(time.Hour * 8)
+		if v.TimeStamp.IsZero() {
+			v.TimeStamp = time.Now().UTC().Add(time.Hour * 8)
 		}
-		errs := CpValidate.Struct(vdp)
+		errs := CpValidate.Struct(v)
 		if errs != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, errs)
 			return
 		}
-		vdp.HubId, _ = strconv.ParseInt(hid, 10, 64)
-		vdp.NodeId, _ = strconv.ParseInt(nid, 10, 64)
-		err = ValueCreate(dpkey + "," + vdp.TimeStamp.Format(time.RFC3339Nano), &vdp)
+		v.HubId, _ = strconv.ParseInt(hid, 10, 64)
+		v.NodeId, _ = strconv.ParseInt(nid, 10, 64)
+		err = ValueCreate(dpkey + "," + v.TimeStamp.Format(time.RFC3339Nano), &v)
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 			return
 		}
-		pStr, _ := json.Marshal(&vdp)
+		pStr, _ := json.Marshal(&v)
 		fmt.Fprintf(w, `{"ok":%d,"data":%v}`, 1, string(pStr))
 	} else if n.Type == NodeTypeEnum.Gps {
 		decoder := json.NewDecoder(r.Body)
