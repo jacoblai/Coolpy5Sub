@@ -42,6 +42,7 @@
       <root url="file://F:/Go/src/text" />
       <root url="file://F:/Go/src/net" />
       <root url="file://F:/Go/src/image" />
+      <root url="file://F:/Go/src/gopkg.in" />
       <root url="file://F:/Go/src/compress" />
       <root url="file://F:/Go/src/io" />
       <root url="file://F:/Go/src/testing" />
@@ -89,6 +90,7 @@
       <root url="file://F:/Go/src/text" />
       <root url="file://F:/Go/src/net" />
       <root url="file://F:/Go/src/image" />
+      <root url="file://F:/Go/src/gopkg.in" />
       <root url="file://F:/Go/src/compress" />
       <root url="file://F:/Go/src/io" />
       <root url="file://F:/Go/src/testing" />

@@ -16,7 +16,7 @@ func Auth(next httprouter.Handle) httprouter.Handle {
 		if strings.HasPrefix(auth, basicAuthPrefix) {
 			// Check credentials
 			payload, err := base64.StdEncoding.DecodeString(auth[len(basicAuthPrefix):])
-			if err == nil && bytes.Contains([]byte(":"), payload) {
+			if err == nil && bytes.Contains(payload, []byte(":")) {
 				pair := bytes.SplitN(payload, []byte(":"), 2)
 				p, err := AccGet(string(pair[0]))
 				if len(pair) == 2 && err == nil && p.Pwd == string(pair[1]) {
