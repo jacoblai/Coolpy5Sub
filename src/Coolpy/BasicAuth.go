@@ -8,7 +8,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func Auth(next httprouter.Handle)httprouter.Handle  {
+func Auth(next httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		const basicAuthPrefix string = "Basic "
 		// Get the Basic Authentication credentials
@@ -16,9 +16,9 @@ func Auth(next httprouter.Handle)httprouter.Handle  {
 		if strings.HasPrefix(auth, basicAuthPrefix) {
 			// Check credentials
 			payload, err := base64.StdEncoding.DecodeString(auth[len(basicAuthPrefix):])
-			if err == nil {
+			if err == nil && bytes.Contains([]byte(":"), payload) {
 				pair := bytes.SplitN(payload, []byte(":"), 2)
-				p ,err := AccGet(string(pair[0]))
+				p, err := AccGet(string(pair[0]))
 				if len(pair) == 2 && err == nil && p.Pwd == string(pair[1]) {
 					r.AddCookie(&http.Cookie{
 						Name:  "islogin",
