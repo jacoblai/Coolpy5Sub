@@ -108,6 +108,10 @@ func main() {
 	router.DELETE("/api/hub/:hid/node/:nid/photo/content/:key", Coolpy.PhotoDelByKey)
 	//系统api
 	router.GET("/api/sys/version", CoSystem.VersionGet)
+	//系统底层api
+	router.POST("/os/cmd", Coolpy.Auth(Coolpy.CmdPost))
+	router.POST("/os/upload/:filename",Coolpy.Auth(Coolpy.UploadPost))
+
 	go func() {
 		ln, err := net.Listen("tcp", ":" + strconv.Itoa(*port))
 		if err != nil {
