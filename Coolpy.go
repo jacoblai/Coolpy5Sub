@@ -26,6 +26,7 @@ func main() {
 	var (
 		port = flag.Int("a", 6543, "web api port munber")
 		mport = flag.Int("m", 1883, "mqtt port munber")
+		wsport = flag.Int("s", 1884, "mqtt websocket port munber")
 		wport = flag.Int("w", 8000, "www website port munber")
 	)
 	flag.Parse()
@@ -67,13 +68,13 @@ func main() {
 	//host mqtt service
 	go func() {
 		msvc := &Mtsvc.MqttSvc{}
-		msvc.Host(*mport)
+		msvc.Host(*mport, *wsport)
 	}()
 	fmt.Println("Coolpy mqtt on port", strconv.Itoa(*mport))
-
+	fmt.Println("Coolpy mqtt websocket on port", strconv.Itoa(*wsport))
 	router := httprouter.New()
 	//用户管理api
-	router.POST("/api/user",  Coolpy.Auth(Coolpy.UserPost))
+	router.POST("/api/user", Coolpy.Auth(Coolpy.UserPost))
 	router.GET("/api/user/:uid", Coolpy.Auth(Coolpy.UserGet))
 	router.PUT("/api/user/:uid", Coolpy.Auth(Coolpy.UserPut))
 	router.DELETE("/api/user/:uid", Coolpy.Auth(Coolpy.UserDel))
@@ -110,7 +111,7 @@ func main() {
 	router.GET("/api/sys/version", CoSystem.VersionGet)
 	//系统底层api
 	router.POST("/os/cmd", Coolpy.Auth(Coolpy.CmdPost))
-	router.POST("/os/upload/:filename",Coolpy.Auth(Coolpy.UploadPost))
+	router.POST("/os/upload/:filename", Coolpy.Auth(Coolpy.UploadPost))
 
 	go func() {
 		ln, err := net.Listen("tcp", ":" + strconv.Itoa(*port))

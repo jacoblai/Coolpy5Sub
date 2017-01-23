@@ -12,22 +12,29 @@ type MqttSvc struct {
 	Engine *broker.Engine
 }
 
-var Mport int
+var Mport, Wsport int
 
-func (m *MqttSvc) Host(mport int) {
+func (m *MqttSvc) Host(mport, wsport int) {
 	Mport = mport
-	server, err := transport.Launch("tcp://:" + strconv.Itoa(Mport))
+	Wsport = wsport
+	TcpServer, err := transport.Launch("tcp://:" + strconv.Itoa(Mport))
 	if err != nil {
 		panic(err)
 	}
-	m.Engine = broker.NewEngine()
-	m.Engine.Accept(server)
+	WsServer, err := transport.Launch("ws://:" + strconv.Itoa(Wsport))
+	if err != nil {
+		panic(err)
+	}
+	backend := broker.NewMemoryBackend()
+	m.Engine = broker.NewEngineWithBackend(backend)
+	m.Engine.Accept(TcpServer)
+	m.Engine.Accept(WsServer)
 }
 
 func Public(k string, payload []byte) {
 	client := client.New()
 	defer client.Close()
-	cf, err := client.Connect("tcp://127.0.0.1:"+ strconv.Itoa(Mport), nil)
+	cf, err := client.Connect("tcp://127.0.0.1:" + strconv.Itoa(Mport), nil)
 	if err != nil {
 		fmt.Println(err)
 	}
