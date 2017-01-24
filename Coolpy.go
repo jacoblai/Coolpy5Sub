@@ -71,7 +71,7 @@ func main() {
 		msvc.Host(*mport, *wsport)
 	}()
 	fmt.Println("Coolpy mqtt on port", strconv.Itoa(*mport))
-	fmt.Println("Coolpy mqtt websocket on port", strconv.Itoa(*wsport))
+	fmt.Println("Coolpy mqtt ws on port", strconv.Itoa(*wsport))
 	router := httprouter.New()
 	//用户管理api
 	router.POST("/api/user", Coolpy.Auth(Coolpy.UserPost))
