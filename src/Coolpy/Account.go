@@ -2,12 +2,10 @@ package Coolpy
 
 import (
 	"github.com/satori/go.uuid"
-	"encoding/json"
 	"strings"
 	"errors"
-	"github.com/garyburd/redigo/redis"
 	"regexp"
-	"time"
+	"github.com/jacoblai/yiyidb"
 )
 
 type Person struct {
@@ -24,25 +22,14 @@ func ValidateUidPwd(vstr string) bool {
 	return re
 }
 
-var accrdsPool *redis.Pool
+var accrdsPool *yiyidb.Kvdb
 
-func AccConnect(addr string, pwd string) {
-	accrdsPool = &redis.Pool{
-		MaxIdle:     10,
-		IdleTimeout: time.Second * 300,
-		Dial: func() (redis.Conn, error) {
-			conn, err := redis.Dial("tcp", addr)
-			if err != nil {
-				return nil, err
-			}
-			_, err = conn.Do("AUTH", pwd)
-			if err != nil {
-				return nil, err
-			}
-			conn.Do("SELECT", "1")
-			return conn, nil
-		},
+func AccConnect(dir string) {
+	db, err := yiyidb.OpenKvdb(dir+"/cp5accs", false, false, 10) //path, enable ttl
+	if err != nil {
+		panic(err)
 	}
+	accrdsPool = db
 }
 
 func AccNew() *Person {
@@ -55,108 +42,66 @@ func (p *Person) CreateUkey() {
 
 func Acccreate(ps *Person) error {
 	if len(strings.TrimSpace(ps.Uid)) == 0 {
-		return errors.New("uid was nil")
+		return errors.New("key nil")
 	}
-	json, err := json.Marshal(ps)
-	if err != nil {
-		return err
-	}
-	k := ps.Ukey + ":" + ps.Uid
-	rds := accrdsPool.Get()
-	defer rds.Close()
-	_, err = rds.Do("SET", k, json)
-	if err != nil {
-		return err
-	}
-	return nil
+	return accrdsPool.PutJson([]byte(ps.Ukey+":"+ps.Uid), ps, 0)
 }
 
 func AccGet(uid string) (*Person, error) {
 	if len(strings.TrimSpace(uid)) == 0 {
-		return nil, errors.New("uid was nil")
+		return nil, errors.New("key nil")
 	}
 	k, err := AccgetFromDb(uid)
 	if err != nil {
 		return nil, err
 	}
-	rds := accrdsPool.Get()
-	defer rds.Close()
-	o, err := redis.String(rds.Do("GET", k))
+
+	var np Person
+	err = accrdsPool.GetJson([]byte(k), &np)
 	if err != nil {
 		return nil, err
 	}
-	np := &Person{}
-	err = json.Unmarshal([]byte(o), &np)
-	if err != nil {
-		return nil, err
-	}
-	return np, nil
+	return &np, nil
 }
 
 func Accdel(uid string) error {
 	if len(strings.TrimSpace(uid)) == 0 {
-		return errors.New("uid was nil")
+		return errors.New("key nil")
 	}
 	k, err := AccgetFromDb(uid)
 	if err != nil {
 		return err
 	}
-	rds := accrdsPool.Get()
-	defer rds.Close()
-	_, err = redis.Int(rds.Do("DEL", k))
-	if err != nil {
-		return err
-	}
-	return nil
+	return accrdsPool.Del([]byte(k))
 }
 
-func AccAll() ([]*Person, error) {
-	rds := accrdsPool.Get()
-	defer rds.Close()
-	data, err := redis.Strings(rds.Do("KEYS", "*"))
-	if err != nil {
-		return nil, err
+func AccAll() ([]*Person) {
+	var nt Person
+	items := accrdsPool.AllByJson(nt)
+	res := make([]*Person, 0)
+	for _, v := range items {
+		res = append(res, v.Object.(*Person))
 	}
-	if len(data) <= 0 {
-		return nil, errors.New("no data")
-	}
-	var ndata []*Person
-	for _, v := range data {
-		if !strings.HasSuffix(v, "admin") {
-			o, _ := redis.String(rds.Do("GET", v))
-			np := &Person{}
-			json.Unmarshal([]byte(o), &np)
-			ndata = append(ndata, np)
-		}
-	}
-	return ndata, nil
+	return res
 }
 
 func AccgetFromDb(uid string) (string, error) {
-	rds := accrdsPool.Get()
-	defer rds.Close()
-	data, err := redis.Strings(rds.Do("KEYS", "*:" + uid))
-	if err != nil {
-		return "", err
+	all := accrdsPool.AllKeys()
+	for _, v := range all {
+		if strings.HasSuffix(v, ":"+uid) {
+			return string(v), nil
+		}
 	}
-	if len(data) <= 0 {
-		return "", errors.New("not ext")
-	}
-	return data[0], nil
+	return "", errors.New("not found")
 }
 
 func AccGetUkeyFromDb(k string) (string, error) {
 	if len(strings.TrimSpace(k)) == 0 {
 		return "", errors.New("ukey was nil")
 	}
-	rds := accrdsPool.Get()
-	defer rds.Close()
-	data, err := redis.Strings(rds.Do("KEYS", k + ":*"))
-	if err != nil {
-		return "", err
-	}
-	if len(data) <= 0 {
+	items := accrdsPool.KeyStartKeys([]byte(k + ":"))
+	if len(items) <= 0 {
 		return "", errors.New("not ext")
 	}
-	return data[0], nil
+	return items[0], nil
 }

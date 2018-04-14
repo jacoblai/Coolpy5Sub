@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"Coolpy/Redico"
 	"flag"
 	"strconv"
 	"Coolpy/Mtsvc"
@@ -36,34 +35,26 @@ func main() {
 		log.Fatal(err)
 	}
 
-	//初始化数据库服务
-	redServer, err := Redico.Run(dir)
-	if err != nil {
-		panic(err)
-	}
-	defer redServer.Close()
-	svcpwd := "icoolpy.com"
-	redServer.RequireAuth(svcpwd)
-	//初始化用户账号服务1
-	Coolpy.AccConnect(redServer.Addr(), svcpwd)
+	//初始化用户账号服务
+	Coolpy.AccConnect(dir)
 	//自动检测创建超级账号
 	Coolpy.CreateAdmin()
 	//自动id库0
-	Coolpy.InrcConnect(redServer.Addr(), svcpwd)
+	Coolpy.InrcConnect(dir)
 	//hub库2
-	Coolpy.HubConnect(redServer.Addr(), svcpwd)
+	Coolpy.HubConnect(dir)
 	//node库3
-	Coolpy.NodeConnect(redServer.Addr(), svcpwd)
+	Coolpy.NodeConnect(dir)
 	//控制器库4
-	Coolpy.CtrlConnect(redServer.Addr(), svcpwd)
+	Coolpy.CtrlConnect(dir)
 	//数据结点value库5
-	Coolpy.ValdpConnect(redServer.Addr(), svcpwd)
+	Coolpy.ValdpConnect(dir)
 	//数据结点gps库6
-	Coolpy.GpsdpConnect(redServer.Addr(), svcpwd)
+	Coolpy.GpsdpConnect(dir)
 	//数据结点gen库7
-	Coolpy.GendpConnect(redServer.Addr(), svcpwd)
+	Coolpy.GendpConnect(dir)
 	//数据结点img库8
-	Coolpy.PhotoConnect(redServer.Addr(), svcpwd)
+	Coolpy.PhotoConnect(dir)
 
 	//host mqtt service
 	go func() {

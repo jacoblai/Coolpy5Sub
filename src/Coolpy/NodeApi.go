@@ -38,7 +38,7 @@ func NodePost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, "dosn't login")
 		return
 	}
-	nhid, err := strconv.ParseInt(hid, 10, 64)
+	nhid, err := strconv.ParseUint(hid, 10, 64)
 	if err != nil {
 		fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
 		return

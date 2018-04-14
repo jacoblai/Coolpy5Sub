@@ -1,12 +1,11 @@
 package Coolpy
 
 import (
-	"github.com/garyburd/redigo/redis"
-	"encoding/json"
 	"time"
 	"github.com/pmylund/sortutil"
 	"strings"
 	"errors"
+	"github.com/jacoblai/yiyidb"
 )
 
 type GenDP struct {
@@ -16,25 +15,14 @@ type GenDP struct {
 	Value     string `validate:"required"`
 }
 
-var GendprdsPool *redis.Pool
+var GendprdsPool *yiyidb.Kvdb
 
-func GendpConnect(addr string, pwd string) {
-	GendprdsPool = &redis.Pool{
-		MaxIdle:     10,
-		IdleTimeout: time.Second * 300,
-		Dial: func() (redis.Conn, error) {
-			conn, err := redis.Dial("tcp", addr)
-			if err != nil {
-				return nil, err
-			}
-			_, err = conn.Do("AUTH", pwd)
-			if err != nil {
-				return nil, err
-			}
-			conn.Do("SELECT", "7")
-			return conn, nil
-		},
+func GendpConnect(dir string) {
+	db, err := yiyidb.OpenKvdb(dir+"/cp5gens", false, false, 10) //path, enable ttl
+	if err != nil {
+		panic(err)
 	}
+	GendprdsPool = db
 }
 
 func delGens(k string) {
@@ -48,95 +36,51 @@ func delGens(k string) {
 }
 
 func GenCreate(k string, dp *GenDP) error {
-	json, err := json.Marshal(dp)
-	if err != nil {
-		return err
-	}
-	rds := GendprdsPool.Get()
-	defer rds.Close()
-	_, err = rds.Do("SET", k, json)
-	if err != nil {
-		return err
-	}
-	return nil
+	return GendprdsPool.PutJson([]byte(k), dp, 0)
 }
 
 func GendpstartWith(k string) ([]string, error) {
-	rds := GendprdsPool.Get()
-	defer rds.Close()
-	data, err := redis.Strings(rds.Do("KEYSSTART", k))
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	ks := GendprdsPool.KeyStartKeys([]byte(k))
+	return ks, nil
 }
 
 func GendpMaxGet(k string) (*GenDP, error) {
-	rds := GendprdsPool.Get()
-	defer rds.Close()
-	data, err := redis.Strings(rds.Do("KEYSSTART", k))
-	if err != nil {
-		return nil, err
-	}
-	if len(data) <= 0 {
+	ks := GendprdsPool.KeyStartKeys([]byte(k))
+	if len(ks) <= 0 {
 		return nil, errors.New("no data")
 	}
-	sortutil.Desc(data)
-	o, _ := redis.String(rds.Do("GET", data[0]))
-	dp := &GenDP{}
-	err = json.Unmarshal([]byte(o), &dp)
+	sortutil.Desc(ks)
+	var dp GenDP
+	err := GendprdsPool.GetJson([]byte(ks[0]), &dp)
 	if err != nil {
 		return nil, err
 	}
-	return dp, nil
+	return &dp, nil
 }
 
 func GendpGetOneByKey(k string) (*GenDP, error) {
-	rds := GendprdsPool.Get()
-	defer rds.Close()
-	o, err := redis.String(rds.Do("GET", k))
+	var dp GenDP
+	err := GendprdsPool.GetJson([]byte(k), &dp)
 	if err != nil {
 		return nil, err
 	}
-	h := &GenDP{}
-	err = json.Unmarshal([]byte(o), &h)
-	if err != nil {
-		return nil, err
-	}
-	return h, nil
+	return &dp, nil
 }
 
 func GendpReplace(k string, h *GenDP) error {
-	json, err := json.Marshal(h)
-	if err != nil {
-		return err
-	}
-	rds := GendprdsPool.Get()
-	defer rds.Close()
-	_, err = rds.Do("SET", k, json)
-	if err != nil {
-		return err
-	}
-	return nil
+	return GendprdsPool.PutJson([]byte(k), h, 0)
 }
 
 func GendpDel(k string) error {
 	if len(strings.TrimSpace(k)) == 0 {
-		return errors.New("uid was nil")
+		return errors.New("key nil")
 	}
-	rds := GendprdsPool.Get()
-	defer rds.Close()
-	_, err := redis.Int(rds.Do("DEL", k))
-	if err != nil {
-		return err
-	}
-	return nil
+	return GendprdsPool.Del([]byte(k))
 }
 
 func GendpGetRange(start string, end string, interval float64, page int) ([]*GenDP, error) {
-	rds := GendprdsPool.Get()
-	defer rds.Close()
-	data, err := redis.Strings(rds.Do("KEYSRANGE", start, end))
+	var gdp GenDP
+	data, err := GendprdsPool.KeyRangeByObject([]byte(start), []byte(end), gdp)
 	if err != nil {
 		return nil, err
 	}
@@ -146,34 +90,28 @@ func GendpGetRange(start string, end string, interval float64, page int) ([]*Gen
 	var IntervalData []string
 	for _, v := range data {
 		if len(IntervalData) == 0 {
-			IntervalData = append(IntervalData, v)
+			IntervalData = append(IntervalData, string(v.Key))
 		} else {
-			otime := strings.Split(IntervalData[len(IntervalData) - 1], ",")
+			otime := strings.Split(IntervalData[len(IntervalData)-1], ",")
 			otm, _ := time.Parse(time.RFC3339Nano, otime[2])
-			vtime := strings.Split(v, ",")
+			vtime := strings.Split(string(v.Key), ",")
 			vtm, _ := time.Parse(time.RFC3339Nano, vtime[2])
 			du := vtm.Sub(otm)
 			if du.Seconds() >= interval {
-				IntervalData = append(IntervalData, v)
+				IntervalData = append(IntervalData, string(v.Key))
 			}
 		}
 	}
 	var ndata []*GenDP
 	for _, v := range IntervalData {
-		o, _ := redis.String(rds.Do("GET", v))
-		h := &GenDP{}
-		json.Unmarshal([]byte(o), &h)
-		ndata = append(ndata, h)
+		var h GenDP
+		GendprdsPool.GetJson([]byte(v), &h)
+		ndata = append(ndata, &h)
 	}
 	return ndata, nil
 }
 
 func GendpAll() ([]string, error) {
-	rds := GendprdsPool.Get()
-	defer rds.Close()
-	data, err := redis.Strings(rds.Do("KEYS", "*"))
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	ks := GendprdsPool.AllKeys()
+	return ks, nil
 }

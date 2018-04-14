@@ -1,49 +1,34 @@
 package Coolpy
 
 import (
-	"github.com/garyburd/redigo/redis"
-	"encoding/json"
 	"strconv"
+	"fmt"
+	"github.com/jacoblai/yiyidb"
 	"strings"
 	"errors"
-	"time"
-	"fmt"
 )
 
 type Hub struct {
-	Id        int64
-	Ukey      string
-	Title     string `validate:"required"`
-	About     string
-	Tags      []string
-	Public    bool
+	Id     uint64
+	Ukey   string
+	Title  string `validate:"required"`
+	About  string
+	Tags   []string
+	Public bool
 	//Local     string `validate:"required"`
 	//Latitude  float64 `validate:"gte=-90,lte=90"`
 	//Longitude float64 `validate:"gte=-180,lte=180"`
 }
 
-var hubrdsPool *redis.Pool
+var hubrdsPool *yiyidb.Kvdb
 
-func HubConnect(addr string, pwd string) {
-	hubrdsPool = &redis.Pool{
-		MaxIdle:     10,
-		IdleTimeout: time.Second * 300,
-		Dial: func() (redis.Conn, error) {
-			conn, err := redis.Dial("tcp", addr)
-			if err != nil {
-				return nil, err
-			}
-			_, err = conn.Do("AUTH", pwd)
-			if err != nil {
-				return nil, err
-			}
-			conn.Do("SELECT", "2")
-			return conn, nil
-		},
+func HubConnect(dir string) {
+	db, err := yiyidb.OpenKvdb(dir+"/cp5hubs", false, false, 10) //path, enable ttl
+	if err != nil {
+		panic(err)
 	}
+	hubrdsPool = db
 }
-
-
 
 func hubCreate(hub *Hub) error {
 	v, err := HubInrc()
@@ -52,14 +37,8 @@ func hubCreate(hub *Hub) error {
 	}
 	hub.Id = v
 	hub.Public = false
-	json, err := json.Marshal(hub)
-	if err != nil {
-		return err
-	}
-	rds := hubrdsPool.Get()
-	defer rds.Close()
-	key := hub.Ukey + ":" + strconv.FormatInt(hub.Id, 10)
-	_, err = rds.Do("SET", key, json)
+	key := hub.Ukey + ":" + strconv.FormatUint(hub.Id, 10)
+	err = hubrdsPool.PutJson([]byte(key), &hub, 0)
 	if err != nil {
 		return err
 	}
@@ -67,53 +46,29 @@ func hubCreate(hub *Hub) error {
 }
 
 func hubStartWith(k string) ([]*Hub, error) {
-	rds := hubrdsPool.Get()
-	defer rds.Close()
-	data, err := redis.Strings(rds.Do("KEYSSTART", k))
+	h := Hub{}
+	data, err := hubrdsPool.KeyStartByObject([]byte(k), h)
 	if err != nil {
 		return nil, err
 	}
-	if len(data) <= 0 {
-		return nil, errors.New("no data")
-	}
 	var ndata []*Hub
 	for _, v := range data {
-		o, _ := redis.String(rds.Do("GET", v))
-		h := &Hub{}
-		json.Unmarshal([]byte(o), &h)
-		ndata = append(ndata, h)
+		ndata = append(ndata, v.Object.(*Hub))
 	}
 	return ndata, nil
 }
 
 func HubGetOne(k string) (*Hub, error) {
-	rds := hubrdsPool.Get()
-	defer rds.Close()
-	o, err := redis.String(rds.Do("GET", k))
+	h := Hub{}
+	err := hubrdsPool.GetJson([]byte(k), &h)
 	if err != nil {
 		return nil, err
 	}
-	h := &Hub{}
-	err = json.Unmarshal([]byte(o), &h)
-	if err != nil {
-		return nil,err
-	}
-	return h, nil
+	return &h, nil
 }
 
-func hubReplace(h *Hub) error {
-	json, err := json.Marshal(h)
-	if err != nil {
-		return err
-	}
-	key := h.Ukey + ":" + strconv.FormatInt(h.Id, 10)
-	rds := hubrdsPool.Get()
-	defer rds.Close()
-	_, err = rds.Do("SET", key, json)
-	if err != nil {
-		return err
-	}
-	return nil
+func hubReplace(k string, hub *Hub) error {
+	return hubrdsPool.PutJson([]byte(k), hub, 0)
 }
 
 func delhubs(ukey string) {
@@ -123,21 +78,19 @@ func delhubs(ukey string) {
 		return
 	}
 	for _, v := range hs {
-		delhubs := ukey + ":" + strconv.FormatInt(v.Id, 10)
-		hubdel(delhubs)
+		k := ukey + ":" + strconv.FormatUint(v.Id, 10)
+		hubdel(k)
 	}
 }
 
 func hubdel(k string) error {
 	if len(strings.TrimSpace(k)) == 0 {
-		return errors.New("uid was nil")
+		return errors.New("key nil")
 	}
-	rds := hubrdsPool.Get()
-	defer rds.Close()
 
 	deldos(k)
 
-	_, err := redis.Int(rds.Do("DEL", k))
+	err := hubrdsPool.Del([]byte(k))
 	if err != nil {
 		return err
 	}
@@ -150,11 +103,6 @@ func deldos(ukeyhid string) {
 }
 
 func HubAll() ([]string, error) {
-	rds := hubrdsPool.Get()
-	defer rds.Close()
-	data, err := redis.Strings(rds.Do("KEYS", "*"))
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	ks := hubrdsPool.AllKeys()
+	return ks, nil
 }

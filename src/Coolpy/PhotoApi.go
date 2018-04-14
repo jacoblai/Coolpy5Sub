@@ -60,8 +60,8 @@ func PhotoPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		if p.TimeStamp.IsZero() {
 			p.TimeStamp = time.Now().UTC().Add(time.Hour * 8)
 		}
-		p.HubId, _ = strconv.ParseInt(hid, 10, 64)
-		p.NodeId, _ = strconv.ParseInt(nid, 10, 64)
+		p.HubId, _ = strconv.ParseUint(hid, 10, 64)
+		p.NodeId, _ = strconv.ParseUint(nid, 10, 64)
 		p.Img = img
 		p.Mime = mm
 		p.Size = int64(len(p.Img))

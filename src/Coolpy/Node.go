@@ -2,21 +2,19 @@ package Coolpy
 
 import (
 	"reflect"
-	"github.com/garyburd/redigo/redis"
 	"strconv"
 	"github.com/syndtr/goleveldb/leveldb/errors"
 	"strings"
-	"time"
-	"encoding/json"
+	"github.com/jacoblai/yiyidb"
 )
 
 type Node struct {
-	Id    int64
-	HubId int64 `validate:"required"`
+	Id    uint64
+	HubId uint64 `validate:"required"`
 	Title string `validate:"required"`
 	About string
 	Tags  []string
-	Type  int `validate:"required"`
+	Type  int    `validate:"required"`
 	Meta  RangeMeta
 }
 
@@ -37,25 +35,14 @@ func (c *NodeType) GetName(v int) string {
 	return NodeReflectType.Field(v).Name
 }
 
-var noderdsPool *redis.Pool
+var noderdsPool *yiyidb.Kvdb
 
-func NodeConnect(addr string, pwd string) {
-	noderdsPool = &redis.Pool{
-		MaxIdle:     10,
-		IdleTimeout: time.Second * 300,
-		Dial: func() (redis.Conn, error) {
-			conn, err := redis.Dial("tcp", addr)
-			if err != nil {
-				return nil, err
-			}
-			_, err = conn.Do("AUTH", pwd)
-			if err != nil {
-				return nil, err
-			}
-			conn.Do("SELECT", "3")
-			return conn, nil
-		},
+func NodeConnect(dir string) {
+	db, err := yiyidb.OpenKvdb(dir+"/cp5nodes", false, false, 10) //path, enable ttl
+	if err != nil {
+		panic(err)
 	}
+	noderdsPool = db
 }
 
 func nodeCreate(ukey string, node *Node) error {
@@ -64,19 +51,13 @@ func nodeCreate(ukey string, node *Node) error {
 		return err
 	}
 	node.Id = v
-	jnode, err := json.Marshal(node)
-	if err != nil {
-		return err
-	}
-	key := ukey + ":" + strconv.FormatInt(node.HubId, 10) + ":" + strconv.FormatInt(node.Id, 10)
-	rds := noderdsPool.Get()
-	defer rds.Close()
-	_, err = rds.Do("SET", key, jnode)
+	key := ukey + ":" + strconv.FormatUint(node.HubId, 10) + ":" + strconv.FormatUint(node.Id, 10)
+	err = noderdsPool.PutJson([]byte(key), node, 0)
 	if err != nil {
 		return err
 	}
 	//验证nodetype
-	if NodeTypeEnum.GetName(node.Type - 1) == "" {
+	if NodeTypeEnum.GetName(node.Type-1) == "" {
 		return errors.New("node type error")
 	}
 	//初始化控制器
@@ -100,52 +81,29 @@ func nodeCreate(ukey string, node *Node) error {
 }
 
 func NodeStartWith(k string) ([]*Node, error) {
-	rds := noderdsPool.Get()
-	defer rds.Close()
-	data, err := redis.Strings(rds.Do("KEYSSTART", k))
+	h := Node{}
+	data, err := noderdsPool.KeyStartByObject([]byte(k), h)
 	if err != nil {
 		return nil, err
 	}
-	if len(data) <= 0 {
-		return nil, errors.New("no data")
-	}
 	var ndata []*Node
 	for _, v := range data {
-		o, _ := redis.String(rds.Do("GET", v))
-		h := &Node{}
-		json.Unmarshal([]byte(o), &h)
-		ndata = append(ndata, h)
+		ndata = append(ndata, v.Object.(*Node))
 	}
 	return ndata, nil
 }
 
 func NodeGetOne(k string) (*Node, error) {
-	rds := noderdsPool.Get()
-	defer rds.Close()
-	o, err := redis.String(rds.Do("GET", k))
+	h := Node{}
+	err := noderdsPool.GetJson([]byte(k), &h)
 	if err != nil {
 		return nil, err
 	}
-	h := &Node{}
-	err = json.Unmarshal([]byte(o), &h)
-	if err != nil {
-		return nil, err
-	}
-	return h, nil
+	return &h, nil
 }
 
 func nodeReplace(k string, h *Node) error {
-	json, err := json.Marshal(h)
-	if err != nil {
-		return err
-	}
-	rds := noderdsPool.Get()
-	defer rds.Close()
-	_, err = rds.Do("SET", k, json)
-	if err != nil {
-		return err
-	}
-	return nil
+	return noderdsPool.PutJson([]byte(k), h, 0)
 }
 
 func delnodes(ukeyhid string) {
@@ -154,21 +112,19 @@ func delnodes(ukeyhid string) {
 		return
 	}
 	for _, v := range ns {
-		delnodes := ukeyhid + ":" + strconv.FormatInt(v.Id, 10)
+		delnodes := ukeyhid + ":" + strconv.FormatUint(v.Id, 10)
 		nodedel(delnodes)
 	}
 }
 
 func nodedel(k string) error {
 	if len(strings.TrimSpace(k)) == 0 {
-		return errors.New("uid was nil")
+		return errors.New("key nil")
 	}
-	rds := noderdsPool.Get()
-	defer rds.Close()
 
 	deldodps(k)
 
-	_, err := redis.Int(rds.Do("DEL", k))
+	err := noderdsPool.Del([]byte(k))
 	if err != nil {
 		return err
 	}
@@ -185,11 +141,6 @@ func deldodps(ukeyhidnid string) {
 }
 
 func NodeAll() ([]string, error) {
-	rds := noderdsPool.Get()
-	defer rds.Close()
-	data, err := redis.Strings(rds.Do("KEYS", "*"))
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	ks := noderdsPool.AllKeys()
+	return ks, nil
 }

@@ -2,41 +2,29 @@ package Coolpy
 
 import (
 	"time"
-	"github.com/garyburd/redigo/redis"
-	"encoding/json"
 	"github.com/pmylund/sortutil"
 	"strings"
 	"errors"
+	"github.com/jacoblai/yiyidb"
 )
 
 type PhotoDP struct {
-	HubId     int64
-	NodeId    int64
+	HubId     uint64
+	NodeId    uint64
 	TimeStamp time.Time
 	Size      int64 `validate:"required"`
 	Mime      string `validate:"required"`
 	Img       []byte `validate:"required"`
 }
 
-var photordsPool *redis.Pool
+var photordsPool *yiyidb.Kvdb
 
-func PhotoConnect(addr string, pwd string) {
-	photordsPool = &redis.Pool{
-		MaxIdle:     10,
-		IdleTimeout: time.Second * 300,
-		Dial: func() (redis.Conn, error) {
-			conn, err := redis.Dial("tcp", addr)
-			if err != nil {
-				return nil, err
-			}
-			_, err = conn.Do("AUTH", pwd)
-			if err != nil {
-				return nil, err
-			}
-			conn.Do("SELECT", "8")
-			return conn, nil
-		},
+func PhotoConnect(dir string) {
+	db, err := yiyidb.OpenKvdb(dir+"/cp5phts", false, false, 10) //path, enable ttl
+	if err != nil {
+		panic(err)
 	}
+	photordsPool = db
 }
 
 func delPhotos(k string) {
@@ -50,81 +38,46 @@ func delPhotos(k string) {
 }
 
 func photoCreate(k string, dp *PhotoDP) error {
-	json, err := json.Marshal(dp)
-	if err != nil {
-		return err
-	}
-	rds := photordsPool.Get()
-	defer rds.Close()
-	_, err = rds.Do("SET", k, json)
-	if err != nil {
-		return err
-	}
-	return nil
+	return photordsPool.PutJson([]byte(k), dp, 0)
 }
 
 func PhotostartWith(k string) ([]string, error) {
-	rds := photordsPool.Get()
-	defer rds.Close()
-	data, err := redis.Strings(rds.Do("KEYSSTART", k))
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	ks := photordsPool.KeyStartKeys([]byte(k))
+	return ks, nil
 }
 
 func PhotomaxGet(k string) (*PhotoDP, error) {
-	rds := photordsPool.Get()
-	defer rds.Close()
-	data, err := redis.Strings(rds.Do("KEYSSTART", k))
-	if err != nil {
-		return nil, err
-	}
-	if len(data) <= 0 {
+	ks := photordsPool.KeyStartKeys([]byte(k))
+	if len(ks) <= 0 {
 		return nil, errors.New("no data")
 	}
-	sortutil.Desc(data)
-	o, _ := redis.String(rds.Do("GET", data[0]))
-	dp := &PhotoDP{}
-	err = json.Unmarshal([]byte(o), &dp)
+	sortutil.Desc(ks)
+	var dp PhotoDP
+	err := photordsPool.GetJson([]byte(ks[0]), &dp)
 	if err != nil {
 		return nil, err
 	}
-	return dp, nil
+	return &dp, nil
 }
 
 func PhotogetOneByKey(k string) (*PhotoDP, error) {
-	rds := photordsPool.Get()
-	defer rds.Close()
-	o, err := redis.String(rds.Do("GET", k))
+	var dp PhotoDP
+	err := photordsPool.GetJson([]byte(k), &dp)
 	if err != nil {
 		return nil, err
 	}
-	h := &PhotoDP{}
-	err = json.Unmarshal([]byte(o), &h)
-	if err != nil {
-		return nil, err
-	}
-	return h, nil
+	return &dp, nil
 }
 
 func Photodel(k string) error {
 	if len(strings.TrimSpace(k)) == 0 {
-		return errors.New("uid was nil")
+		return errors.New("key nil")
 	}
-	rds := photordsPool.Get()
-	defer rds.Close()
-	_, err := redis.Int(rds.Do("DEL", k))
-	if err != nil {
-		return err
-	}
-	return nil
+	return photordsPool.Del([]byte(k))
 }
 
 func PhotoGetRange(start string, end string, interval float64, page int) ([]string, error) {
-	rds := photordsPool.Get()
-	defer rds.Close()
-	data, err := redis.Strings(rds.Do("KEYSRANGE", start, end))
+	data, err := photordsPool.KeyRange([]byte(start), []byte(end))
 	if err != nil {
 		return nil, err
 	}
@@ -134,16 +87,15 @@ func PhotoGetRange(start string, end string, interval float64, page int) ([]stri
 	var IntervalData []string
 	for _, v := range data {
 		if len(IntervalData) == 0 {
-			fk:= strings.Split(v, ",")
-			IntervalData = append(IntervalData, fk[2])
+			IntervalData = append(IntervalData, string(v.Key))
 		} else {
-			otime := IntervalData[len(IntervalData) - 1]
-			otm, _ := time.Parse(time.RFC3339Nano, otime)
-			vtime := strings.Split(v, ",")
+			otime := strings.Split(IntervalData[len(IntervalData)-1], ",")
+			otm, _ := time.Parse(time.RFC3339Nano, otime[2])
+			vtime := strings.Split(string(v.Key), ",")
 			vtm, _ := time.Parse(time.RFC3339Nano, vtime[2])
 			du := vtm.Sub(otm)
 			if du.Seconds() >= interval {
-				IntervalData = append(IntervalData, vtime[2])
+				IntervalData = append(IntervalData, string(v.Key))
 			}
 		}
 	}
@@ -151,11 +103,6 @@ func PhotoGetRange(start string, end string, interval float64, page int) ([]stri
 }
 
 func PhotoAll() ([]string, error) {
-	rds := photordsPool.Get()
-	defer rds.Close()
-	data, err := redis.Strings(rds.Do("KEYS", "*"))
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	ks := photordsPool.AllKeys()
+	return ks, nil
 }

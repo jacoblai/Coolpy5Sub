@@ -1,29 +1,27 @@
 package Coolpy
 
 import (
-	"github.com/garyburd/redigo/redis"
 	"strconv"
-	"encoding/json"
 	"strings"
 	"errors"
-	"time"
+	"github.com/jacoblai/yiyidb"
 )
 
 type Switcher struct {
-	HubId  int64
-	NodeId int64
+	HubId  uint64
+	NodeId uint64
 	Svalue int
 }
 
 type GenControl struct {
-	HubId  int64
-	NodeId int64
+	HubId  uint64
+	NodeId uint64
 	Gvalue string `validate:"required"`
 }
 
 type RangeControl struct {
-	HubId  int64
-	NodeId int64
+	HubId  uint64
+	NodeId uint64
 	Rvalue int64
 	Min    int64
 	Max    int64
@@ -36,25 +34,14 @@ type RangeMeta struct {
 	Step int64
 }
 
-var ctrlrdsPool *redis.Pool
+var ctrlrdsPool *yiyidb.Kvdb
 
-func CtrlConnect(addr string, pwd string) {
-	ctrlrdsPool = &redis.Pool{
-		MaxIdle:     10,
-		IdleTimeout: time.Second * 300,
-		Dial: func() (redis.Conn, error) {
-			conn, err := redis.Dial("tcp", addr)
-			if err != nil {
-				return nil, err
-			}
-			_, err = conn.Do("AUTH", pwd)
-			if err != nil {
-				return nil, err
-			}
-			conn.Do("SELECT", "4")
-			return conn, nil
-		},
+func CtrlConnect(dir string) {
+	db, err := yiyidb.OpenKvdb(dir+"/cp5ctrls", false, false, 10) //path, enable ttl
+	if err != nil {
+		panic(err)
 	}
+	ctrlrdsPool = db
 }
 
 func DelControls(k string) {
@@ -68,85 +55,43 @@ func DelControls(k string) {
 }
 
 func ReplaceSwitcher(k string, s *Switcher) error {
-	json, err := json.Marshal(s)
-	if err != nil {
-		return err
-	}
-	rds := ctrlrdsPool.Get()
-	defer rds.Close()
-	_, err = rds.Do("SET", k, json)
-	if err != nil {
-		return err
-	}
-	return nil
+	return ctrlrdsPool.PutJson([]byte(k), s, 0)
 }
 
 func GetSwitcher(k string) (*Switcher, error) {
-	rds := ctrlrdsPool.Get()
-	defer rds.Close()
-	o, err := redis.String(rds.Do("GET", k))
+	var s Switcher
+	err := ctrlrdsPool.GetJson([]byte(k), &s)
 	if err != nil {
 		return nil, err
 	}
-	h := &Switcher{}
-	err = json.Unmarshal([]byte(o), &h)
-	if err != nil {
-		return nil, err
-	}
-	return h, nil
+	return &s, nil
 }
 
-func BeginSwitcher(ukey string, Hubid int64, Nodeid int64) error {
-	key := ukey + ":" + strconv.FormatInt(Hubid, 10) + ":" + strconv.FormatInt(Nodeid, 10)
+func BeginSwitcher(ukey string, Hubid uint64, Nodeid uint64) error {
+	key := ukey + ":" + strconv.FormatUint(Hubid, 10) + ":" + strconv.FormatUint(Nodeid, 10)
 	o := Switcher{
-		HubId:Hubid,
-		NodeId:Nodeid,
-		Svalue:0,
+		HubId:  Hubid,
+		NodeId: Nodeid,
+		Svalue: 0,
 	}
-	json, err := json.Marshal(o)
-	if err != nil {
-		return err
-	}
-	rds := ctrlrdsPool.Get()
-	defer rds.Close()
-	_, err = rds.Do("SET", key, json)
-	if err != nil {
-		return err
-	}
-	return nil
+	return ctrlrdsPool.PutJson([]byte(key), &o, 0)
 }
 
 func ReplaceRangeControl(k string, s *RangeControl) error {
-	json, err := json.Marshal(s)
-	if err != nil {
-		return err
-	}
-	rds := ctrlrdsPool.Get()
-	defer rds.Close()
-	_, err = rds.Do("SET", k, json)
-	if err != nil {
-		return err
-	}
-	return nil
+	return ctrlrdsPool.PutJson([]byte(k), s, 0)
 }
 
 func GetRangeControl(k string) (*RangeControl, error) {
-	rds := ctrlrdsPool.Get()
-	defer rds.Close()
-	o, err := redis.String(rds.Do("GET", k))
+	var r RangeControl
+	err := ctrlrdsPool.GetJson([]byte(k), &r)
 	if err != nil {
 		return nil, err
 	}
-	h := &RangeControl{}
-	err = json.Unmarshal([]byte(o), &h)
-	if err != nil {
-		return nil, err
-	}
-	return h, nil
+	return &r, nil
 }
 
-func BeginRangeControl(ukey string, Hubid int64, Nodeid int64, meta RangeMeta) error {
-	key := ukey + ":" + strconv.FormatInt(Hubid, 10) + ":" + strconv.FormatInt(Nodeid, 10)
+func BeginRangeControl(ukey string, Hubid uint64, Nodeid uint64, meta RangeMeta) error {
+	key := ukey + ":" + strconv.FormatUint(Hubid, 10) + ":" + strconv.FormatUint(Nodeid, 10)
 	if meta.Max == 0 {
 		meta.Max = 255
 	}
@@ -154,107 +99,52 @@ func BeginRangeControl(ukey string, Hubid int64, Nodeid int64, meta RangeMeta) e
 		meta.Step = 5
 	}
 	o := RangeControl{
-		HubId:Hubid,
-		NodeId:Nodeid,
-		Rvalue:0,
-		Min:meta.Min,
-		Max:meta.Max,
-		Step:meta.Step,
+		HubId:  Hubid,
+		NodeId: Nodeid,
+		Rvalue: 0,
+		Min:    meta.Min,
+		Max:    meta.Max,
+		Step:   meta.Step,
 	}
-	json, err := json.Marshal(o)
-	if err != nil {
-		return err
-	}
-	rds := ctrlrdsPool.Get()
-	defer rds.Close()
-	_, err = rds.Do("SET", key, json)
-	if err != nil {
-		return err
-	}
-	return nil
+	return ctrlrdsPool.PutJson([]byte(key), &o, 0)
 }
 
 func ReplaceGenControl(k string, s *GenControl) error {
-	json, err := json.Marshal(s)
-	if err != nil {
-		return err
-	}
-	rds := ctrlrdsPool.Get()
-	defer rds.Close()
-	_, err = rds.Do("SET", k, json)
-	if err != nil {
-		return err
-	}
-	return nil
+	return ctrlrdsPool.PutJson([]byte(k), s, 0)
 }
 
 func GetGenControl(k string) (*GenControl, error) {
-	rds := ctrlrdsPool.Get()
-	defer rds.Close()
-	o, err := redis.String(rds.Do("GET", k))
+	var r GenControl
+	err := ctrlrdsPool.GetJson([]byte(k), &r)
 	if err != nil {
 		return nil, err
 	}
-	h := &GenControl{}
-	err = json.Unmarshal([]byte(o), &h)
-	if err != nil {
-		return nil, err
-	}
-	return h, nil
+	return &r, nil
 }
 
-func BeginGenControl(ukey string, Hubid int64, Nodeid int64) error {
-	key := ukey + ":" + strconv.FormatInt(Hubid, 10) + ":" + strconv.FormatInt(Nodeid, 10)
+func BeginGenControl(ukey string, Hubid uint64, Nodeid uint64) error {
+	key := ukey + ":" + strconv.FormatUint(Hubid, 10) + ":" + strconv.FormatUint(Nodeid, 10)
 	o := GenControl{
-		HubId:Hubid,
-		NodeId:Nodeid,
-		Gvalue:"",
+		HubId:  Hubid,
+		NodeId: Nodeid,
+		Gvalue: "",
 	}
-	json, err := json.Marshal(o)
-	if err != nil {
-		return err
-	}
-	rds := ctrlrdsPool.Get()
-	defer rds.Close()
-	_, err = rds.Do("SET", key, json)
-	if err != nil {
-		return err
-	}
-	return nil
+	return ctrlrdsPool.PutJson([]byte(key), &o, 0)
 }
 
 func ctrlStartWith(k string) ([]string, error) {
-	rds := ctrlrdsPool.Get()
-	defer rds.Close()
-	data, err := redis.Strings(rds.Do("KEYSSTART", k))
-	if err != nil {
-		return nil, err
-	}
-	if len(data) <= 0 {
-		return nil, errors.New("no data")
-	}
-	return data, nil
+	ks := ctrlrdsPool.KeyStartKeys([]byte(k))
+	return ks, nil
 }
 
 func ctrldel(k string) error {
 	if len(strings.TrimSpace(k)) == 0 {
-		return errors.New("uid was nil")
+		return errors.New("key nil")
 	}
-	rds := ctrlrdsPool.Get()
-	defer rds.Close()
-	_, err := redis.Int(rds.Do("DEL", k))
-	if err != nil {
-		return err
-	}
-	return nil
+	return ctrlrdsPool.Del([]byte(k))
 }
 
 func CtrlAll() ([]string, error) {
-	rds := ctrlrdsPool.Get()
-	defer rds.Close()
-	data, err := redis.Strings(rds.Do("KEYS", "*"))
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	ks := ctrlrdsPool.AllKeys()
+	return ks, nil
 }

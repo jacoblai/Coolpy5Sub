@@ -69,8 +69,8 @@ func DPPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, errs)
 			return
 		}
-		v.HubId, _ = strconv.ParseInt(hid, 10, 64)
-		v.NodeId, _ = strconv.ParseInt(nid, 10, 64)
+		v.HubId, _ = strconv.ParseUint(hid, 10, 64)
+		v.NodeId, _ = strconv.ParseUint(nid, 10, 64)
 		err = ValueCreate(dpkey + "," + v.TimeStamp.Format(time.RFC3339Nano), &v)
 		if err != nil {
 			fmt.Fprintf(w, `{"ok":%d,"err":"%v"}`, 0, err)
